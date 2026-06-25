@@ -1,0 +1,1725 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Smart Basket Optimizer — Product Design Case Study</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700;800;900&family=Hanken+Grotesk:wght@400;500;600;700&family=Spline+Sans+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#FAFAF6;
+    --tint:#F1F0EA;
+    --ink:#17171B;
+    --ink-soft:#56565E;
+    --ink-faint:#8C8C92;
+    --line:#E4E3DB;
+    --line-2:#CFCEC4;
+    --brand:#FFD400;
+    --brand-deep:#8A6D00; /* AA-legible amber for text/labels on light bg (4.7:1 on paper); bright --brand stays for fills only */
+    --save:#1A7A45;
+    --save-tint:#E7F2EB;
+    --value:#4338CA;
+    --value-tint:#ECEBFB;
+    --maxw:1140px;
+    --measure:42rem;
+    --pad-section:6.5rem;
+    --radius:14px;
+    --font-d:'Archivo',sans-serif;
+    --font-b:'Hanken Grotesk',sans-serif;
+    --font-m:'Spline Sans Mono',monospace;
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;scroll-padding-top:5rem;-webkit-text-size-adjust:100%;}
+  body{
+    margin:0;background:var(--paper);color:var(--ink);
+    font-family:var(--font-b);font-size:17px;line-height:1.62;
+    font-weight:400;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;
+  }
+  ::selection{background:var(--brand);color:var(--ink);}
+  h1,h2,h3,h4{font-family:var(--font-d);font-weight:800;margin:0;line-height:1.04;letter-spacing:-0.02em;}
+  p{margin:0 0 1.1rem;}
+  a{color:inherit;}
+  .mono{font-family:var(--font-m);font-feature-settings:"tnum" 1,"zero" 1;}
+
+  /* ---------- layout ---------- */
+  .wrap{max-width:var(--maxw);margin:0 auto;padding:0 1.6rem;}
+  .section{padding:var(--pad-section) 0;border-top:1px solid var(--line);}
+  .section:first-of-type{border-top:0;}
+  .lede{max-width:var(--measure);}
+  .lede p{font-size:1.16rem;color:var(--ink-soft);}
+
+  /* ---------- eyebrow / section head ---------- */
+  .eyebrow{
+    display:inline-flex;align-items:center;gap:.55rem;
+    font-family:var(--font-m);font-size:.72rem;font-weight:600;
+    letter-spacing:.16em;text-transform:uppercase;color:var(--ink-soft);
+    margin-bottom:1.4rem;
+  }
+  .eyebrow .dot{width:7px;height:7px;background:var(--brand);border-radius:2px;flex:none;}
+  .sec-h{font-size:clamp(2rem,4.4vw,3.1rem);max-width:18ch;margin-bottom:1.6rem;}
+
+  /* ---------- top bar ---------- */
+  header.bar{
+    position:sticky;top:0;z-index:50;background:var(--paper);
+    border-bottom:1px solid var(--line);
+  }
+  .bar-in{max-width:var(--maxw);margin:0 auto;padding:.7rem 1.6rem;display:flex;align-items:center;gap:1.2rem;}
+  .mark{display:flex;align-items:center;gap:.6rem;font-family:var(--font-d);font-weight:800;font-size:.95rem;letter-spacing:-0.01em;flex:none;}
+  .mark .tagchip{
+    background:var(--brand);color:var(--ink);font-family:var(--font-m);font-weight:700;
+    font-size:.62rem;letter-spacing:.08em;padding:.18rem .42rem;border-radius:4px;text-transform:uppercase;
+  }
+  nav.secnav{margin-left:auto;display:flex;gap:.3rem;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch;}
+  nav.secnav::-webkit-scrollbar{display:none;}
+  nav.secnav a{
+    font-family:var(--font-m);font-size:.72rem;font-weight:500;letter-spacing:.03em;
+    color:var(--ink-soft);text-decoration:none;padding:.32rem .56rem;border-radius:6px;white-space:nowrap;
+    transition:background .15s,color .15s;
+  }
+  nav.secnav a:hover{color:var(--ink);background:var(--tint);}
+  nav.secnav a.active{color:var(--ink);background:var(--brand);font-weight:600;}
+
+  /* ---------- hero ---------- */
+  .hero{padding:5rem 0 5.5rem;}
+  .hero h1{font-size:clamp(2.5rem,6vw,4.5rem);max-width:16ch;font-weight:800;}
+  .hero h1 .hl{background:linear-gradient(transparent 62%,var(--brand) 62%);padding:0 .04em;}
+  .hero .sub{max-width:38rem;margin-top:1.6rem;font-size:1.2rem;color:var(--ink-soft);}
+  .meta-row{display:flex;flex-wrap:wrap;gap:.5rem;margin-top:2rem;}
+  .pill{
+    font-family:var(--font-m);font-size:.72rem;font-weight:500;letter-spacing:.04em;
+    color:var(--ink-soft);border:1px solid var(--line-2);padding:.34rem .66rem;border-radius:30px;
+  }
+  .pill.solid{background:var(--ink);color:var(--paper);border-color:var(--ink);font-weight:600;}
+
+  /* ---------- swap card (signature) ---------- */
+  .swap{
+    background:#fff;border:1px solid var(--line-2);border-radius:var(--radius);
+    box-shadow:0 1px 0 var(--line),0 18px 40px -28px rgba(20,20,25,.35);
+    overflow:hidden;
+  }
+  .swap-head{display:flex;align-items:center;justify-content:space-between;gap:1rem;padding:.85rem 1.1rem;border-bottom:1px solid var(--line);background:var(--paper);}
+  .swap-head .lab{font-family:var(--font-m);font-size:.7rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-soft);}
+  .swap-body{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);align-items:stretch;}
+  .prod{padding:1.2rem 1.25rem;display:flex;flex-direction:column;gap:.15rem;min-width:0;}
+  .prod.alt{background:var(--paper);}
+  .prod .cat{font-family:var(--font-m);font-size:.66rem;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-faint);}
+  .prod .nm{font-family:var(--font-d);font-weight:650;font-size:1rem;line-height:1.2;margin-top:.25rem;}
+  .prod .brand{font-size:.88rem;color:var(--ink-soft);margin-top:.08rem;}
+  .price-block{margin-top:.72rem;display:flex;align-items:baseline;gap:.5rem;flex-wrap:wrap;}
+  .price{font-family:var(--font-m);font-weight:800;font-size:1.58rem;letter-spacing:-0.01em;}
+  .unit{font-family:var(--font-m);font-weight:600;font-size:.86rem;color:var(--ink);opacity:.76;}
+  .unit b{color:var(--ink);font-weight:600;}
+  .swap-arrow{display:flex;align-items:center;justify-content:center;padding:0 .4rem;background:var(--paper);border-left:1px solid var(--line);border-right:1px solid var(--line);}
+  .swap-arrow span{font-family:var(--font-m);color:var(--ink-faint);font-size:1.1rem;}
+  .swap-foot{display:flex;align-items:center;gap:.6rem;flex-wrap:wrap;padding:.9rem 1.1rem;border-top:1px solid var(--line);}
+  .reason{font-family:var(--font-m);font-size:.74rem;font-weight:600;letter-spacing:.02em;padding:.32rem .6rem;border-radius:6px;display:inline-flex;align-items:center;gap:.4rem;}
+  .reason.lower{background:var(--save-tint);color:var(--save);}
+  .reason.value{background:var(--value-tint);color:var(--value);}
+  .reason.own{background:var(--tint);color:var(--ink);border:1px solid var(--line-2);}
+  .impact{font-family:var(--font-m);font-weight:700;font-size:.82rem;}
+  .impact.save{color:var(--save);}
+  .impact.val{color:var(--value);}
+  .impact.up{color:var(--ink-soft);font-weight:500;}
+  .swap-actions{margin-left:auto;display:flex;gap:.5rem;}
+  .btn{font-family:var(--font-b);font-weight:600;font-size:.84rem;padding:.5rem .9rem;border-radius:8px;border:1px solid var(--ink);background:var(--ink);color:var(--paper);cursor:pointer;}
+  .btn.ghost{background:transparent;color:var(--ink);border-color:var(--line-2);}
+  .btn:focus-visible,.btn.ghost:focus-visible{outline:3px solid var(--ink);outline-offset:2px;}
+  /* shared visible focus ring for controls that previously had none */
+  nav.secnav a:focus-visible,.proto-reset:focus-visible,.pf-btn:focus-visible,.pf-back:focus-visible,.pf-head-action:focus-visible,.cr-undo:focus-visible,.opp-row2:focus-visible{outline:3px solid var(--ink);outline-offset:2px;}
+  .pf-toast .tundo:focus-visible{outline:3px solid var(--brand);outline-offset:2px;}
+  .pf-title:focus{outline:none;}
+  .hero-cap{font-size:.95rem;color:var(--ink-soft);margin-top:1.1rem;max-width:40rem;}
+  .example-intro{margin-top:3.2rem;max-width:42rem;}
+  .example-intro p{font-size:1.02rem;color:var(--ink-soft);margin:0;}
+
+  /* applied state */
+  .swap.applied .prod:not(.alt){opacity:.5;}
+  .swap.applied .prod:not(.alt) .price{text-decoration:line-through;text-decoration-color:var(--ink-faint);}
+  .applied-bar{display:none;align-items:center;gap:.6rem;padding:.7rem 1.1rem;background:var(--save-tint);border-top:1px solid var(--save-tint);color:var(--save);font-weight:600;font-size:.9rem;}
+  .swap.applied .applied-bar{display:flex;}
+  .swap.applied .swap-foot{display:none;}
+  .applied-bar .undo{margin-left:auto;font-family:var(--font-b);font-weight:600;font-size:.82rem;color:var(--ink);background:#fff;border:1px solid var(--line-2);border-radius:8px;padding:.4rem .75rem;cursor:pointer;}
+  .applied-bar .undo:focus-visible{outline:3px solid var(--ink);outline-offset:2px;}
+
+  /* ---------- generic blocks ---------- */
+  .two{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:2.4rem;margin-top:2.2rem;}
+  .three{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1.2rem;}
+  .stack-lg{display:flex;flex-direction:column;gap:1.4rem;}
+
+  /* statement / pull */
+  .statement{
+    font-family:var(--font-d);font-weight:700;font-size:clamp(1.4rem,2.8vw,2rem);line-height:1.2;
+    letter-spacing:-0.015em;max-width:26ch;
+  }
+  .statement .hl{background:linear-gradient(transparent 60%,var(--brand) 60%);}
+  .callout{border-left:4px solid var(--brand);padding:.3rem 0 .3rem 1.3rem;margin:2rem 0;}
+  .callout .statement{max-width:32ch;}
+
+  /* labelled problem split */
+  .probsplit{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:1.2rem;margin-top:2rem;}
+  .pcard{border:1px solid var(--line);border-radius:var(--radius);padding:1.4rem 1.5rem;background:#fff;}
+  .pcard .tier{font-family:var(--font-m);font-size:.7rem;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-faint);margin-bottom:.7rem;}
+  .pcard.real{background:var(--ink);color:var(--paper);border-color:var(--ink);}
+  .pcard.real .tier{color:var(--brand);}
+  .pcard h4{font-size:1.15rem;margin-bottom:.5rem;}
+  .pcard p{font-size:.97rem;margin-bottom:0;color:inherit;}
+  .pcard.real p{color:#D9D9DC;}
+
+  /* persona */
+  .persona{border:1px solid var(--line-2);border-radius:var(--radius);overflow:hidden;background:#fff;margin-top:2.2rem;}
+  .persona-top{display:flex;gap:1.1rem;align-items:flex-start;padding:1.4rem 1.5rem;border-bottom:1px solid var(--line);}
+  .persona-badge{flex:none;width:54px;height:54px;border-radius:12px;background:var(--brand);display:flex;align-items:center;justify-content:center;font-family:var(--font-d);font-weight:800;font-size:1.4rem;}
+  .persona-top h4{font-size:1.18rem;}
+  .persona-top .role{font-family:var(--font-m);font-size:.72rem;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-soft);margin-top:.3rem;}
+  .persona-grid{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);}
+  .persona-col{padding:1.3rem 1.5rem;}
+  .persona-col + .persona-col{border-left:1px solid var(--line);}
+  .persona-col h5{font-family:var(--font-m);font-size:.7rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-faint);margin:0 0 .8rem;}
+  .needs{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:.55rem;}
+  .needs li{position:relative;padding-left:1.2rem;font-size:.95rem;color:var(--ink-soft);}
+  .needs li::before{content:"";position:absolute;left:0;top:.55em;width:6px;height:6px;border-radius:2px;background:var(--brand);}
+  .frust{font-size:.98rem;color:var(--ink);}
+
+  /* problem section sub-blocks */
+  .subblock{margin-top:3.6rem;}
+  .sub-h{font-family:var(--font-d);font-weight:800;font-size:clamp(1.35rem,2.5vw,1.85rem);line-height:1.12;letter-spacing:-0.015em;max-width:24ch;margin-bottom:1.1rem;}
+  .block-p{max-width:42rem;color:var(--ink-soft);font-size:1.05rem;}
+  .opp-panel{margin-top:1.9rem;border:1px solid var(--line-2);border-radius:var(--radius);padding:1.7rem 1.8rem;background:#fff;}
+  .opp-lead{font-family:var(--font-d);font-weight:700;font-size:1.2rem;line-height:1.32;letter-spacing:-0.01em;margin:0;max-width:48rem;}
+  .scope{display:grid;grid-template-columns:repeat(auto-fit,minmax(168px,1fr));gap:.7rem;margin-top:1.4rem;}
+  .scope .tile{border:1px solid var(--line);border-radius:10px;padding:1rem 1.1rem;background:var(--paper);}
+  .scope .tile .n{font-family:var(--font-m);font-weight:700;font-size:.72rem;color:var(--brand-deep);margin-bottom:.5rem;}
+  .scope .tile .t{font-size:.92rem;color:var(--ink);line-height:1.4;}
+  .evidence{margin-top:3.6rem;border:1px solid var(--line);border-radius:var(--radius);background:var(--tint);padding:1.5rem 1.7rem;}
+  .evidence p{font-size:.97rem;color:var(--ink-soft);margin:0 0 .9rem;max-width:54rem;}
+  .evidence p:last-child{margin-bottom:0;}
+
+  /* journey stages + key finding (section 3) */
+  .jstages{margin-top:2.2rem;}
+  .jstage{border:1px solid var(--line);border-radius:var(--radius);padding:1.4rem 1.5rem;background:#fff;}
+  .jstage + .jstage{margin-top:.8rem;}
+  .jstage.fr{border-left:3px solid var(--brand);}
+  .jhead{display:flex;align-items:baseline;gap:.85rem;flex-wrap:wrap;}
+  .jnum{font-family:var(--font-m);font-weight:700;font-size:.78rem;color:var(--ink-faint);}
+  .jname{font-family:var(--font-d);font-weight:700;font-size:1.12rem;}
+  .jq{font-family:var(--font-d);font-weight:600;font-size:1.06rem;color:var(--ink);margin:.55rem 0 1.1rem;letter-spacing:-0.01em;}
+  .jbody{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:1.4rem;}
+  .jpart .pl{font-family:var(--font-m);font-size:.64rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-faint);margin-bottom:.4rem;}
+  .jpart .pt{font-size:.92rem;color:var(--ink-soft);line-height:1.5;}
+  .jpart.fr .pl{color:var(--ink);}
+  .jpart.fr .pt{color:var(--ink);}
+  .finding-contrast{display:grid;gap:.8rem;margin-top:1.6rem;}
+  .fq{border:1px solid var(--line);border-radius:var(--radius);padding:1.4rem 1.6rem;background:#fff;}
+  .fq.accent{border-color:var(--ink);background:var(--ink);}
+  .fq .fl{font-family:var(--font-m);font-size:.66rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-faint);margin-bottom:.55rem;}
+  .fq.accent .fl{color:var(--brand);}
+  .fq .ft{font-family:var(--font-d);font-weight:700;font-size:clamp(1.2rem,2.4vw,1.5rem);letter-spacing:-0.015em;color:var(--ink);}
+  .fq.accent .ft{color:var(--paper);}
+  @media (max-width:620px){ .jbody{grid-template-columns:minmax(0,1fr);gap:1rem;} }
+
+  /* friction concentration table */
+  .fconc{margin-top:1.6rem;display:grid;grid-template-columns:max-content max-content minmax(0,1fr);border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;background:#fff;}
+  .fconc .fhead,.fconc .frow{display:contents;}
+  .fconc .fhead > div{background:var(--ink);color:var(--paper);font-family:var(--font-m);font-size:.68rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;white-space:nowrap;padding:.95rem 1.5rem;}
+  .fconc .frow > div{padding:1.15rem 1.5rem;border-top:1px solid var(--line);display:flex;align-items:center;}
+  .fconc .fstage{font-family:var(--font-d);font-weight:700;font-size:1rem;white-space:nowrap;}
+  .fconc .fgap{font-size:.92rem;color:var(--ink-soft);line-height:1.5;}
+  .flevel{font-family:var(--font-m);font-size:.72rem;font-weight:600;padding:.32rem .65rem;border-radius:6px;white-space:nowrap;display:inline-block;}
+  .flevel.s{background:var(--save-tint);color:var(--save);}
+  .flevel.m{background:var(--tint);color:var(--ink-soft);}
+  .flevel.h{background:var(--ink);color:var(--brand);}
+  @media (max-width:620px){
+    .fconc{display:block;}
+    .fconc .fhead{display:none;}
+    .fconc .frow{display:block;border-top:1px solid var(--line);padding:1.1rem 1.3rem;}
+    .fconc .frow:first-of-type{border-top:0;}
+    .fconc .frow > div{border-top:0;padding:.28rem 0;display:block;}
+    .fconc .fstage{white-space:normal;}
+  }
+
+  /* flow / journey */
+  .flow{display:flex;flex-direction:column;gap:0;margin-top:2.2rem;border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;background:#fff;}
+  .step{display:grid;grid-template-columns:auto minmax(0,1fr);gap:1.1rem;padding:1.15rem 1.4rem;border-top:1px solid var(--line);align-items:start;}
+  .step:first-child{border-top:0;}
+  .step .num{font-family:var(--font-m);font-weight:700;font-size:.8rem;color:var(--ink-faint);padding-top:.25rem;width:1.6rem;}
+  .step .nm{font-family:var(--font-d);font-weight:700;font-size:1.04rem;}
+  .step .q{font-size:.93rem;color:var(--ink-soft);margin-top:.25rem;}
+  .step.break{background:var(--paper);}
+  .step.break .nm::after{content:"friction starts here";font-family:var(--font-m);font-weight:600;font-size:.62rem;letter-spacing:.08em;text-transform:uppercase;color:var(--save);background:var(--save-tint);padding:.15rem .45rem;border-radius:5px;margin-left:.6rem;vertical-align:middle;}
+
+  /* ledger rows (friction map + competitive) */
+  .ledger{margin-top:2.2rem;border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;background:#fff;}
+  .lhead,.lrow{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1.3fr) minmax(0,1.4fr);gap:1.2rem;padding:1rem 1.4rem;}
+  .lhead{background:var(--ink);color:var(--paper);font-family:var(--font-m);font-size:.68rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;}
+  .lrow{border-top:1px solid var(--line);align-items:start;}
+  .lrow .stg{font-family:var(--font-d);font-weight:700;font-size:.98rem;}
+  .lrow .pos,.lrow .neg{font-size:.92rem;color:var(--ink-soft);position:relative;padding-left:1.3rem;}
+  .lrow .pos::before{content:"+";position:absolute;left:0;top:-.05em;color:var(--save);font-family:var(--font-m);font-weight:700;}
+  .lrow .neg::before{content:"–";position:absolute;left:0;top:-.05em;color:var(--ink-faint);font-family:var(--font-m);font-weight:700;}
+
+  /* competitive cards */
+  .compgrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1.1rem;margin-top:2.2rem;}
+  .comp{border:1px solid var(--line);border-radius:var(--radius);padding:1.3rem 1.4rem;background:#fff;}
+  .comp h4{font-size:1.05rem;margin-bottom:.9rem;}
+  .comp .ln{display:grid;grid-template-columns:auto 1fr;gap:.6rem;align-items:start;font-size:.9rem;margin-top:.5rem;}
+  .comp .k{font-family:var(--font-m);font-size:.64rem;font-weight:600;letter-spacing:.06em;text-transform:uppercase;padding:.15rem .4rem;border-radius:5px;white-space:nowrap;}
+  .comp .k.s{background:var(--save-tint);color:var(--save);}
+  .comp .k.m{background:var(--tint);color:var(--ink-soft);}
+  .comp .v{color:var(--ink-soft);}
+
+  /* observed vs assumed */
+  .oa{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:1.2rem;margin-top:2.2rem;}
+  .oacol{border:1px solid var(--line);border-radius:var(--radius);padding:1.4rem 1.5rem;background:#fff;}
+  .oacol.assume{border-style:dashed;border-color:var(--line-2);background:var(--paper);}
+  .oacol h4{font-size:1rem;display:flex;align-items:center;gap:.5rem;margin-bottom:1rem;}
+  .oacol h4 .tagx{font-family:var(--font-m);font-size:.6rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;padding:.18rem .42rem;border-radius:5px;}
+  .oacol.obs h4 .tagx{background:var(--ink);color:var(--paper);}
+  .oacol.assume h4 .tagx{background:var(--brand);color:var(--ink);}
+  .oalist{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:.7rem;}
+  .oalist li{position:relative;padding-left:1.2rem;font-size:.93rem;color:var(--ink-soft);}
+  .oalist li::before{content:"";position:absolute;left:0;top:.55em;width:6px;height:6px;border-radius:50%;background:var(--line-2);}
+
+  /* directions */
+  .dirs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1.1rem;margin-top:2.4rem;}
+  .dir{border:1px solid var(--line);border-radius:var(--radius);padding:1.4rem 1.4rem;background:#fff;display:flex;flex-direction:column;}
+  .dir.chosen{border:2px solid var(--ink);box-shadow:0 18px 40px -28px rgba(20,20,25,.4);}
+  .dir .ribbon{font-family:var(--font-m);font-size:.62rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-faint);margin-bottom:.7rem;display:flex;align-items:center;gap:.5rem;}
+  .dir.chosen .ribbon .pick{background:var(--brand);color:var(--ink);padding:.16rem .45rem;border-radius:5px;}
+  .dir h4{font-size:1.18rem;margin-bottom:.7rem;}
+  .dir p{font-size:.92rem;color:var(--ink-soft);margin-bottom:.9rem;}
+  .dir .vl{font-size:.86rem;margin-top:auto;padding-top:.6rem;border-top:1px solid var(--line);}
+  .dir .vl b{font-family:var(--font-m);font-size:.62rem;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-faint);display:block;margin-bottom:.2rem;font-weight:600;}
+
+  .hyp{margin-top:2.4rem;border:1px solid var(--line-2);border-radius:var(--radius);padding:1.6rem 1.7rem;background:var(--value-tint);}
+  .hyp .tagx{font-family:var(--font-m);font-size:.64rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--value);margin-bottom:.7rem;display:inline-block;}
+  .hyp p{font-family:var(--font-d);font-weight:600;font-size:1.2rem;line-height:1.32;color:var(--ink);margin:0;letter-spacing:-0.01em;}
+
+  /* section 5: opportunity / directions / comparison tables */
+  .criteria{list-style:none;counter-reset:c;margin:1.5rem 0 0;padding:0;display:grid;gap:.75rem;max-width:54rem;}
+  .criteria li{position:relative;padding-left:2.4rem;font-size:1rem;color:var(--ink);line-height:1.5;}
+  .criteria li::before{counter-increment:c;content:counter(c,decimal-leading-zero);position:absolute;left:0;top:.05em;font-family:var(--font-m);font-weight:700;font-size:.8rem;color:var(--brand-deep);}
+  .dirfull{border:1px solid var(--line);border-radius:var(--radius);padding:1.6rem 1.7rem;background:#fff;}
+  .dirfull + .dirfull{margin-top:1.1rem;}
+  .dirfull.sel{border:2px solid var(--ink);box-shadow:0 18px 40px -28px rgba(20,20,25,.4);}
+  .dir-top{display:flex;align-items:center;gap:.7rem;flex-wrap:wrap;margin-bottom:.6rem;}
+  .dir-num{font-family:var(--font-m);font-size:.62rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-faint);}
+  .dir-name{font-family:var(--font-d);font-weight:800;font-size:1.3rem;letter-spacing:-0.015em;}
+  .dir-status{margin-left:auto;font-family:var(--font-m);font-size:.6rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;padding:.26rem .6rem;border-radius:6px;}
+  .dir-status.no{background:var(--tint);color:var(--ink-soft);}
+  .dir-status.yes{background:var(--brand);color:var(--ink);}
+  .dir-desc{color:var(--ink-soft);font-size:1.02rem;line-height:1.6;max-width:58rem;margin-bottom:1.2rem;}
+  .explains{border:1px solid var(--line);border-radius:10px;background:var(--paper);padding:1.1rem 1.3rem;margin-bottom:1.3rem;}
+  .ex-label{font-family:var(--font-m);font-size:.64rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-faint);margin-bottom:.7rem;}
+  .ex-note{margin:.9rem 0 0;font-size:.95rem;color:var(--ink);font-weight:600;}
+  .pl-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:1.3rem 2.2rem;}
+  .pl-grid h5{font-family:var(--font-m);font-size:.64rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-faint);margin:0 0 .7rem;}
+  .oalist.pos li::before{background:var(--save);}
+  .rectags{display:flex;flex-wrap:wrap;gap:.6rem;}
+  .rtag{display:inline-block;max-width:100%;font-family:var(--font-m);font-size:.72rem;font-weight:600;padding:.38rem .75rem;border-radius:6px;border:1px solid;}
+  .rtag.save{background:var(--save-tint);color:var(--save);border-color:#cfe6d8;}
+  .rtag.value{background:var(--value-tint);color:var(--value);border-color:#dcdbf5;}
+  .rtag.own{background:var(--tint);color:var(--ink-soft);border-color:var(--line-2);}
+
+  /* section 6: system / IA */
+  .entrycta{margin-top:1.5rem;border:1px solid var(--line-2);border-radius:var(--radius);padding:1.5rem 1.6rem;background:#fff;max-width:42rem;}
+  .cta-btn{display:inline-flex;align-items:center;gap:.5rem;border:1.5px solid var(--ink);border-radius:9px;padding:.7rem 1.15rem;font-family:var(--font-d);font-weight:700;font-size:1rem;color:var(--ink);}
+  .cta-sub{margin:1rem 0 0;font-size:.96rem;color:var(--ink-soft);line-height:1.5;}
+  .flowsteps{margin-top:1.8rem;display:grid;gap:.8rem;}
+  .fstep{border:1px solid var(--line);border-radius:var(--radius);padding:1.35rem 1.5rem;background:#fff;display:grid;grid-template-columns:auto minmax(0,1fr);gap:1.2rem;}
+  .fsn{font-family:var(--font-m);font-weight:700;font-size:.85rem;color:var(--brand-deep);padding-top:.12rem;}
+  .fst{font-family:var(--font-d);font-weight:700;font-size:1.08rem;margin-bottom:.4rem;letter-spacing:-0.01em;}
+  .fsd{font-size:.95rem;color:var(--ink-soft);line-height:1.55;}
+  .fstep .oalist{margin:.75rem 0;}
+  .ialevels{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1.1rem;margin-top:1.6rem;}
+  .layer .ltitle{font-family:var(--font-m);font-size:.62rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--brand-deep);margin-bottom:.35rem;}
+  .layer .lnote{margin:.95rem 0 0;font-size:.85rem;color:var(--ink-faint);border-top:1px solid var(--line);padding-top:.8rem;line-height:1.5;}
+  .tagcards{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(330px,100%),1fr));gap:1rem;margin-top:1.6rem;}
+  .tagcard{border:1px solid var(--line);border-radius:var(--radius);padding:1.4rem 1.5rem;background:#fff;}
+  .tc-desc{font-size:.93rem;color:var(--ink-soft);margin:.95rem 0 .85rem;line-height:1.5;}
+  .tc-label{font-family:var(--font-m);font-size:.6rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-faint);margin-bottom:.55rem;}
+  .tc-note{margin:1rem 0 0;font-size:.86rem;color:var(--ink);background:var(--tint);border-radius:8px;padding:.75rem .95rem;line-height:1.5;}
+  .tc-ex{display:flex;flex-direction:column;gap:.45rem;margin-top:.2rem;}
+  .cmprules{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1.1rem;margin-top:1.6rem;}
+  .cmpcol{border:1px solid var(--line);border-radius:var(--radius);padding:1.4rem 1.5rem;background:#fff;}
+  .cmpcol h5{font-family:var(--font-m);font-size:.66rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-faint);margin:0 0 1rem;}
+  .cmplist{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:.6rem;}
+  .cmplist li{position:relative;padding-left:1.5rem;font-size:.92rem;color:var(--ink-soft);line-height:1.5;}
+  .cmplist.inc li::before{content:"✓";position:absolute;left:0;color:var(--save);font-family:var(--font-m);font-weight:700;}
+  .cmplist.exc li::before{content:"✕";position:absolute;left:0;color:var(--ink-faint);font-family:var(--font-m);font-weight:700;}
+  .posind{display:inline-flex;align-items:center;gap:.4rem;font-family:var(--font-m);font-size:.74rem;font-weight:600;color:var(--ink);background:var(--brand);border-radius:6px;padding:.32rem .65rem;}
+  @media (max-width:760px){ .ialevels,.cmprules{grid-template-columns:minmax(0,1fr);} }
+  @media (max-width:520px){ .fstep{grid-template-columns:minmax(0,1fr);gap:.5rem;} }
+
+  /* section 7: design responses / scope / screens */
+  .scope2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1rem;margin-top:1.6rem;}
+  .scard{border:1px solid var(--line);border-radius:var(--radius);padding:1.3rem 1.4rem;background:#fff;}
+  .scard.later{background:var(--paper);border-style:dashed;border-color:var(--line-2);}
+  .sc-h{display:flex;align-items:center;gap:.6rem;margin-bottom:.55rem;flex-wrap:wrap;}
+  .sc-badge{font-family:var(--font-m);font-size:.55rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;padding:.2rem .45rem;border-radius:5px;}
+  .sc-badge.inc{background:var(--save-tint);color:var(--save);}
+  .sc-badge.later{background:var(--tint);color:var(--ink-soft);}
+  .sc-title{font-family:var(--font-d);font-weight:700;font-size:1.05rem;}
+  .scard p{font-size:.92rem;color:var(--ink-soft);line-height:1.55;margin:0;}
+  .scard .oalist,.scard .rectags{margin-top:.75rem;}
+  .dresp{border:1px solid var(--line);border-radius:var(--radius);padding:1.5rem 1.6rem;background:#fff;}
+  .dresp + .dresp{margin-top:1rem;}
+  .drh{display:flex;align-items:baseline;gap:.7rem;flex-wrap:wrap;margin-bottom:1.1rem;}
+  .drn{font-family:var(--font-m);font-size:.66rem;font-weight:700;letter-spacing:.1em;color:var(--brand-deep);}
+  .drt{font-family:var(--font-d);font-weight:800;font-size:1.2rem;letter-spacing:-0.015em;}
+  .drseg{margin-bottom:1rem;}
+  .drseg:last-child{margin-bottom:0;}
+  .drlab{font-family:var(--font-m);font-size:.58rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-faint);margin-bottom:.35rem;}
+  .drtx{font-size:.96rem;color:var(--ink-soft);line-height:1.55;max-width:62rem;}
+  .drseg.dec{border-top:1px solid var(--line);padding-top:1rem;}
+  .exbox{margin-top:.85rem;border:1px solid var(--line-2);border-radius:10px;background:var(--paper);padding:1.15rem 1.25rem;}
+  .extag{font-family:var(--font-m);font-size:.55rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-faint);margin-bottom:.75rem;display:block;}
+  .exbtns{display:flex;gap:.6rem;flex-wrap:wrap;}
+  .exbtn{font-family:var(--font-d);font-weight:700;font-size:.9rem;padding:.5rem .95rem;border-radius:8px;border:1.5px solid var(--ink);color:var(--ink);background:#fff;}
+  .exbtn.primary{background:var(--ink);color:var(--paper);}
+  .opp-item{border:1px solid var(--line);border-radius:9px;background:#fff;padding:.9rem 1.1rem;}
+  .opp-item .oi-n{font-family:var(--font-d);font-weight:700;font-size:1.02rem;}
+  .opp-item .oi-b{font-family:var(--font-m);font-size:.82rem;color:var(--save);font-weight:600;margin-top:.4rem;}
+  .opt-row{display:flex;gap:.8rem;align-items:flex-start;padding:.75rem 0;border-top:1px solid var(--line);}
+  .opt-row:first-child{border-top:0;padding-top:0;}
+  .opt-row .or-num{font-family:var(--font-m);font-size:.68rem;font-weight:700;color:var(--ink-faint);padding-top:.5rem;white-space:nowrap;}
+  .opt-row .or-d{font-size:.9rem;color:var(--ink-soft);margin-top:.4rem;}
+  .tradeoff{display:flex;flex-direction:column;gap:.55rem;}
+  .to-val{font-family:var(--font-m);font-size:.95rem;color:var(--value);font-weight:700;}
+  .to-unit{font-size:.96rem;color:var(--ink);}
+  .to-cost{display:inline-block;font-family:var(--font-m);font-size:.82rem;font-weight:600;color:var(--ink-soft);background:var(--tint);border-radius:6px;padding:.35rem .65rem;width:fit-content;}
+  .scrncards{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(280px,100%),1fr));gap:1rem;margin-top:1.6rem;}
+  .scrn{border:1px solid var(--line);border-radius:var(--radius);padding:1.3rem 1.4rem;background:#fff;}
+  .scrn .sn{font-family:var(--font-m);font-size:.6rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--brand-deep);margin-bottom:.3rem;}
+  .scrn h4{font-size:1.02rem;margin-bottom:.85rem;}
+  @media (max-width:760px){ .scope2{grid-template-columns:minmax(0,1fr);} }
+
+  /* interactive prototype */
+  .proto{margin-top:1.8rem;display:grid;grid-template-columns:minmax(0,1fr) 236px;gap:2.4rem;align-items:start;}
+  .pside-lead{font-family:var(--font-d);font-weight:800;font-size:1.2rem;letter-spacing:-0.015em;margin-bottom:.7rem;}
+  .proto-side p{font-size:.96rem;color:var(--ink-soft);line-height:1.6;max-width:34rem;margin:0;}
+  .try-list{list-style:none;margin:1.1rem 0 0;padding:0;display:flex;flex-direction:column;gap:.55rem;}
+  .try-list li{position:relative;padding-left:1.4rem;font-size:.92rem;color:var(--ink-soft);line-height:1.45;}
+  .try-list li::before{content:"›";position:absolute;left:0;color:var(--brand-deep);font-weight:700;}
+  .proto-reset{margin-top:1.4rem;display:inline-flex;align-items:center;justify-content:center;min-height:44px;font-family:var(--font-m);font-size:.76rem;font-weight:600;color:var(--ink-soft);background:none;border:1px solid var(--line-2);border-radius:7px;padding:.5rem .9rem;cursor:pointer;}
+  .proto-reset:hover{background:var(--tint);}
+
+  .pf{width:100%;max-width:236px;margin:0 auto;border:6px solid #1f1f24;border-radius:28px;background:#1f1f24;box-shadow:0 24px 50px -28px rgba(20,20,25,.42);}
+  .pf-screen{position:relative;display:flex;flex-direction:column;width:100%;aspect-ratio:402 / 874;background:var(--paper);border-radius:22px;overflow:hidden;}
+  .pf-head{flex:0 0 auto;min-height:45px;display:flex;align-items:center;gap:.48rem;padding:.66rem .72rem;border-bottom:1px solid var(--line);background:#fff;}
+  .pf-back{border:none;background:var(--tint);width:26px;height:26px;border-radius:7px;font-size:.92rem;cursor:pointer;color:var(--ink);line-height:1;flex:0 0 auto;}
+  .pf-title{min-width:0;font-family:var(--font-d);font-weight:800;font-size:.91rem;letter-spacing:-0.015em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .pf-sub{margin-left:auto;font-family:var(--font-m);font-size:.61rem;color:var(--ink-faint);white-space:nowrap;}
+  .pf-head-action{margin-left:auto;border:0;background:none;padding:.5rem .3rem;min-height:32px;display:inline-flex;align-items:center;font-family:var(--font-m);font-size:.59rem;font-weight:700;color:var(--brand-deep);cursor:pointer;white-space:nowrap;}
+  .pf-body{flex:1;min-height:0;overflow-y:auto;padding:.72rem .76rem;display:flex;flex-direction:column;gap:.48rem;scrollbar-width:none;-ms-overflow-style:none;}
+  .pf-body::-webkit-scrollbar{display:none;width:0;height:0;}
+  .pf-foot{flex:0 0 auto;padding:.62rem .72rem .7rem;border-top:1px solid var(--line);background:#fff;display:flex;flex-direction:column;gap:.42rem;}
+  .pf-foot.two{display:grid;grid-template-columns:1fr 1.22fr;gap:.42rem;}
+  .pf-btn{font-family:var(--font-d);font-weight:700;font-size:.72rem;line-height:1.15;padding:.58rem .52rem;border-radius:9px;border:1.25px solid var(--ink);background:#fff;color:var(--ink);cursor:pointer;text-align:center;}
+  .pf-btn.primary{background:var(--ink);color:#fff;}
+  .pf-btn.ghost{border-color:var(--line-2);color:var(--ink-soft);background:#fff;}
+  .pf-intro{font-size:.72rem;color:var(--ink-soft);line-height:1.42;margin:0 0 .2rem;}
+
+  .foot-total{display:flex;justify-content:space-between;align-items:baseline;font-family:var(--font-d);font-weight:700;font-size:.78rem;}
+  .foot-total .ft-amt{font-size:1.02rem;}
+  .foot-saved{font-family:var(--font-m);font-size:.61rem;font-weight:700;color:var(--save);}
+  .foot-note{font-family:var(--font-m);font-size:.56rem;line-height:1.35;color:var(--ink-faint);text-align:center;}
+
+  .cart-row{display:flex;justify-content:space-between;align-items:flex-start;gap:.55rem;padding:.52rem 0;border-bottom:1px solid var(--line);}
+  .cart-row:last-child{border-bottom:0;}
+  .cr-main{min-width:0;}
+  .cr-n{font-family:var(--font-d);font-weight:650;font-size:.79rem;line-height:1.2;}
+  .cr-b{font-size:.65rem;color:var(--ink-faint);margin-top:.12rem;line-height:1.3;}
+  .cr-rep{color:var(--save);font-weight:700;}
+  .cr-result{display:block;margin-top:.18rem;font-family:var(--font-m);font-size:.55rem;font-weight:700;line-height:1.3;}
+  .cr-result.save{color:var(--save);}
+  .cr-result.value{color:var(--value);}
+  .cr-p{font-family:var(--font-m);font-size:.72rem;font-weight:700;text-align:right;white-space:nowrap;}
+  .cr-undo{display:inline-flex;align-items:center;justify-content:center;min-height:24px;margin:.2rem 0 0 auto;font-family:var(--font-m);font-size:.53rem;font-weight:700;color:var(--ink-soft);background:var(--tint);border:none;border-radius:5px;padding:.3rem .5rem;cursor:pointer;}
+
+  .opp-row2{width:100%;display:flex;align-items:center;gap:.5rem;text-align:left;border:1px solid var(--line);border-radius:10px;background:#fff;padding:.68rem .72rem;cursor:pointer;}
+  .opp-row2:hover{border-color:var(--line-2);background:var(--tint);}
+  .o2-main{min-width:0;}
+  .o2-n{font-family:var(--font-d);font-weight:700;font-size:.78rem;}
+  .o2-meta{font-size:.62rem;color:var(--ink-soft);margin-top:.14rem;line-height:1.35;}
+  .o2-done{color:var(--save);font-weight:700;}
+  .o2-act{margin-left:auto;font-family:var(--font-m);font-size:.58rem;font-weight:700;color:var(--brand-deep);white-space:nowrap;}
+
+  .cmp-body{overflow:hidden;padding:.62rem .7rem .68rem;gap:.4rem;}
+  .cmp-fixed{flex:0 0 auto;display:flex;flex-direction:column;gap:.32rem;}
+  .cmp-label{font-family:var(--font-m);font-size:.49rem;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--ink-faint);}
+  .cmp-cur{border:1px solid var(--line);border-radius:11px;padding:.55rem .64rem;background:#fff;}
+  .cmp-arrow{text-align:center;color:var(--ink-faint);font-size:.86rem;line-height:1;margin:.02rem 0;}
+  .cmp-stack{flex:1;min-height:0;overflow-y:auto;scroll-snap-type:y mandatory;overscroll-behavior-y:contain;-webkit-overflow-scrolling:touch;touch-action:pan-y;scrollbar-width:none;-ms-overflow-style:none;}
+  .cmp-stack::-webkit-scrollbar{display:none;width:0;height:0;}
+  .cmp-slide{height:100%;min-height:100%;scroll-snap-align:start;scroll-snap-stop:always;display:flex;flex-direction:column;gap:.36rem;overflow:hidden;}
+  .cmp-top{flex:0 0 auto;display:flex;justify-content:space-between;align-items:center;gap:.45rem;}
+  .cmp-pos{font-family:var(--font-m);font-size:.57rem;font-weight:700;color:var(--ink-soft);}
+  .cmp-swipe{font-family:var(--font-m);font-size:.54rem;color:var(--ink-faint);}
+  .cmp-alt{flex:1;min-height:0;overflow-y:auto;display:flex;flex-direction:column;border:1.25px solid var(--ink);border-radius:12px;padding:.66rem;background:#fff;scrollbar-width:none;-ms-overflow-style:none;}
+  .cmp-alt::-webkit-scrollbar{display:none;width:0;height:0;}
+  .cmp-alt .rtag{align-self:flex-start;font-size:.57rem;line-height:1.25;padding:.28rem .44rem;border-radius:6px;}
+  .cmp-n{font-family:var(--font-d);font-weight:650;font-size:.79rem;line-height:1.2;margin-top:.22rem;letter-spacing:-0.01em;}
+  .cmp-b{font-size:.68rem;color:var(--ink-soft);margin-top:.12rem;line-height:1.3;}
+  .cmp-price{display:flex;align-items:baseline;flex-wrap:wrap;gap:.28rem .48rem;margin-top:.46rem;}
+  .cmp-amt{font-family:var(--font-m);font-weight:800;font-size:1rem;letter-spacing:-0.01em;}
+  .cmp-unit{font-family:var(--font-m);font-size:.67rem;color:var(--ink);opacity:.76;}
+  .cmp-cur .cmp-n{font-size:.75rem;margin-top:0;}
+  .cmp-cur .cmp-b{font-size:.64rem;margin-top:.08rem;}
+  .cmp-cur .cmp-price{margin-top:.34rem;}
+  .cmp-cur .cmp-amt{font-size:.9rem;}
+  .cmp-cur .cmp-unit{font-size:.62rem;}
+  .cmp-diff{margin-top:.48rem;font-family:var(--font-m);font-size:.7rem;font-weight:700;line-height:1.3;}
+  .cmp-diff.save{color:var(--save);}
+  .cmp-diff.cost{color:var(--value);}
+  .cmp-note{margin-top:.24rem;font-size:.63rem;color:var(--ink-soft);line-height:1.35;}
+  .cmp-impact{margin-top:.5rem;padding-top:.45rem;border-top:1px solid var(--line);font-size:.67rem;color:var(--ink-soft);}
+  .cmp-choose{margin-top:auto;padding-top:.52rem;}
+  .cmp-choose .pf-btn{width:100%;}
+
+  .cf-row{display:flex;gap:.55rem;justify-content:space-between;padding:.48rem 0;border-bottom:1px solid var(--line);font-size:.7rem;line-height:1.35;}
+  .cf-k{font-family:var(--font-m);font-size:.52rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-faint);flex:0 0 auto;padding-top:.08rem;}
+  .cf-v{text-align:right;color:var(--ink);}
+  .cf-v.save{color:var(--save);font-weight:700;font-family:var(--font-m);}
+  .cf-v.cost{color:var(--value);font-weight:700;font-family:var(--font-m);}
+  .cf-note{font-size:.64rem;color:var(--ink-soft);margin-top:.45rem;line-height:1.4;}
+  .cf-total{display:flex;justify-content:space-between;align-items:baseline;margin-top:.7rem;padding-top:.6rem;border-top:1.25px solid var(--ink);font-family:var(--font-d);font-weight:700;font-size:.72rem;}
+  .cf-amt{font-size:1rem;}
+
+  .pf-toast{position:absolute;left:.65rem;right:.65rem;bottom:.65rem;background:var(--ink);color:#fff;border-radius:9px;padding:.58rem .68rem;font-size:.63rem;display:flex;align-items:center;gap:.45rem;box-shadow:0 10px 24px -12px rgba(0,0,0,.5);opacity:0;transform:translateY(7px);transition:opacity .2s,transform .2s;pointer-events:none;z-index:5;}
+  .pf-toast.show{opacity:1;transform:translateY(0);pointer-events:auto;}
+  .pf-toast .tundo{margin-left:auto;display:inline-flex;align-items:center;min-height:24px;padding:.3rem .4rem;font-family:var(--font-m);font-size:.58rem;font-weight:700;color:var(--brand);background:none;border:none;cursor:pointer;}
+
+  @media (max-width:820px){
+    .proto{grid-template-columns:minmax(0,1fr);gap:1.5rem;}
+    .pf{max-width:236px;}
+  }
+
+
+  /* stable prototype layout: one replacement at a time */
+  .proto{grid-template-columns:minmax(0,1fr) 324px;gap:2.7rem;}
+  .pf{max-width:324px;border-width:8px;border-radius:36px;box-shadow:0 30px 64px -30px rgba(20,20,25,.5);}
+  .pf-screen{height:648px;aspect-ratio:auto;border-radius:28px;}
+  .pf-head{min-height:54px;padding:.78rem .88rem;gap:.58rem;}
+  .pf-back{width:30px;height:30px;border-radius:8px;font-size:1rem;}
+  .pf-title{font-size:1rem;}
+  .pf-sub{font-size:.66rem;}
+  .pf-head-action{font-size:.63rem;}
+  .pf-body{padding:.86rem .9rem;gap:.58rem;}
+  .pf-foot{padding:.72rem .88rem .82rem;gap:.5rem;}
+  .pf-btn{font-size:.79rem;padding:.68rem .7rem;border-radius:10px;}
+  .pf-intro{font-size:.78rem;}
+
+  .cart-row{padding:.62rem 0;gap:.65rem;}
+  .cr-n{font-size:.86rem;}
+  .cr-b{font-size:.7rem;}
+  .cr-result{font-size:.6rem;}
+  .cr-p{font-size:.78rem;}
+  .foot-total{font-size:.84rem;}
+  .foot-total .ft-amt{font-size:1.12rem;}
+  .foot-saved{font-size:.66rem;}
+  .foot-note{font-size:.6rem;}
+
+  .opp-row2{padding:.76rem .8rem;border-radius:11px;}
+  .o2-n{font-size:.86rem;}
+  .o2-meta{font-size:.68rem;}
+  .o2-act{font-size:.62rem;}
+
+  .cmp-body{overflow:hidden;padding:.76rem .85rem .78rem;gap:.48rem;}
+  .cmp-fixed{gap:.36rem;}
+  .cmp-label{font-size:.53rem;}
+  .cmp-cur{border-radius:12px;padding:.68rem .74rem;}
+  .cmp-arrow{font-size:.92rem;margin:.04rem 0;}
+  .cmp-option{flex:1;min-height:0;display:flex;flex-direction:column;gap:.48rem;touch-action:pan-y;}
+  .cmp-option-head{display:flex;justify-content:space-between;align-items:center;gap:.6rem;}
+  .cmp-pos{font-size:.62rem;}
+  .cmp-swipe{font-size:.58rem;}
+  .cmp-option-stage{flex:1;min-height:0;display:grid;grid-template-columns:minmax(0,1fr) 10px;gap:.46rem;align-items:center;}
+  .cmp-alt{height:100%;min-height:0;overflow:hidden;display:flex;flex-direction:column;border-width:1.35px;border-radius:13px;padding:.78rem;}
+  .cmp-alt .rtag{font-size:.61rem;padding:.31rem .48rem;}
+  .cmp-n{font-size:.88rem;margin-top:.26rem;}
+  .cmp-b{font-size:.73rem;}
+  .cmp-price{margin-top:.5rem;gap:.32rem .55rem;}
+  .cmp-amt{font-size:1.08rem;}
+  .cmp-unit{font-size:.71rem;}
+  .cmp-cur .cmp-n{font-size:.82rem;}
+  .cmp-cur .cmp-b{font-size:.68rem;}
+  .cmp-cur .cmp-amt{font-size:.96rem;}
+  .cmp-cur .cmp-unit{font-size:.66rem;}
+  .cmp-diff{font-size:.75rem;margin-top:.52rem;}
+  .cmp-note{font-size:.67rem;}
+  .cmp-impact{font-size:.71rem;margin-top:.56rem;padding-top:.5rem;}
+  .cmp-choose{margin-top:auto;padding-top:.58rem;}
+  .cmp-progress{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.3rem;height:100%;}
+  .cmp-dot{width:4px;height:9px;border-radius:999px;background:var(--line-2);transition:height .18s ease,background .18s ease;}
+  .cmp-dot.active{height:24px;background:var(--ink);}
+  .cmp-edge{font-family:var(--font-m);font-size:.57rem;color:var(--ink-faint);text-align:center;min-height:.78rem;}
+
+  .cf-row{font-size:.76rem;}
+  .cf-k{font-size:.55rem;}
+  .cf-note{font-size:.69rem;}
+  .cf-total{font-size:.78rem;}
+  .cf-amt{font-size:1.08rem;}
+
+  @media (max-width:820px){
+    .proto{grid-template-columns:minmax(0,1fr);}
+    .pf{max-width:324px;}
+  }
+
+  /* section 8: validation */
+  .qlist{list-style:none;margin:1.2rem 0 0;padding:0;columns:2;column-gap:2.6rem;}
+  .qlist li{break-inside:avoid;position:relative;padding-left:1.3rem;font-size:.93rem;color:var(--ink-soft);margin-bottom:.75rem;line-height:1.45;}
+  .qlist li::before{content:"?";position:absolute;left:0;top:0;font-family:var(--font-m);font-weight:700;color:var(--brand-deep);font-size:.85rem;}
+  .cmplist.lim li::before{content:"\2013";position:absolute;left:0;color:var(--ink-faint);font-family:var(--font-m);font-weight:700;}
+  .disclaim{background:var(--tint);border-radius:10px;padding:1rem 1.2rem;font-size:.94rem;color:var(--ink);max-width:54rem;line-height:1.55;margin-top:.4rem;}
+  @media (max-width:680px){ .qlist{columns:1;} }
+  /* validation: two-part hierarchy — numbered methods vs un-numbered criteria */
+  .vgroup{font-family:var(--font-d);font-weight:800;font-size:1.2rem;letter-spacing:-0.015em;line-height:1.15;margin:0 0 1.2rem;}
+  .vgroup.next{margin-top:2.6rem;}
+  .evalgrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1rem;}
+  .evalcard{border:1px solid var(--line);border-radius:var(--radius);background:#fff;padding:1.2rem 1.4rem;}
+  .evalcard .ec-t{font-family:var(--font-d);font-weight:700;font-size:1rem;margin-bottom:.4rem;}
+  .evalcard .ec-d{font-size:.92rem;color:var(--ink-soft);line-height:1.55;}
+  @media (max-width:760px){ .evalgrid{grid-template-columns:minmax(0,1fr);} }
+
+  /* section 9: reflection */
+  .shifts{margin-top:1.6rem;}
+  .shift{border:1px solid var(--line);border-radius:var(--radius);padding:1.4rem 1.5rem;background:#fff;}
+  .shift + .shift{margin-top:1rem;}
+  .shift-pair{display:flex;flex-wrap:wrap;align-items:center;gap:.55rem;margin-bottom:.7rem;}
+  .shift-from{font-family:var(--font-d);font-weight:600;font-size:1rem;color:var(--ink-faint);}
+  .shift-arrow{color:var(--brand-deep);font-weight:700;font-size:1.05rem;}
+  .shift-to{font-family:var(--font-d);font-weight:800;font-size:1.1rem;color:var(--ink);letter-spacing:-0.01em;}
+  .shift p{font-size:.95rem;color:var(--ink-soft);line-height:1.55;margin:.2rem 0 0;max-width:62rem;}
+  .shift .oalist,.shift .rectags{margin-top:.75rem;}
+  .dir-decision{margin-top:1.3rem;padding-top:1rem;border-top:1px solid var(--line);font-size:.96rem;color:var(--ink);}
+  .dir-decision b{font-family:var(--font-m);font-size:.62rem;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-faint);font-weight:600;margin-right:.5rem;}
+  .gtable{margin-top:1.5rem;display:grid;border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;background:#fff;}
+  .gtable .grow{display:contents;}
+  .gtable .gh > div{background:var(--ink);color:var(--paper);font-family:var(--font-m);font-size:.66rem;font-weight:600;letter-spacing:.09em;text-transform:uppercase;padding:.9rem 1.4rem;}
+  .gtable .grow:not(.gh) > div{padding:1.1rem 1.4rem;border-top:1px solid var(--line);font-size:.93rem;color:var(--ink-soft);line-height:1.5;display:flex;flex-direction:column;justify-content:center;}
+  .gtable .grow:not(.gh) > div.gname{font-family:var(--font-d);font-weight:700;font-size:1rem;color:var(--ink);}
+  .gtable .gl{display:none;}
+  @media (max-width:760px){ .pl-grid{grid-template-columns:minmax(0,1fr);gap:1.4rem;} }
+  @media (max-width:640px){
+    .gtable{display:block;}
+    .gtable .gh{display:none;}
+    .gtable .grow:not(.gh){display:block;border-top:1px solid var(--line);padding:1.1rem 1.3rem;}
+    .gtable .grow:not(.gh):first-of-type{border-top:0;}
+    .gtable .grow:not(.gh) > div{border-top:0;padding:.4rem 0;display:block;}
+    .gtable .gl{display:block;font-family:var(--font-m);font-size:.6rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-faint);margin-bottom:.2rem;}
+  }
+
+  /* IA layers + states */
+  .layers{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1.1rem;margin-top:2.2rem;}
+  .layer{border:1px solid var(--line);border-radius:var(--radius);padding:1.3rem 1.4rem;background:#fff;}
+  .layer h4{font-size:1.05rem;margin-bottom:.8rem;}
+  .layer ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:.5rem;}
+  .layer li{font-size:.9rem;color:var(--ink-soft);position:relative;padding-left:1.1rem;}
+  .layer li::before{content:"›";position:absolute;left:0;color:var(--brand-deep);font-weight:700;}
+
+  .rules{margin-top:2.2rem;border:1px solid var(--line);border-radius:var(--radius);background:var(--paper);padding:1.5rem 1.6rem;}
+  .rules h4{font-size:1rem;margin-bottom:1rem;}
+  .rulewrap{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.7rem 1.6rem;}
+  .rule{display:grid;grid-template-columns:auto 1fr;gap:.6rem;align-items:start;font-size:.92rem;color:var(--ink-soft);}
+  .rule .chk{color:var(--save);font-family:var(--font-m);font-weight:700;}
+
+  .states{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:.7rem;margin-top:2.2rem;}
+  .state{border:1px solid var(--line);border-radius:10px;padding:1rem 1rem;background:#fff;}
+  .state .st{font-family:var(--font-m);font-size:.62rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-faint);margin-bottom:.5rem;}
+  .state .sd{font-size:.84rem;color:var(--ink-soft);}
+
+  /* design — three types */
+  .types{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1.2rem;margin-top:2.4rem;}
+  .type{border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;background:#fff;display:flex;flex-direction:column;}
+  .type-h{padding:1.1rem 1.3rem;border-bottom:1px solid var(--line);}
+  .type-h .badge{font-family:var(--font-m);font-size:.64rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;padding:.2rem .5rem;border-radius:5px;display:inline-block;margin-bottom:.6rem;}
+  .type.lower .badge{background:var(--save-tint);color:var(--save);}
+  .type.value .badge{background:var(--value-tint);color:var(--value);}
+  .type.own .badge{background:var(--tint);color:var(--ink);border:1px solid var(--line-2);}
+  .type-h h4{font-size:1.08rem;}
+  .type-h p{font-size:.88rem;color:var(--ink-soft);margin:.5rem 0 0;}
+  .mini{padding:1.1rem 1.3rem;display:flex;flex-direction:column;gap:.7rem;}
+  .mini-row{display:grid;grid-template-columns:1fr auto;gap:.6rem;align-items:baseline;}
+  .mini-row .mn{font-size:.86rem;}
+  .mini-row .mn b{font-family:var(--font-d);}
+  .mini-row .mp{font-family:var(--font-m);font-weight:700;font-size:.95rem;text-align:right;white-space:nowrap;}
+  .mini-row .mu{font-family:var(--font-m);font-size:.72rem;color:var(--ink-soft);display:block;}
+  .mini-tag{font-family:var(--font-m);font-size:.74rem;font-weight:600;}
+  .mini-tag.s{color:var(--save);}
+  .mini-tag.v{color:var(--value);}
+  .mini-note{font-size:.8rem;color:var(--ink-faint);}
+  .arrow-down{font-family:var(--font-m);color:var(--ink-faint);font-size:.9rem;text-align:center;}
+
+  /* scenario banner (rendered optimizer UI) */
+  .scenario{margin-top:2.6rem;border:1px solid var(--line-2);border-radius:var(--radius);overflow:hidden;background:#fff;}
+  .opt-banner{display:flex;align-items:center;gap:1rem;padding:1.1rem 1.3rem;background:var(--brand);}
+  .opt-banner .ic{flex:none;width:34px;height:34px;border-radius:8px;background:var(--ink);color:var(--brand);display:flex;align-items:center;justify-content:center;font-family:var(--font-d);font-weight:800;font-size:.85rem;}
+  .opt-banner .txt{font-weight:600;font-size:.98rem;color:var(--ink);line-height:1.35;}
+  .opt-banner .txt b{font-family:var(--font-m);font-weight:700;}
+  .tally{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));}
+  .tcell{padding:1.2rem 1.3rem;border-top:1px solid var(--line);}
+  .tcell + .tcell{border-left:1px solid var(--line);}
+  .tcell .tk{font-family:var(--font-m);font-size:.66rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-faint);}
+  .tcell .tv{font-family:var(--font-m);font-weight:700;font-size:1.5rem;margin-top:.35rem;}
+  .tcell.save .tv{color:var(--save);}
+  .tcell .old{text-decoration:line-through;color:var(--ink-faint);}
+
+  /* device + state showcase */
+  .showcase{display:grid;grid-template-columns:auto minmax(0,1fr);gap:2rem;margin-top:2.6rem;align-items:start;}
+  .device{flex:none;width:300px;border:10px solid var(--ink);border-radius:30px;background:#fff;overflow:hidden;box-shadow:0 30px 60px -34px rgba(20,20,25,.5);}
+  .device-top{height:30px;background:#fff;display:flex;align-items:center;justify-content:center;}
+  .device-top span{width:80px;height:6px;background:var(--line-2);border-radius:6px;}
+  .device-screen{padding:0 0 1rem;}
+  .dscreen-head{padding:.9rem 1rem .7rem;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;}
+  .dscreen-head .ti{font-family:var(--font-d);font-weight:700;font-size:.95rem;}
+  .dscreen-head .ct{font-family:var(--font-m);font-size:.7rem;color:var(--ink-soft);}
+  .dline{display:flex;justify-content:space-between;padding:.7rem 1rem;border-bottom:1px solid var(--line);font-size:.84rem;}
+  .dline .dn{color:var(--ink);}
+  .dline .dp{font-family:var(--font-m);font-weight:600;}
+  .dtotal{display:flex;justify-content:space-between;align-items:baseline;padding:.9rem 1rem;background:var(--paper);}
+  .dtotal .lab{font-size:.8rem;color:var(--ink-soft);}
+  .dtotal .amt{font-family:var(--font-m);font-weight:700;font-size:1.25rem;}
+  .dcta{margin:.9rem 1rem 0;background:var(--brand);border-radius:10px;padding:.7rem;text-align:center;font-family:var(--font-d);font-weight:700;font-size:.92rem;display:flex;align-items:center;justify-content:center;gap:.5rem;}
+  .dcta .sub{font-family:var(--font-b);font-weight:500;font-size:.72rem;color:var(--ink-soft);}
+  .showcase-side{display:flex;flex-direction:column;gap:1rem;}
+  .showcase-side .cap{font-size:.95rem;color:var(--ink-soft);}
+
+  /* empty state */
+  .empty{border:1px dashed var(--line-2);border-radius:var(--radius);padding:1.6rem 1.7rem;background:var(--paper);}
+  .empty .st{font-family:var(--font-m);font-size:.66rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-faint);margin-bottom:.7rem;}
+  .empty h4{font-size:1.1rem;margin-bottom:.5rem;}
+  .empty p{font-size:.92rem;color:var(--ink-soft);margin:0;}
+
+  /* (validation criteria now use .evalgrid/.evalcard — see "validation: two-part hierarchy" above) */
+
+  /* postponed / risks / next as tag lists */
+  .chips{display:flex;flex-wrap:wrap;gap:.6rem;margin-top:1.4rem;}
+  .chip-item{border:1px solid var(--line-2);border-radius:30px;padding:.4rem .85rem;font-size:.86rem;color:var(--ink-soft);background:#fff;}
+
+  .risklist{margin-top:2.2rem;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:1.6rem 2.4rem;}
+  .risk{border-top:2px solid var(--ink);padding-top:.9rem;}
+  .risk h4{font-size:1rem;margin-bottom:.4rem;}
+  .risk p{font-size:.9rem;color:var(--ink-soft);margin:0;}
+
+  .nextlist{margin-top:2.2rem;border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;background:#fff;}
+  .next{display:grid;grid-template-columns:auto minmax(0,1fr);gap:1.1rem;padding:1.1rem 1.4rem;border-top:1px solid var(--line);align-items:start;}
+  .next:first-child{border-top:0;}
+  .next .nn{font-family:var(--font-m);font-weight:700;font-size:.78rem;color:var(--ink-faint);padding-top:.2rem;}
+  .next .nt{font-family:var(--font-d);font-weight:700;font-size:1.02rem;}
+  .next .nd{font-size:.9rem;color:var(--ink-soft);margin-top:.2rem;}
+
+  /* validation needs */
+  .needsgrid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:.7rem;margin-top:2.2rem;}
+  .vneed{border:1px solid var(--line);border-radius:10px;padding:1.1rem 1rem;background:#fff;}
+  .vneed .vn{font-family:var(--font-m);font-size:.62rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--brand-deep);margin-bottom:.5rem;}
+  .vneed h4{font-size:.98rem;margin-bottom:.4rem;}
+  .vneed p{font-size:.82rem;color:var(--ink-soft);margin:0;}
+
+  .findings{margin-top:2.2rem;display:flex;flex-direction:column;gap:1rem;}
+  .finding{display:grid;grid-template-columns:auto minmax(0,1fr);gap:1rem;border:1px solid var(--line);border-radius:var(--radius);padding:1.2rem 1.4rem;background:#fff;align-items:start;}
+  .finding .fk{font-family:var(--font-m);font-size:.6rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;background:var(--paper);border:1px solid var(--line-2);color:var(--ink-soft);padding:.25rem .5rem;border-radius:5px;white-space:nowrap;}
+  .finding .ft{font-family:var(--font-d);font-weight:700;font-size:1.04rem;margin-bottom:.3rem;}
+  .finding .fd{font-size:.9rem;color:var(--ink-soft);}
+
+  /* closing */
+  .closing{background:var(--brand);border-radius:18px;padding:3rem 2.4rem;margin-top:3rem;}
+  .closing .eyebrow{color:var(--ink);}
+  .closing .eyebrow .dot{background:var(--ink);}
+  .closing .big{font-family:var(--font-d);font-weight:800;font-size:clamp(1.7rem,4vw,2.7rem);line-height:1.12;letter-spacing:-0.02em;max-width:32ch;}
+
+  /* footer */
+  footer.foot{border-top:1px solid var(--line);padding:3rem 0;}
+  .foot-in{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:2rem;align-items:end;}
+  .foot-copy{min-width:0;}
+  .foot-kicker{font-family:var(--font-m);font-size:.72rem;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:.55rem;}
+  .credit{font-family:var(--font-d);font-weight:700;font-size:1.2rem;}
+  .credit .name{background:linear-gradient(transparent 62%,var(--brand) 62%);padding:0 .1em;}
+  .foot-note{margin-top:.55rem;color:var(--ink-soft);font-size:.9rem;line-height:1.55;max-width:38rem;}
+  .contact-links{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:.7rem;}
+  .contact-link{display:inline-flex;align-items:center;justify-content:center;gap:.5rem;min-height:2.75rem;padding:.72rem 1rem;border:1px solid var(--line);border-radius:999px;background:var(--paper);color:var(--ink);font-family:var(--font-m);font-size:.78rem;font-weight:700;text-decoration:none;transition:transform .18s ease,border-color .18s ease,background .18s ease;}
+  .contact-link:hover{transform:translateY(-2px);border-color:var(--ink);background:var(--paper-2);}
+  .contact-link:focus-visible{outline:3px solid color-mix(in srgb,var(--brand) 35%,transparent);outline-offset:3px;}
+  .contact-link svg{width:1rem;height:1rem;flex:0 0 auto;}
+
+  /* reveal */
+  .reveal{opacity:0;transition:opacity .45s ease;}
+  .reveal.in{opacity:1;}
+
+  /* ---------- responsive ---------- */
+  @media (max-width:900px){
+    :root{--pad-section:4.2rem;}
+    body{font-size:16px;}
+    .two,.probsplit,.oa,.compgrid,.persona-grid,.principles,.risklist{grid-template-columns:minmax(0,1fr);}
+    .three,.dirs,.layers,.types{grid-template-columns:minmax(0,1fr);}
+    .states,.needsgrid{grid-template-columns:minmax(0,1fr) minmax(0,1fr);}
+    .rulewrap{grid-template-columns:minmax(0,1fr);}
+    .tally{grid-template-columns:minmax(0,1fr);}
+    .tcell + .tcell{border-left:0;}
+    .showcase{grid-template-columns:minmax(0,1fr);}
+    .device{width:100%;max-width:300px;margin:0 auto;}
+    .persona-col + .persona-col{border-left:0;border-top:1px solid var(--line);}
+    nav.secnav{display:none;}
+  }
+  @media (max-width:620px){
+    .swap-body{grid-template-columns:minmax(0,1fr);}
+    .swap-arrow{border-left:0;border-right:0;border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:.3rem;}
+    .swap-arrow span{transform:rotate(90deg);}
+    .prod.alt{border-top:0;}
+    .lhead{display:none;}
+    .lrow{grid-template-columns:minmax(0,1fr);gap:.5rem;}
+    .lrow .stg{font-size:1.05rem;margin-bottom:.2rem;}
+    .swap-actions{margin-left:0;width:100%;}
+    .swap-actions .btn{flex:1;}
+    .states,.needsgrid{grid-template-columns:minmax(0,1fr);}
+    .closing{padding:2.2rem 1.5rem;}
+    .finding,.next,.step{grid-template-columns:minmax(0,1fr);}
+    .finding .fk{justify-self:start;}
+    .foot-in{grid-template-columns:minmax(0,1fr);align-items:start;}
+    .contact-links{justify-content:flex-start;}
+    .contact-link{flex:1 1 100%;}
+  }
+  @media (prefers-reduced-motion:reduce){
+    html{scroll-behavior:auto;}
+    .reveal{opacity:1;transition:none;}
+  }
+
+
+  /* continuous vertical replacement cards */
+  .cmp-body{overflow:hidden;}
+  .cmp-fixed{flex:0 0 auto;}
+  .cmp-list-head{flex:0 0 auto;display:flex;align-items:center;justify-content:space-between;gap:.6rem;margin-top:.02rem;}
+  .cmp-continuous-list{
+    flex:1;
+    min-height:0;
+    overflow-y:auto;
+    display:flex;
+    flex-direction:column;
+    gap:.72rem;
+    padding:0 .12rem 2.25rem 0;
+    scroll-snap-type:y proximity;
+    overscroll-behavior-y:contain;
+    -webkit-overflow-scrolling:touch;
+    touch-action:pan-y;
+    scrollbar-width:none;
+    -ms-overflow-style:none;
+  }
+  .cmp-continuous-list::-webkit-scrollbar{display:none;width:0;height:0;}
+  .cmp-scroll-card{
+    flex:0 0 calc(100% - 44px);
+    min-height:calc(100% - 44px);
+    scroll-snap-align:start;
+    display:flex;
+    flex-direction:column;
+    border:1.35px solid var(--ink);
+    border-radius:13px;
+    padding:.78rem;
+    background:#fff;
+    overflow:hidden;
+  }
+  .cmp-scroll-card .rtag{align-self:flex-start;font-size:.61rem;padding:.31rem .48rem;}
+  .cmp-scroll-card .cmp-choose{margin-top:auto;padding-top:.58rem;}
+  .cmp-scroll-card .cmp-choose .pf-btn{width:100%;}
+  .cmp-option,.cmp-option-stage,.cmp-progress,.cmp-dot,.cmp-edge{display:none!important;}
+
+  /* ---------- mobile-first refinement ---------- */
+  @media (max-width:760px){
+    :root{
+      --pad-section:3.6rem;
+      --radius:12px;
+    }
+    html{scroll-padding-top:4.25rem;}
+    body{font-size:16px;line-height:1.58;overflow-x:hidden;}
+    .wrap{width:100%;padding-left:1.05rem;padding-right:1.05rem;}
+
+    header.bar{position:sticky;}
+    .bar-in{min-height:3.55rem;padding:.62rem 1.05rem;}
+    .mark{font-size:.84rem;line-height:1.2;max-width:100%;}
+
+    .hero{padding:3.15rem 0 3.7rem;}
+    .hero h1{font-size:clamp(2.25rem,11vw,3.2rem);line-height:1.01;max-width:12ch;}
+    .hero .sub{font-size:1.05rem;line-height:1.55;margin-top:1.3rem;}
+    .hero .sub[style]{font-size:.98rem!important;line-height:1.55!important;margin-top:.85rem!important;}
+    .meta-row{gap:.42rem;margin-top:1.45rem;}
+    .pill{font-size:.64rem;padding:.3rem .56rem;}
+    .example-intro{margin-top:2.4rem;}
+
+    .section{padding:3.6rem 0;}
+    .eyebrow{font-size:.64rem;line-height:1.45;letter-spacing:.12em;margin-bottom:1rem;flex-wrap:wrap;}
+    .sec-h{font-size:clamp(1.85rem,8.2vw,2.45rem);line-height:1.08;max-width:15ch;margin-bottom:1.25rem;}
+    .lede p{font-size:1.03rem;}
+    .subblock{margin-top:2.65rem;}
+    .sub-h{font-size:1.38rem;max-width:20ch;margin-bottom:.9rem;}
+    .block-p{font-size:1rem;}
+    .statement{font-size:1.42rem;line-height:1.24;}
+    .callout{margin:1.65rem 0;padding-left:1rem;}
+
+    .two,.three,.probsplit,.compgrid,.pl-grid,.scope2,.ialevels,.cmprules,.principles,.risklist,.persona-grid{grid-template-columns:minmax(0,1fr)!important;gap:1rem;}
+    .dirfull,.pcard,.comp,.scard,.dresp,.layer,.hyp,.evidence,.opp-panel{padding:1.2rem 1.15rem;}
+    .dir-top{align-items:flex-start;}
+    .dir-status{margin-left:0;}
+    .dir-name{font-size:1.17rem;}
+    .dir-desc{font-size:.97rem;}
+    .hyp p{font-size:1.08rem;}
+
+    .flow,.ledger,.nextlist{border-radius:11px;}
+    .step,.fstep,.next,.finding{padding:1rem 1.05rem;}
+    .step .num,.fsn,.next .nn{width:auto;padding-top:0;}
+    .step.break .nm::after{display:block;width:max-content;margin:.45rem 0 0;}
+    .lrow{padding:1rem 1.05rem;}
+
+    .swap{border-radius:12px;}
+    .swap-head{padding:.75rem .9rem;}
+    .prod{padding:1rem;}
+    .price{font-size:1.38rem;}
+    .swap-foot{padding:.85rem .9rem;}
+    .swap-actions{display:grid;grid-template-columns:1fr 1fr;gap:.5rem;}
+    .btn{min-height:2.8rem;padding:.58rem .7rem;}
+
+    .persona-top{padding:1.15rem;}
+    .persona-col{padding:1.1rem 1.15rem;}
+    .persona-badge{width:48px;height:48px;font-size:1.2rem;}
+
+    .fconc .frow{padding:1rem 1.05rem;}
+    .tagcards{grid-template-columns:minmax(0,1fr);}
+    .tagcard{padding:1.15rem;}
+    .rectags{gap:.45rem;}
+    .rtag{font-size:.66rem;padding:.34rem .62rem;}
+
+    .proto{grid-template-columns:minmax(0,1fr);gap:1.35rem;margin-top:1.35rem;}
+    .proto-side p{font-size:.94rem;}
+    .try-list{gap:.45rem;margin-top:.9rem;}
+    .try-list li{font-size:.88rem;}
+    .proto-reset{width:100%;min-height:2.8rem;margin-top:1.1rem;}
+    .pf{width:min(100%,324px);max-width:none;border-width:7px;border-radius:31px;}
+    .pf-screen{height:clamp(560px,178vw,648px);max-height:72rem;border-radius:24px;}
+    .pf-head{min-height:50px;padding:.7rem .75rem;}
+    .pf-title{font-size:.93rem;}
+    .pf-body{padding:.72rem .75rem;}
+    .pf-foot{padding:.66rem .75rem .75rem;}
+    .pf-btn{min-height:2.75rem;font-size:.76rem;}
+    .cmp-scroll-card{flex-basis:calc(100% - 38px);min-height:calc(100% - 38px);}
+
+    .closing{margin-top:2.3rem;padding:1.8rem 1.25rem;border-radius:14px;}
+    .closing .big[style]{font-size:1.38rem!important;line-height:1.2!important;}
+    .closing p[style]{font-size:.94rem!important;line-height:1.58!important;}
+
+    footer.foot{padding:2.4rem 0;}
+    .foot-in{gap:1.35rem;}
+    .credit{font-size:1.08rem;}
+    .foot-note{font-size:.84rem;}
+    .contact-links{display:grid;grid-template-columns:1fr;gap:.58rem;width:100%;}
+    .contact-link{width:100%;min-height:3rem;}
+  }
+
+  @media (max-width:420px){
+    :root{--pad-section:3.2rem;}
+    .wrap{padding-left:.9rem;padding-right:.9rem;}
+    .bar-in{padding-left:.9rem;padding-right:.9rem;}
+    .mark{font-size:.79rem;}
+    .hero{padding-top:2.7rem;}
+    .hero h1{font-size:clamp(2.05rem,11.8vw,2.75rem);}
+    .sec-h{font-size:clamp(1.72rem,8.8vw,2.15rem);}
+    .meta-row{gap:.36rem;}
+    .pill{font-size:.61rem;}
+    .swap-actions{grid-template-columns:1fr;}
+    .pf{width:100%;}
+    .pf-screen{height:clamp(540px,184vw,620px);}
+    .pf-foot.two{grid-template-columns:1fr 1fr;}
+    .cf-row{gap:.4rem;}
+    .cf-v{max-width:60%;}
+  }
+
+  @media (max-width:340px){
+    .hero h1{font-size:1.95rem;}
+    .sec-h{font-size:1.65rem;}
+    .eyebrow{letter-spacing:.09em;}
+    .pill{font-size:.58rem;padding:.28rem .48rem;}
+    .pf-screen{height:535px;}
+  }
+
+
+
+  /* ---------- mobile layout repair ---------- */
+  *, *::before, *::after{box-sizing:border-box;}
+  img,svg,video,canvas{max-width:100%;}
+  main,.wrap,.section,.section > *, .hero > *, .foot-in > *{min-width:0;}
+
+  @media (max-width:760px){
+    .wrap{
+      width:auto;
+      max-width:none;
+      margin-left:0;
+      margin-right:0;
+      padding-left:1.25rem;
+      padding-right:1.25rem;
+    }
+    .bar-in{
+      width:100%;
+      padding-left:1.25rem;
+      padding-right:1.25rem;
+    }
+
+    /* Force every desktop card collection to a single readable column. */
+    .two,.three,.dirs,.layers,.types,.states,.needsgrid,.tally,
+    .probsplit,.oa,.compgrid,.persona-grid,.principles,.risklist,
+    .pl-grid,.scope2,.ialevels,.validation-assumptions,.cmprules,
+    .tagcards,.scrncards,.rulewrap,.showcase{
+      grid-template-columns:minmax(0,1fr)!important;
+      width:100%;
+    }
+    .layer,.pcard,.comp,.scard,.dresp,.dirfull,.hyp,.evidence,
+    .opp-panel,.principle,.finding,.next,.fstep,.step{
+      min-width:0;
+      width:100%;
+    }
+    .layer p,.layer h4,.pcard p,.scard p,.principle .pd{
+      overflow-wrap:normal;
+      word-break:normal;
+      hyphens:none;
+    }
+
+    /* Keep the interactive phone inside the viewport. */
+    .proto{display:block;width:100%;}
+    .proto-side{width:100%;margin-bottom:1.25rem;}
+    .proto-stage{width:100%;min-width:0;display:flex;justify-content:center;}
+    .pf{
+      width:100%;
+      max-width:324px;
+      min-width:0;
+      margin:0 auto;
+    }
+    .pf-screen{width:100%;}
+    .pf button,.pf [role="button"]{touch-action:manipulation;}
+  }
+
+  @media (max-width:420px){
+    .wrap,.bar-in{
+      padding-left:1.1rem;
+      padding-right:1.1rem;
+    }
+    .section{padding-top:3.2rem;padding-bottom:3.2rem;}
+  }
+
+
+  .proto-fallback-note{margin-top:.8rem;padding:.7rem .75rem;border:1px dashed var(--line);border-radius:10px;background:var(--paper-2);font-size:.72rem;line-height:1.45;color:var(--ink-soft);}
+
+
+  /* ---------- tablet spacing + comparison-label refinement ---------- */
+  @media (max-width:1180px) and (min-width:761px){
+    .wrap,
+    .bar-in{
+      padding-left:2.5rem;
+      padding-right:2.5rem;
+    }
+  }
+
+  /* Stacked comparison rows with compact pill labels on every viewport. */
+  .comp .ln{
+    display:grid;
+    grid-template-columns:minmax(0,1fr);
+    gap:.45rem;
+    align-items:start;
+    margin-top:0;
+    padding:.45rem 0;
+  }
+  .comp .ln:first-of-type{
+    padding-top:0;
+  }
+  .comp .ln:last-of-type{
+    padding-bottom:0;
+  }
+  .comp .k{
+    display:inline-flex;
+    align-items:center;
+    justify-self:start;
+    width:max-content;
+    max-width:100%;
+    padding:.2rem .48rem;
+    border-radius:5px;
+    white-space:normal;
+    line-height:1.35;
+    letter-spacing:.06em;
+  }
+  .comp .k.s{
+    background:var(--save-tint)!important;
+    color:var(--save);
+  }
+  .comp .k.m{
+    background:var(--tint)!important;
+    color:var(--ink-soft);
+  }
+  .comp .v{
+    min-width:0;
+    line-height:1.55;
+  }
+
+  @media (max-width:760px){
+    .comp .ln{
+      gap:.45rem;
+      padding:.4rem 0;
+    }
+    .comp .k{
+      font-size:.63rem;
+    }
+  }
+
+</style>
+</head>
+<body>
+
+<header class="bar">
+  <div class="bar-in">
+    <div class="mark">Smart Basket Optimizer</div>
+    <nav class="secnav" aria-label="Sections">
+      <a href="#opportunity">Problem</a>
+      <a href="#friction">Audience</a>
+      <a href="#journey">Journey</a>
+      <a href="#direction">Direction</a>
+      <a href="#design">Design</a>
+      <a href="#validation">Validation</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+<section class="wrap hero" id="top">
+  <div class="eyebrow"><span class="dot"></span>Product opportunity · Discount grocery e-commerce</div>
+  <h1>From product-level choices to <span class="hl">cart-level decisions.</span></h1>
+  <p class="sub">Shopping apps help shoppers compare and choose individual products. But once those choices come together in the cart, they get little help lowering the total or getting better value.</p>
+  <p class="sub" style="margin-top:1rem;font-size:1.05rem">Smart Basket Optimizer explores an optional tool inside the cart that highlights lower-priced or better-value alternatives, compares price and quantity, and shows the updated total before the shopper confirms a replacement.</p>
+  <div class="meta-row">
+    <span class="pill solid">Self-directed concept</span>
+    <span class="pill">Product opportunity</span>
+    <span class="pill">Product thinking</span>
+    <span class="pill">UX strategy</span>
+    <span class="pill">Interactive prototype</span>
+  </div>
+
+  <div class="example-intro">
+    <div class="eyebrow"><span class="dot"></span>The idea in one action</div>
+    <p>Choose a product to review, compare a small set of replacements, and see the updated cart total before confirming.</p>
+  </div>
+  <div class="swap" style="margin-top:1.6rem" aria-label="Example replacement">
+    <div class="swap-head"><span class="lab">Example replacement</span></div>
+    <div class="swap-body">
+      <div class="prod">
+        <span class="cat">Current item</span><span class="nm">Sunflower oil</span><span class="brand">Golden Harvest · 1.5 L</span>
+        <div class="price-block"><span class="price">SAR 24</span><span class="unit"><b>SAR 16.00</b> / L</span></div>
+      </div>
+      <div class="swap-arrow"><span>→</span></div>
+      <div class="prod alt">
+        <span class="cat">Replacement</span><span class="nm">Sunflower oil</span><span class="brand">Value Co · 1.5 L</span>
+        <div class="price-block"><span class="price">SAR 16</span><span class="unit"><b>SAR 10.67</b> / L</span></div>
+      </div>
+    </div>
+    <div class="swap-foot">
+      <span class="reason lower">Same size, lower price</span>
+      <span class="impact up"><b style="color:var(--save)">Pay SAR 8 less now</b></span>
+      <div class="swap-actions">
+        <button class="btn ghost" type="button" data-keep data-label="Keep current item">Keep current item</button>
+        <button class="btn" type="button" data-apply>Replace item</button>
+      </div>
+    </div>
+    <div class="applied-bar">Item replaced · Total reduced by SAR 8 <button class="undo" type="button" data-undo>Undo</button></div>
+  </div>
+</section>
+
+<section class="wrap section" id="opportunity">
+  <div class="eyebrow"><span class="dot"></span>01 · Framing the problem</div>
+  <h2 class="sec-h">Shoppers get strong support while choosing individual products, but little help improving the cart once those choices come together.</h2>
+  <div class="lede">
+    <p>Shopping apps help shoppers search, compare prices and pack sizes, review price per unit, and choose individual products.</p>
+    <p>Once those products form a cart, the experience mainly presents the selected items, the total, and checkout.</p>
+    <p>If shoppers want to lower the total or get better value, they often have to return to earlier shopping steps and repeat work they have already completed.</p>
+  </div>
+
+  <div class="callout">
+    <div class="eyebrow" style="margin-bottom:.8rem"><span class="dot"></span>Opportunity question</div>
+    <div class="statement" style="max-width:48ch">How might we help shoppers improve the cart without restarting the shopping journey?</div>
+  </div>
+</section>
+
+<section class="wrap section" id="friction">
+  <div class="eyebrow"><span class="dot"></span>02 · Audience and impact</div>
+  <h2 class="sec-h">The need becomes most visible when budget-conscious shoppers have built the cart and seen the total.</h2>
+
+  <div class="evidence" style="margin-top:1.6rem">
+    <div class="eyebrow" style="margin-bottom:.7rem"><span class="dot"></span>Working audience</div>
+    <p>A budget-conscious grocery shopper who builds a regular household cart and checks the total before checkout.</p>
+    <p>At that point, they may want to lower the total, get more for a similar spend, or choose a slightly higher-priced option that offers better value per unit.</p>
+  </div>
+
+  <div class="two">
+    <div>
+      <h3 class="sub-h">Why it matters to the shopper</h3>
+      <ul class="oalist">
+        <li>They have to return to search and repeat comparisons after already building the cart.</li>
+        <li>Relevant product details and trade-offs are spread across several pages.</li>
+        <li>They may need to calculate manually how each alternative would affect the total.</li>
+        <li>They may remove a product they still need because suitable alternatives are difficult to find.</li>
+      </ul>
+    </div>
+    <div>
+      <h3 class="sub-h">Why it may matter to the business</h3>
+      <ul class="oalist">
+        <li>Repeating search, comparison, and calculation may create more hesitation before checkout.</li>
+        <li>The order may be delayed or left incomplete.</li>
+        <li>Lower-priced or private-label alternatives may remain undiscovered even when they offer a clear shopper benefit.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="hyp" style="margin-top:2rem">
+    <span class="tagx">Business hypothesis · unproven</span>
+    <p>These outcomes would require behavioral data and live testing.</p>
+  </div>
+</section>
+
+<section class="wrap section" id="journey">
+  <div class="eyebrow"><span class="dot"></span>03 · Current journey gap</div>
+  <h2 class="sec-h">The main friction appears after shoppers have selected their products, added them to the cart, and seen the total.</h2>
+
+  <div class="flow">
+    <div class="step"><div class="num">01</div><div><div class="nm">Browse products</div><div class="q">Search, filters, offers, recommendations, and related products help shoppers find products.</div></div></div>
+    <div class="step"><div class="num">02</div><div><div class="nm">Compare and add items</div><div class="q">Product information, prices, pack sizes, and prices per unit help shoppers choose each item.</div></div></div>
+    <div class="step break"><div class="num">03</div><div><div class="nm">Review the cart</div><div class="q">The shopper sees the selected products and total, then considers whether the cart still meets their priorities.</div></div></div>
+    <div class="step"><div class="num">04</div><div><div class="nm">Return to search</div><div class="q">If the shopper wants to change the cart, they must return to product pages and find and compare alternatives manually.</div></div></div>
+    <div class="step"><div class="num">05</div><div><div class="nm">Decide whether to continue</div><div class="q">The shopper may remove products they still need, delay the order, leave without checking out, or continue with a cart they are not satisfied with.</div></div></div>
+  </div>
+
+  <div class="subblock">
+    <div class="eyebrow"><span class="dot"></span>Where existing patterns stop</div>
+    <div class="compgrid">
+      <div class="comp"><h4>Promotions and recommendations</h4><div class="ln"><span class="k s">They help with</span><span class="v">Discovering products and adding more items during shopping.</span></div><div class="ln"><span class="k m">They do not help with</span><span class="v">Reconsidering products already in the cart when the shopper wants to reduce the total or improve value.</span></div></div>
+      <div class="comp"><h4>Product comparison and unit pricing</h4><div class="ln"><span class="k s">They help with</span><span class="v">Comparing products during an individual product decision.</span></div><div class="ln"><span class="k m">They do not help with</span><span class="v">Comparing suitable alternatives while keeping the completed cart in context.</span></div></div>
+      <div class="comp"><h4>Cart total and savings summary</h4><div class="ln"><span class="k s">They help with</span><span class="v">Showing the current total and applied discounts.</span></div><div class="ln"><span class="k m">They do not help with</span><span class="v">Identifying which products could be changed and showing how each change would affect the total.</span></div></div>
+      <div class="comp"><h4>Out-of-stock replacements</h4><div class="ln"><span class="k s">They help with</span><span class="v">Replacing a product that cannot be fulfilled.</span></div><div class="ln"><span class="k m">They do not help with</span><span class="v">Offering optional alternatives based on price, pack size, private label, or price per unit.</span></div></div>
+    </div>
+  </div>
+
+  <div class="finding-contrast">
+    <div class="fq"><div class="fl">While shopping</div><div class="ft">“Which product should I choose?”</div></div>
+    <div class="fq accent"><div class="fl">In the cart</div><div class="ft">“What could I change to lower the total or get better value?”</div></div>
+  </div>
+
+  <div class="evidence" style="margin-top:1.6rem">
+    <div class="eyebrow" style="margin-bottom:.7rem"><span class="dot"></span>Journey insight</div>
+    <p>The gap is not missing product information. The existing information is no longer organized around the completed cart when the shopper needs to lower the total or improve value.</p>
+  </div>
+</section>
+
+<section class="wrap section" id="direction">
+  <div class="eyebrow"><span class="dot"></span>04 · Choosing the first direction</div>
+  <h2 class="sec-h">Start inside the cart, then expand after shoppers trust the recommendations.</h2>
+
+  <div class="dirfull">
+    <div class="dir-top">
+      <span class="dir-num">Direction 1</span>
+      <span class="dir-name">Budget-First Shopping</span>
+      <span class="dir-status no">Future direction</span>
+    </div>
+    <p class="dir-desc">Shoppers would set a total budget and category limits before or during shopping.</p>
+    <div class="pl-grid">
+      <div>
+        <h5>What it could offer</h5>
+        <ul class="oalist pos">
+          <li>Show the remaining total and category budgets while shopping.</li>
+          <li>Warn shoppers when spending approaches a limit.</li>
+          <li>Suggest alternatives that support the limits they set.</li>
+        </ul>
+      </div>
+      <div>
+        <h5>Why it comes later</h5>
+        <ul class="oalist">
+          <li>It introduces a new planning pattern from the start of the journey.</li>
+          <li>It asks shoppers to manage limits while they shop.</li>
+          <li>It requires trust in the recommendation system before that trust has been earned.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="dirfull sel">
+    <div class="dir-top">
+      <span class="dir-num">Direction 2</span>
+      <span class="dir-name">Smart Basket Optimizer</span>
+      <span class="dir-status yes">Selected</span>
+    </div>
+    <p class="dir-desc">An optional tool inside the cart that shows a small number of transparent alternatives.</p>
+    <div class="rectags" style="margin-bottom:1.2rem">
+      <span class="rtag save">Same size, lower price</span>
+      <span class="rtag value">Best price per unit</span>
+      <span class="rtag own">Store brand (private label), lower price</span>
+    </div>
+    <div class="pl-grid">
+      <div>
+        <h5>Why it comes first</h5>
+        <ul class="oalist pos">
+          <li>The Basket Optimizer addresses this friction inside the cart, where the shopper first sees the combined effect of their choices.</li>
+          <li>It fits the current journey without teaching a new shopping pattern.</li>
+          <li>Shoppers choose when to use it and confirm every change.</li>
+          <li>It can begin with limited categories and clear comparison rules.</li>
+        </ul>
+      </div>
+      <div>
+        <h5>What it needs to prove</h5>
+        <ul class="oalist">
+          <li>The alternatives feel genuinely comparable.</li>
+          <li>The benefit of each option is easy to understand.</li>
+          <li>Using the feature requires less effort than manually finding and comparing alternatives.</li>
+          <li>The recommendations feel useful rather than commercially biased.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="subblock">
+    <div class="eyebrow"><span class="dot"></span>Product evolution</div>
+    <div class="nextlist">
+      <div class="next"><div class="nn">01</div><div><div class="nt">Smart Basket Optimizer</div><div class="nd">Test transparent, optional recommendations inside the cart.</div></div></div>
+      <div class="next"><div class="nn">02</div><div><div class="nt">Save as an Optimized Basket</div><div class="nd">Let shoppers preserve and reuse the work they completed in the Basket Optimizer.</div></div></div>
+      <div class="next"><div class="nn">03</div><div><div class="nt">Budget-First Shopping</div><div class="nd">Use evidence from repeated use of Optimized Baskets to shape total and category spending limits.</div></div></div>
+    </div>
+  </div>
+
+  <div class="hyp">
+    <span class="tagx">Working hypothesis · unproven</span>
+    <p>If shoppers understand and trust the recommendations, they may use the Basket Optimizer again and become more comfortable with proactive budget guidance later.</p>
+  </div>
+</section>
+
+<section class="wrap section" id="design">
+  <div class="eyebrow"><span class="dot"></span>05 · Designing the experience</div>
+  <h2 class="sec-h">Compare alternatives and update the cart without returning to earlier shopping steps.</h2>
+  <div class="lede">
+    <p>Smart Basket Optimizer appears as an optional action inside the cart. Shoppers can leave the Basket Optimizer and return to checkout at any time.</p>
+    <p>The first version focuses on categories where price, pack size, price per unit, and availability support a fair comparison.</p>
+  </div>
+
+  <div class="subblock">
+    <div class="eyebrow"><span class="dot"></span>Core flow</div>
+    <div class="flowsteps">
+      <div class="fstep"><div class="fsn">01</div><div><div class="fst">Open Optimize basket</div><div class="fsd">The shopper opens the feature from the completed cart or continues directly to checkout.</div></div></div>
+      <div class="fstep"><div class="fsn">02</div><div><div class="fst">Review eligible items</div><div class="fsd">Only products with at least one suitable alternative are shown.</div></div></div>
+      <div class="fstep"><div class="fsn">03</div><div><div class="fst">Compare alternatives</div><div class="fsd">The current item stays visible while the shopper compares price, quantity, price per unit, and the reason for each suggestion.</div></div></div>
+      <div class="fstep"><div class="fsn">04</div><div><div class="fst">Preview the cart impact</div><div class="fsd">The shopper sees the price difference and new cart total before making a change.</div></div></div>
+      <div class="fstep"><div class="fsn">05</div><div><div class="fst">Confirm or keep</div><div class="fsd">Nothing changes automatically. The shopper can apply the replacement or keep the current item.</div></div></div>
+      <div class="fstep"><div class="fsn">06</div><div><div class="fst">Review and undo</div><div class="fsd">The updated cart shows the result, and the original item can be restored without searching again.</div></div></div>
+    </div>
+  </div>
+
+  <div class="subblock">
+    <div class="eyebrow"><span class="dot"></span>Interactive prototype</div>
+    <div class="proto">
+      <div class="proto-side">
+        <div class="pside-lead">Try the main cart flow.</div>
+        <p>The prototype follows the experience from a completed cart, through the Basket Optimizer, and back to the updated cart.</p>
+        <ul class="try-list">
+          <li>Open <strong>Optimize basket</strong> from the cart.</li>
+          <li>Choose an item with alternatives.</li>
+          <li>Review the available options.</li>
+          <li>Review the price, quantity, price per unit, and new cart total.</li>
+          <li>Apply the selected change.</li>
+          <li>Undo the change from the cart.</li>
+        </ul>
+        <button class="proto-reset" type="button" id="protoReset">Reset prototype</button>
+      </div>
+      <div class="pf"><div class="pf-screen" id="pfScreen">
+          <div class="pf-head"><div class="pf-title">Your cart</div><div class="pf-sub">6 items</div></div>
+          <div class="pf-body">
+            <div class="cart-row"><div class="cr-main"><div class="cr-n">Sunflower oil</div><div class="cr-b">Golden Harvest · 1.5 L</div></div><div class="cr-p">SAR 24</div></div>
+            <div class="cart-row"><div class="cr-main"><div class="cr-n">Rice</div><div class="cr-b">Golden Field · 2 kg</div></div><div class="cr-p">SAR 19</div></div>
+            <div class="cart-row"><div class="cr-main"><div class="cr-n">Dish soap</div><div class="cr-b">CleanPro · 750 ml</div></div><div class="cr-p">SAR 14</div></div>
+            <div class="cart-row"><div class="cr-main"><div class="cr-n">Cornflakes</div><div class="cr-b">Morning Co · 500 g</div></div><div class="cr-p">SAR 18</div></div>
+            <div class="cart-row"><div class="cr-main"><div class="cr-n">Pasta</div><div class="cr-b">Value Co · 1 kg</div></div><div class="cr-p">SAR 7</div></div>
+            <div class="cart-row"><div class="cr-main"><div class="cr-n">Olive oil</div><div class="cr-b">Regional · 500 ml</div></div><div class="cr-p">SAR 22</div></div>
+            <div class="proto-fallback-note">Open this page in Safari or Chrome to use the interactive prototype.</div>
+          </div>
+          <div class="pf-foot"><div class="foot-total"><span>Total</span><span class="ft-amt">SAR 104</span></div><button class="pf-btn ghost" type="button">Optimize basket</button></div>
+        </div></div>
+    </div>
+  </div>
+
+  <div class="subblock">
+    <div class="eyebrow"><span class="dot"></span>Key design decisions</div>
+    <div class="scope2">
+      <div class="scard"><div class="sc-h"><span class="sc-badge inc">Decision</span><span class="sc-title">Show only fair comparisons</span></div><p>Do not show an alternative unless the product type, intended use, size, price, and available data support a reasonable comparison.</p></div>
+      <div class="scard"><div class="sc-h"><span class="sc-badge inc">Decision</span><span class="sc-title">Explain the benefit</span></div><p>Use specific labels such as “Same size, lower price” instead of vague labels such as “Recommended.”</p></div>
+      <div class="scard"><div class="sc-h"><span class="sc-badge inc">Decision</span><span class="sc-title">Separate immediate saving from unit value</span></div><p>Use “save” only when the current cart total decreases. Show better price per unit as a different benefit.</p></div>
+      <div class="scard"><div class="sc-h"><span class="sc-badge inc">Decision</span><span class="sc-title">Keep the current item visible</span></div><p>Let shoppers compare both products using the same information without remembering details or reopening product pages.</p></div>
+      <div class="scard"><div class="sc-h"><span class="sc-badge inc">Decision</span><span class="sc-title">Keep every change reversible</span></div><p>Require confirmation before replacement and provide undo from the updated cart.</p></div>
+    </div>
+  </div>
+
+  <div class="hyp">
+    <span class="tagx">Focused MVP</span>
+    <p>Limited categories, reliable catalog data, a small number of transparent alternatives, preview of the new total, confirmation, and undo.</p>
+  </div>
+</section>
+
+<section class="wrap section" id="validation">
+  <div class="eyebrow"><span class="dot"></span>06 · Validation and next steps</div>
+  <h2 class="sec-h">Validate the need, then compare the current journey with the Basket Optimizer.</h2>
+
+  <div class="ialevels validation-assumptions">
+    <div class="layer"><div class="ltitle">Assumption 1</div><h4>The need is frequent enough to address</h4><p>Shoppers regularly want to lower the total, get more for a similar spend, or choose a slightly higher-priced option that offers better value per unit.</p></div>
+    <div class="layer"><div class="ltitle">Assumption 2</div><h4>The alternatives earn trust</h4><p>Shoppers understand why each option appears and consider it a reasonable replacement.</p></div>
+    <div class="layer"><div class="ltitle">Assumption 3</div><h4>The Basket Optimizer reduces effort</h4><p>Reviewing alternatives inside the cart requires less searching, comparison, and calculation than finding them manually.</p></div>
+  </div>
+
+  <div class="subblock">
+    <div class="eyebrow"><span class="dot"></span>How I would test the direction</div>
+
+    <h3 class="vgroup">Validation approach</h3>
+    <div class="pl-grid">
+      <div>
+        <h5>Step 1 — Confirm the need</h5>
+        <p>Use product data and recent-shopping interviews to understand what shoppers do after seeing the cart total, how often they reconsider products, and which value trade-offs matter to them.</p>
+      </div>
+      <div>
+        <h5>Step 2 — Compare the two journeys</h5>
+        <p>Give shoppers the same completed cart and ask them to adjust it in two ways: by returning to search and by using Smart Basket Optimizer.</p>
+      </div>
+    </div>
+
+    <h3 class="vgroup next">What I would evaluate</h3>
+    <div class="evalgrid">
+      <div class="evalcard"><div class="ec-t">Time and effort</div><div class="ec-d">Does the Basket Optimizer reduce the time and effort spent searching, comparing, and calculating?</div></div>
+      <div class="evalcard"><div class="ec-t">Understanding</div><div class="ec-d">Do shoppers understand what Optimize basket will do and why each alternative appears?</div></div>
+      <div class="evalcard"><div class="ec-t">Value choices</div><div class="ec-d">Can shoppers distinguish between a lower total, better price per unit, and a lower-priced private-label option?</div></div>
+      <div class="evalcard"><div class="ec-t">Trust and control</div><div class="ec-d">Do shoppers understand what changed and remain comfortable because every replacement is confirmed and reversible?</div></div>
+    </div>
+  </div>
+
+  <div class="closing">
+    <div class="eyebrow"><span class="dot"></span>Next step</div>
+    <div class="big" style="max-width:48ch;font-size:clamp(1.35rem,2.7vw,1.95rem)">The next step is to validate whether shoppers need this support and whether the comparison flow reduces the effort of finding alternatives manually.</div>
+    <p style="max-width:54rem;margin:1.2rem 0 0;font-size:1rem;line-height:1.65">If shoppers understand and trust the recommendations, the next extension would let them save the optimized cart as a reusable <strong>Optimized Basket</strong>.</p>
+    <p style="max-width:54rem;margin:.9rem 0 0;font-size:.95rem;line-height:1.6">Repeated use could then provide evidence about shopping frequency, category spending, and which replacements shoppers accept or reverse. That evidence could help shape a future <strong>Budget-First Shopping</strong> experience with total and category spending limits.</p>
+  </div>
+</section>
+</main>
+
+<footer class="foot">
+  <div class="wrap foot-in">
+    <div class="foot-copy">
+      <div class="foot-kicker">Interested in the thinking behind this concept? Let’s connect.</div>
+      <div class="credit">Product design case study by <span class="name">Islam Ashraf</span></div>
+      <div class="foot-note">Smart Basket Optimizer · Discount grocery e-commerce · 2026</div>
+    </div>
+    <div class="contact-links" aria-label="Contact links">
+      <a class="contact-link" href="https://www.linkedin.com/in/islamashraf" target="_blank" rel="noopener noreferrer" aria-label="Open Islam Ashraf’s LinkedIn profile">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M6.5 8.1A1.6 1.6 0 1 1 6.5 5a1.6 1.6 0 0 1 0 3.1ZM5.1 9.5h2.8V19H5.1V9.5Zm4.6 0h2.7v1.3h.04c.38-.72 1.3-1.48 2.68-1.48 2.87 0 3.4 1.89 3.4 4.35V19h-2.8v-4.72c0-1.13-.02-2.58-1.57-2.58-1.58 0-1.82 1.23-1.82 2.5V19H9.7V9.5Z"/></svg>
+        LinkedIn
+      </a>
+      <a class="contact-link" href="https://github.com/IslamoAshraf" target="_blank" rel="noopener noreferrer" aria-label="Open Islam Ashraf’s GitHub profile">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 3a9 9 0 0 0-2.85 17.54c.45.08.62-.2.62-.44v-1.72c-2.52.55-3.05-1.07-3.05-1.07-.41-1.05-1-1.33-1-1.33-.82-.56.06-.55.06-.55.91.06 1.39.94 1.39.94.8 1.38 2.11.98 2.63.75.08-.58.31-.98.57-1.2-2.01-.23-4.13-1.01-4.13-4.48 0-.99.35-1.8.93-2.43-.09-.23-.4-1.15.09-2.4 0 0 .76-.24 2.48.93A8.6 8.6 0 0 1 12 8.23a8.6 8.6 0 0 1 2.26.3c1.72-1.17 2.48-.93 2.48-.93.49 1.25.18 2.17.09 2.4.58.63.93 1.44.93 2.43 0 3.48-2.12 4.25-4.14 4.48.33.28.61.83.61 1.68v2.5c0 .24.17.52.62.44A9 9 0 0 0 12 3Z"/></svg>
+        GitHub
+      </a>
+      <a class="contact-link" href="mailto:islameliwa@gmail.com" aria-label="Email Islam Ashraf at islameliwa@gmail.com">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M4 6h16a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2Zm8 6.25L4.7 8h14.6L12 12.25ZM4 16h16V9.75l-7.5 4.38a1 1 0 0 1-1 0L4 9.75V16Z"/></svg>
+        Email
+      </a>
+    </div>
+  </div>
+</footer>
+
+<script>
+  // scroll reveal
+  (function(){
+    var els = document.querySelectorAll('.section, .closing');
+    els.forEach(function(el){ el.classList.add('reveal'); });
+    if('IntersectionObserver' in window){
+      var io = new IntersectionObserver(function(entries){
+        entries.forEach(function(e){ if(e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target); } });
+      },{threshold:0.08, rootMargin:'0px 0px -8% 0px'});
+      els.forEach(function(el){ io.observe(el); });
+    } else {
+      els.forEach(function(el){ el.classList.add('in'); });
+    }
+  })();
+
+  // active section nav
+  (function(){
+    var links = Array.prototype.slice.call(document.querySelectorAll('nav.secnav a'));
+    var map = {};
+    links.forEach(function(a){ var id=a.getAttribute('href').slice(1); var s=document.getElementById(id); if(s) map[id]=a; });
+    var sections = Object.keys(map).map(function(id){ return document.getElementById(id); });
+    if('IntersectionObserver' in window){
+      var io = new IntersectionObserver(function(entries){
+        entries.forEach(function(e){
+          if(e.isIntersecting){
+            links.forEach(function(a){ a.classList.remove('active'); });
+            var a = map[e.target.id]; if(a){ a.classList.add('active'); }
+          }
+        });
+      },{rootMargin:'-45% 0px -50% 0px'});
+      sections.forEach(function(s){ io.observe(s); });
+    }
+  })();
+
+  // swap apply / keep / undo (demo interactions)
+  (function(){
+    document.querySelectorAll('.swap').forEach(function(card){
+      var apply = card.querySelector('[data-apply]');
+      var undo  = card.querySelector('[data-undo]');
+      var keep  = card.querySelector('[data-keep]');
+      if(apply) apply.addEventListener('click', function(){ card.classList.add('applied'); });
+      if(undo)  undo.addEventListener('click', function(){ card.classList.remove('applied'); });
+      if(keep)  keep.addEventListener('click', function(){
+        keep.textContent = 'Kept current item';
+        keep.style.background = 'var(--tint)';
+        setTimeout(function(){ keep.textContent = card.querySelector('[data-keep]').dataset.label || 'Keep current item'; keep.style.background=''; }, 1400);
+      });
+    });
+  })();
+
+  // interactive prototype: Smart Basket Optimizer
+  (function(){
+    var screenEl = document.getElementById('pfScreen');
+    if(!screenEl) return;
+
+    var REVIEW = [
+      {
+        id:'oil', name:'Sunflower oil', brand:'Golden Harvest', size:'1.5 L', price:24, unit:'SAR 16.00 / L',
+        benefit:'Save up to SAR 8 or improve unit price',
+        alts:[
+          {tag:'save', label:'Same size, lower price', name:'Sunflower oil', brand:'Value Co', size:'1.5 L', price:16, unit:'SAR 10.67 / L', diff:'Pay SAR 8 less now', dtype:'save', note:''},
+          {tag:'value', label:'Best price per unit', name:'Sunflower oil', brand:'Value Co', size:'3 L', price:28, unit:'SAR 9.33 / L', diff:'Pay SAR 4 more now', dtype:'cost', note:'Lower price per liter · larger pack'},
+          {tag:'own', label:'Store brand, lower price', name:'Sunflower oil', brand:'Store label', size:'1.5 L', price:17, unit:'SAR 11.33 / L', diff:'Pay SAR 7 less now', dtype:'save', note:''}
+        ]
+      },
+      {
+        id:'rice', name:'Rice', brand:'Golden Field', size:'2 kg', price:19, unit:'SAR 9.50 / kg',
+        benefit:'Save SAR 4 or improve unit price',
+        alts:[
+          {tag:'save', label:'Same size, lower price', name:'Rice', brand:'Value Co', size:'2 kg', price:15, unit:'SAR 7.50 / kg', diff:'Pay SAR 4 less now', dtype:'save', note:''},
+          {tag:'value', label:'Best price per unit', name:'Rice', brand:'Golden Field', size:'5 kg', price:39, unit:'SAR 7.80 / kg', diff:'Pay SAR 20 more now', dtype:'cost', note:'Lower price per kg · larger pack'}
+        ]
+      },
+      {
+        id:'soap', name:'Dish soap', brand:'CleanPro', size:'750 ml', price:14, unit:'',
+        benefit:'Save SAR 5 with the same size',
+        alts:[
+          {tag:'own', label:'Store brand, lower price', name:'Dish soap', brand:'Store label', size:'750 ml', price:9, unit:'', diff:'Pay SAR 5 less now', dtype:'save', note:''}
+        ]
+      }
+    ];
+
+    var OTHERS = [
+      {name:'Cornflakes', brand:'Morning Co', size:'500 g', price:18},
+      {name:'Pasta', brand:'Value Co', size:'1 kg', price:7},
+      {name:'Olive oil', brand:'Regional', size:'500 ml', price:22}
+    ];
+
+    var st = { view:'cart', item:null, ai:0, replaced:{} };
+
+    function find(id){
+      for(var i=0;i<REVIEW.length;i++) if(REVIEW[i].id===id) return REVIEW[i];
+      return null;
+    }
+
+    function totalWith(rep){
+      var t=0,i;
+      for(i=0;i<REVIEW.length;i++){
+        var it=REVIEW[i];
+        t += rep[it.id] ? rep[it.id].price : it.price;
+      }
+      for(i=0;i<OTHERS.length;i++) t += OTHERS[i].price;
+      return t;
+    }
+
+    function total(){ return totalWith(st.replaced); }
+    function origTotal(){ return totalWith({}); }
+
+    function impactWith(it,a){
+      var clone={},k;
+      for(k in st.replaced) clone[k]=st.replaced[k];
+      clone[it.id]=a;
+      return totalWith(clone);
+    }
+
+    function tag(a){
+      return '<span class="rtag '+a.tag+'">'+a.label+'</span>';
+    }
+
+    function replacementResult(it,rep){
+      if(!rep) return '';
+      if(rep.price<it.price) return '<span class="cr-result save">Pay SAR '+(it.price-rep.price)+' less now</span>';
+      if(rep.tag==='value' && rep.unit) return '<span class="cr-result value">Best price per unit · '+rep.unit+'</span>';
+      return '<span class="cr-result value">'+rep.label+'</span>';
+    }
+
+    function header(title, backView, showCheckout, sub){
+      return '<div class="pf-head">'
+        +(backView?'<button class="pf-back" data-go="'+backView+'">←</button>':'')
+        +'<div class="pf-title" tabindex="-1">'+title+'</div>'
+        +(sub?'<div class="pf-sub">'+sub+'</div>':'')
+        +(showCheckout?'<button class="pf-head-action" data-checkout>Checkout</button>':'')
+        +'</div>';
+    }
+
+    function render(moveFocus){
+      if(st.view==='cart') screenEl.innerHTML=cartHTML();
+      else if(st.view==='opps') screenEl.innerHTML=oppsHTML();
+      else if(st.view==='compare'){
+        screenEl.innerHTML=compareHTML();
+        requestAnimationFrame(function(){
+          var list=screenEl.querySelector('[data-option-list]');
+          var card=screenEl.querySelector('[data-option-index="'+st.ai+'"]');
+          if(list&&card&&st.ai>0) list.scrollTop=card.offsetTop-list.offsetTop;
+        });
+      }
+      else if(st.view==='confirm') screenEl.innerHTML=confirmHTML();
+      // After a user-driven view change, move focus to the new screen's title so
+      // keyboard/screen-reader users are not silently dumped to <body>.
+      if(moveFocus){
+        var h=screenEl.querySelector('.pf-title');
+        if(h&&h.focus){ try{ h.focus({preventScroll:true}); }catch(e){ h.focus(); } }
+      }
+    }
+
+    function cartHTML(){
+      var rows='',i;
+      for(i=0;i<REVIEW.length;i++){
+        var it=REVIEW[i], rep=st.replaced[it.id], p=rep||it;
+        rows += '<div class="cart-row"><div class="cr-main"><div class="cr-n">'+p.name+'</div><div class="cr-b">'+p.brand+' · '+p.size+(rep?' <span class="cr-rep">Replaced</span>':'')+'</div>'+replacementResult(it,rep)+'</div><div class="cr-p">SAR '+p.price+(rep?'<button class="cr-undo" data-undo="'+it.id+'">Undo</button>':'')+'</div></div>';
+      }
+      for(i=0;i<OTHERS.length;i++){
+        var o=OTHERS[i];
+        rows += '<div class="cart-row"><div class="cr-main"><div class="cr-n">'+o.name+'</div><div class="cr-b">'+o.brand+' · '+o.size+'</div></div><div class="cr-p">SAR '+o.price+'</div></div>';
+      }
+
+      var saved=origTotal()-total();
+      var reviewed=Object.keys(st.replaced).length;
+      var note=reviewed===REVIEW.length ? 'All available options reviewed' : REVIEW.length+' items have alternatives';
+
+      return header('Your cart',null,false,(REVIEW.length+OTHERS.length)+' items')
+        +'<div class="pf-body">'+rows+'</div>'
+        +'<div class="pf-foot">'
+        +(saved>0?'<div class="foot-saved">You pay SAR '+saved+' less now</div>':'')
+        +'<div class="foot-total"><span>Total</span><span class="ft-amt">SAR '+total()+'</span></div>'
+        +'<button class="pf-btn ghost" data-go="opps">Optimize basket</button>'
+        +'<div class="foot-note">'+note+'</div>'
+        +'<button class="pf-btn primary" data-checkout>Checkout</button>'
+        +'</div>';
+    }
+
+    function oppsHTML(){
+      var rows='',i;
+      for(i=0;i<REVIEW.length;i++){
+        var it=REVIEW[i],rep=st.replaced[it.id];
+        rows += '<button class="opp-row2" data-open="'+it.id+'"><div class="o2-main"><div class="o2-n">'+it.name+'</div><div class="o2-meta">'
+          +(rep?'<span class="o2-done">Replaced ✓</span> · '+rep.brand+' '+rep.size:it.alts.length+' option'+(it.alts.length!==1?'s':'')+' · '+it.benefit)
+          +'</div></div><div class="o2-act">'+(rep?'Review again':'Review options')+' →</div></button>';
+      }
+      return header('Optimize basket','cart',true,'')
+        +'<div class="pf-body"><p class="pf-intro">Choose an item to review.</p>'+rows+'</div>'
+        +'<div class="pf-foot"><button class="pf-btn ghost" data-go="cart">Back to cart</button></div>';
+    }
+
+    function compareHTML(){
+      var it=find(st.item),cards='',i;
+      for(i=0;i<it.alts.length;i++){
+        var a=it.alts[i],imp=impactWith(it,a);
+        cards += '<article class="cmp-scroll-card" data-option-index="'+i+'">'
+          +tag(a)
+          +'<div class="cmp-n">'+a.name+'</div>'
+          +'<div class="cmp-b">'+a.brand+' · '+a.size+'</div>'
+          +'<div class="cmp-price"><span class="cmp-amt">SAR '+a.price+'</span>'+(a.unit?'<span class="cmp-unit">'+a.unit+'</span>':'')+'</div>'
+          +'<div class="cmp-diff '+a.dtype+'">'+a.diff+'</div>'
+          +(a.note?'<div class="cmp-note">'+a.note+'</div>':'')
+          +'<div class="cmp-impact">New cart total: <b>SAR '+imp+'</b></div>'
+          +'<div class="cmp-choose"><button class="pf-btn primary" data-confirm-index="'+i+'">Review this option</button></div>'
+          +'</article>';
+      }
+
+      return header(it.name,'opps',true,'')
+        +'<div class="pf-body cmp-body">'
+        +'<div class="cmp-fixed"><div class="cmp-label">Current item</div><div class="cmp-cur"><div class="cmp-n">'+it.name+'</div><div class="cmp-b">'+it.brand+' · '+it.size+'</div><div class="cmp-price"><span class="cmp-amt">SAR '+it.price+'</span>'+(it.unit?'<span class="cmp-unit">'+it.unit+'</span>':'')+'</div></div><div class="cmp-arrow">↓</div></div>'
+        +'<div class="cmp-list-head"><span class="cmp-label">Alternatives</span><span class="cmp-swipe">Swipe vertically</span></div>'
+        +'<div class="cmp-continuous-list" data-option-list>'+cards+'</div>'
+        +'</div>'
+        +'<div class="pf-foot"><button class="pf-btn ghost" data-go="opps">Keep current item</button></div>';
+    }
+
+    function confirmHTML(){
+      var it=find(st.item),a=it.alts[st.ai],nt=impactWith(it,a),d=a.price-it.price;
+      var dv=d<=0?'<span class="cf-v save">Pay SAR '+Math.abs(d)+' less</span>':'<span class="cf-v cost">Pay SAR '+d+' more</span>';
+
+      return header('Review this change','compare',true,'')
+        +'<div class="pf-body">'
+        +'<div class="cf-row"><span class="cf-k">Current</span><span class="cf-v">'+it.name+' · '+it.brand+' '+it.size+' · SAR '+it.price+'</span></div>'
+        +'<div class="cf-row"><span class="cf-k">New</span><span class="cf-v">'+a.name+' · '+a.brand+' '+a.size+' · SAR '+a.price+'</span></div>'
+        +'<div class="cf-row"><span class="cf-k">Why</span><span class="cf-v">'+tag(a)+'</span></div>'
+        +'<div class="cf-row"><span class="cf-k">Current order</span>'+dv+'</div>'
+        +(a.note?'<div class="cf-note">'+a.note+'</div>':'')
+        +'<div class="cf-total"><span>Updated total</span><span class="cf-amt">SAR '+nt+'</span></div>'
+        +'</div>'
+        +'<div class="pf-foot two"><button class="pf-btn ghost" data-go="compare">Cancel</button><button class="pf-btn primary" data-apply>Apply change</button></div>';
+    }
+
+
+
+    function toast(msg,undoId){
+      var old=screenEl.querySelector('.pf-toast');
+      if(old&&old.parentNode) old.parentNode.removeChild(old);
+      var t=document.createElement('div');
+      t.className='pf-toast';
+      t.setAttribute('role','status'); /* announce state changes to screen readers */
+      t.innerHTML='<span>'+msg+'</span>'+(undoId?'<button class="tundo" data-undo="'+undoId+'">Undo</button>':'');
+      screenEl.appendChild(t);
+      requestAnimationFrame(function(){ t.classList.add('show'); });
+      clearTimeout(window.__pft);
+      window.__pft=setTimeout(function(){
+        t.classList.remove('show');
+        setTimeout(function(){ if(t.parentNode) t.parentNode.removeChild(t); },250);
+      },3200);
+    }
+
+    screenEl.addEventListener('click',function(e){
+      var t=e.target.closest('[data-go],[data-open],[data-confirm-index],[data-apply],[data-undo],[data-checkout]');
+      if(!t) return;
+
+      if(t.hasAttribute('data-go')){
+        st.view=t.getAttribute('data-go');
+        render(true);
+      }else if(t.hasAttribute('data-open')){
+        st.item=t.getAttribute('data-open');
+        st.ai=0;
+        st.view='compare';
+        render(true);
+      }else if(t.hasAttribute('data-confirm-index')){
+        st.ai=parseInt(t.getAttribute('data-confirm-index'),10)||0;
+        st.view='confirm';
+        render(true);
+      }else if(t.hasAttribute('data-apply')){
+        var it=find(st.item);
+        st.replaced[it.id]=it.alts[st.ai];
+        st.view='cart';
+        render(true);
+        toast('Cart updated · total is now SAR '+total(),it.id);
+      }else if(t.hasAttribute('data-undo')){
+        var id=t.getAttribute('data-undo');
+        delete st.replaced[id];
+        render(true);
+        toast('Change undone',null);
+      }else if(t.hasAttribute('data-checkout')){
+        toast('Checkout would continue here.',null);
+      }
+    });
+
+
+    var rb=document.getElementById('protoReset');
+    if(rb) rb.addEventListener('click',function(){
+      st={view:'cart',item:null,ai:0,replaced:{}};
+      render();
+    });
+
+    render();
+  })();
+</script>
+</body>
+</html>
