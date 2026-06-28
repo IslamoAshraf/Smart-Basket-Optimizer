@@ -3,7 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Smart Basket Optimizer — Product Design Case Study</title>
+<title>Cart-Level Decisions — Product Design Case Study</title>
+<link rel="icon" type="image/svg+xml" sizes="any" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2064%2064%22%3E%0A%3Crect%20x%3D%221.5%22%20y%3D%221.5%22%20width%3D%2261%22%20height%3D%2261%22%20rx%3D%2214%22%20fill%3D%22%23FFD400%22%20stroke%3D%22%2317171B%22%20stroke-width%3D%223%22%2F%3E%0A%3Cpath%20d%3D%22M20%2027c1-10%206-15%2012-15s11%205%2012%2015%22%20fill%3D%22none%22%20stroke%3D%22%2317171B%22%20stroke-width%3D%225%22%20stroke-linecap%3D%22round%22%2F%3E%0A%3Cpath%20d%3D%22M13%2027h38l-5%2024a6%206%200%200%201-6%205H24a6%206%200%200%201-6-5z%22%20fill%3D%22%23B86A2E%22%20stroke%3D%22%2317171B%22%20stroke-width%3D%224%22%20stroke-linejoin%3D%22round%22%2F%3E%0A%3Cpath%20d%3D%22M24%2033l2%2016M32%2033v16M40%2033l-2%2016%22%20stroke%3D%22%23FFE7A3%22%20stroke-width%3D%223%22%20stroke-linecap%3D%22round%22%2F%3E%0A%3C%2Fsvg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700;800;900&family=Hanken+Grotesk:wght@400;500;600;700&family=Spline+Sans+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -1065,13 +1066,70 @@
     }
   }
 
+
+
+  /* ---------- bilingual language switch ---------- */
+  .lang-switch{
+    display:inline-flex;align-items:center;gap:.2rem;flex:none;
+    padding:.18rem;border:1px solid var(--line-2);border-radius:9px;background:#fff;
+    direction:ltr;
+  }
+  .lang-switch button{
+    border:0;background:transparent;color:var(--ink-soft);cursor:pointer;
+    font-family:var(--font-b);font-size:.74rem;font-weight:700;line-height:1;
+    padding:.48rem .62rem;border-radius:6px;
+  }
+  .lang-switch button.active{background:var(--ink);color:var(--paper);}
+  .lang-switch button:focus-visible{outline:3px solid var(--brand);outline-offset:2px;}
+
+  body.lang-ar{direction:rtl;font-family:Tahoma,Arial,sans-serif;}
+  body.lang-ar h1,body.lang-ar h2,body.lang-ar h3,body.lang-ar h4,
+  body.lang-ar .mark,body.lang-ar .statement,body.lang-ar .dir-name,
+  body.lang-ar .fst,body.lang-ar .drt,body.lang-ar .credit,
+  body.lang-ar .closing .big{font-family:Tahoma,Arial,sans-serif;letter-spacing:0;}
+  body.lang-ar .mono,body.lang-ar .eyebrow,body.lang-ar .pill,
+  body.lang-ar nav.secnav a,body.lang-ar .reason,body.lang-ar .impact,
+  body.lang-ar .dir-num,body.lang-ar .dir-status,body.lang-ar .ltitle,
+  body.lang-ar .sc-badge,body.lang-ar .foot-kicker{font-family:Tahoma,Arial,sans-serif;letter-spacing:0;text-transform:none;}
+  body.lang-ar nav.secnav{margin-left:0;margin-right:auto;}
+  body.lang-ar .callout{border-left:0;border-right:4px solid var(--brand);padding-left:0;padding-right:1.3rem;}
+  body.lang-ar .needs li,body.lang-ar .oalist li,body.lang-ar .criteria li,
+  body.lang-ar .cmplist li,body.lang-ar .try-list li,body.lang-ar .layer li{
+    padding-left:0;padding-right:1.2rem;
+  }
+  body.lang-ar .needs li::before,body.lang-ar .oalist li::before,
+  body.lang-ar .criteria li::before,body.lang-ar .cmplist li::before,
+  body.lang-ar .try-list li::before,body.lang-ar .layer li::before{left:auto;right:0;}
+  body.lang-ar .swap-actions{margin-left:0;margin-right:auto;}
+  body.lang-ar .dir-status{margin-left:0;margin-right:auto;}
+  body.lang-ar .persona-col + .persona-col{border-left:0;border-right:1px solid var(--line);}
+  body.lang-ar .step.break .nm::after{content:"تبدأ المشكلة هنا";margin-left:0;margin-right:.6rem;}
+  body.lang-ar .contact-links{justify-content:flex-start;}
+  body.lang-ar .contact-link svg{margin-left:.1rem;}
+  body.lang-ar .proto,body.lang-ar .proto *{direction:ltr;text-align:left;font-family:var(--font-b);}
+  body.lang-ar .proto .pf-title,body.lang-ar .proto .cr-n,body.lang-ar .proto .o2-n,
+  body.lang-ar .proto .cmp-n,body.lang-ar .proto .pf-btn,body.lang-ar .proto .foot-total,
+  body.lang-ar .proto .pside-lead{font-family:var(--font-d);}
+
+  @media (max-width:760px){
+    .lang-switch{margin-left:auto;}
+    body.lang-ar .lang-switch{margin-left:0;margin-right:auto;}
+  }
+  @media (max-width:420px){
+    .lang-switch button{font-size:.68rem;padding:.43rem .5rem;}
+  }
+
 </style>
 </head>
 <body>
 
 <header class="bar">
   <div class="bar-in">
-    <div class="mark">Smart Basket Optimizer</div>
+    <div class="mark">Cart-Level Decisions</div>
+    <div class="lang-switch" role="group" aria-label="Language">
+      <button type="button" class="active" data-language="en" aria-pressed="true">English</button>
+      <button type="button" data-language="ar" aria-pressed="false">العربية</button>
+    </div>
     <nav class="secnav" aria-label="Sections">
       <a href="#opportunity">Problem</a>
       <a href="#friction">Audience</a>
@@ -1088,41 +1146,13 @@
   <div class="eyebrow"><span class="dot"></span>Product opportunity · Discount grocery e-commerce</div>
   <h1>From product-level choices to <span class="hl">cart-level decisions.</span></h1>
   <p class="sub">Shopping apps help shoppers compare and choose individual products. But once those choices come together in the cart, they get little help lowering the total or getting better value.</p>
-  <p class="sub" style="margin-top:1rem;font-size:1.05rem">Smart Basket Optimizer explores an optional tool inside the cart that highlights lower-priced or better-value alternatives, compares price and quantity, and shows the updated total before the shopper confirms a replacement.</p>
+  <p class="sub" style="margin-top:1rem;font-size:1.05rem">This case study explores the gap between the support available while choosing each product and the decisions shoppers face after seeing the completed cart.</p>
   <div class="meta-row">
     <span class="pill solid">Self-directed concept</span>
     <span class="pill">Product opportunity</span>
     <span class="pill">Product thinking</span>
     <span class="pill">UX strategy</span>
     <span class="pill">Interactive prototype</span>
-  </div>
-
-  <div class="example-intro">
-    <div class="eyebrow"><span class="dot"></span>The idea in one action</div>
-    <p>Choose a product to review, compare a small set of replacements, and see the updated cart total before confirming.</p>
-  </div>
-  <div class="swap" style="margin-top:1.6rem" aria-label="Example replacement">
-    <div class="swap-head"><span class="lab">Example replacement</span></div>
-    <div class="swap-body">
-      <div class="prod">
-        <span class="cat">Current item</span><span class="nm">Sunflower oil</span><span class="brand">Golden Harvest · 1.5 L</span>
-        <div class="price-block"><span class="price">SAR 24</span><span class="unit"><b>SAR 16.00</b> / L</span></div>
-      </div>
-      <div class="swap-arrow"><span>→</span></div>
-      <div class="prod alt">
-        <span class="cat">Replacement</span><span class="nm">Sunflower oil</span><span class="brand">Value Co · 1.5 L</span>
-        <div class="price-block"><span class="price">SAR 16</span><span class="unit"><b>SAR 10.67</b> / L</span></div>
-      </div>
-    </div>
-    <div class="swap-foot">
-      <span class="reason lower">Same size, lower price</span>
-      <span class="impact up"><b style="color:var(--save)">Pay SAR 8 less now</b></span>
-      <div class="swap-actions">
-        <button class="btn ghost" type="button" data-keep data-label="Keep current item">Keep current item</button>
-        <button class="btn" type="button" data-apply>Replace item</button>
-      </div>
-    </div>
-    <div class="applied-bar">Item replaced · Total reduced by SAR 8 <button class="undo" type="button" data-undo>Undo</button></div>
   </div>
 </section>
 
@@ -1212,7 +1242,10 @@
 
 <section class="wrap section" id="direction">
   <div class="eyebrow"><span class="dot"></span>04 · Choosing the first direction</div>
-  <h2 class="sec-h">Start inside the cart, then expand after shoppers trust the recommendations.</h2>
+  <h2 class="sec-h">I explored two directions for supporting decisions at the cart level.</h2>
+  <div class="lede">
+    <p>The first changes how shoppers plan from the start. The second supports them after the cart is already built.</p>
+  </div>
 
   <div class="dirfull">
     <div class="dir-top">
@@ -1296,6 +1329,34 @@
   <div class="lede">
     <p>Smart Basket Optimizer appears as an optional action inside the cart. Shoppers can leave the Basket Optimizer and return to checkout at any time.</p>
     <p>The first version focuses on categories where price, pack size, price per unit, and availability support a fair comparison.</p>
+  </div>
+
+  <div class="subblock">
+    <div class="eyebrow"><span class="dot"></span>How the selected direction works</div>
+    <p class="block-p">Choose a product to review, compare a small set of replacements, and see the updated cart total before confirming.</p>
+    <div class="swap" style="margin-top:1.6rem" aria-label="Example replacement">
+      <div class="swap-head"><span class="lab">Example replacement</span></div>
+      <div class="swap-body">
+        <div class="prod">
+          <span class="cat">Current item</span><span class="nm">Sunflower oil</span><span class="brand">Golden Harvest · 1.5 L</span>
+          <div class="price-block"><span class="price">SAR 24</span><span class="unit"><b>SAR 16.00</b> / L</span></div>
+        </div>
+        <div class="swap-arrow"><span>→</span></div>
+        <div class="prod alt">
+          <span class="cat">Replacement</span><span class="nm">Sunflower oil</span><span class="brand">Value Co · 1.5 L</span>
+          <div class="price-block"><span class="price">SAR 16</span><span class="unit"><b>SAR 10.67</b> / L</span></div>
+        </div>
+      </div>
+      <div class="swap-foot">
+        <span class="reason lower">Same size, lower price</span>
+        <span class="impact up"><b style="color:var(--save)">Pay SAR 8 less now</b></span>
+        <div class="swap-actions">
+          <button class="btn ghost" type="button" data-keep data-label="Keep current item">Keep current item</button>
+          <button class="btn" type="button" data-apply>Replace item</button>
+        </div>
+      </div>
+      <div class="applied-bar">Item replaced · Total reduced by SAR 8 <button class="undo" type="button" data-undo>Undo</button></div>
+    </div>
   </div>
 
   <div class="subblock">
@@ -1721,5 +1782,96 @@
     render();
   })();
 </script>
+
+<script>
+  // bilingual presentation layer: the original English text remains the source of truth
+  (function(){
+    var AR = {"Smart Basket Optimizer":"Smart Basket Optimizer","Problem":"المشكلة","Audience":"المتسوق","Journey":"الرحلة","Direction":"الاتجاه","Design":"التصميم","Validation":"التحقق","Product opportunity · Discount grocery e-commerce":"Product Opportunity · Discount Grocery E-commerce","From product-level choices to":"من قرارات على مستوى المنتج إلى","cart-level decisions.":"قرارات على مستوى السلة.","Shopping apps help shoppers compare and choose individual products. But once those choices come together in the cart, they get little help lowering the total or getting better value.":"تساعد تطبيقات التسوق المتسوق على مقارنة المنتجات واختيارها كلًّا على حدة. لكن عندما تجتمع هذه الاختيارات داخل السلة، لا يجد الدعم نفسه لخفض الإجمالي أو الحصول على قيمة أفضل.","Self-directed concept":"Self-directed concept","Product opportunity":"Product opportunity","Product thinking":"Product thinking","UX strategy":"UX strategy","Interactive prototype":"Interactive prototype","Choose a product to review, compare a small set of replacements, and see the updated cart total before confirming.":"يختار المتسوق منتجًا لمراجعته، ويقارن بين عدد محدود من البدائل، ثم يرى إجمالي السلة بعد التغيير قبل تأكيده.","Example replacement":"مثال على الاستبدال","Current item":"المنتج الحالي","Sunflower oil":"زيت دوار الشمس","Golden Harvest · 1.5 L":"Golden Harvest · 1.5 L","SAR 24":"SAR 24","SAR 16.00":"SAR 16.00","/ L":"/ L","Replacement":"البديل","Value Co · 1.5 L":"Value Co · 1.5 L","SAR 16":"SAR 16","SAR 10.67":"SAR 10.67","Same size, lower price":"الحجم نفسه، بسعر أقل","Pay SAR 8 less now":"وفّر الآن 8 SAR","Keep current item":"الاحتفاظ بالمنتج الحالي","Kept current item":"تم الاحتفاظ بالمنتج الحالي","Replace item":"استبدال المنتج","Item replaced · Total reduced by SAR 8":"تم استبدال المنتج · انخفض الإجمالي بمقدار 8 SAR","Undo":"تراجع","01 · Framing the problem":"01 · تحديد المشكلة","Shoppers get strong support while choosing individual products, but little help improving the cart once those choices come together.":"يحصل المتسوق على دعم قوي عند اختيار كل منتج، لكنه لا يجد الدعم نفسه عندما يحاول تحسين السلة بعد اكتمالها.","Shopping apps help shoppers search, compare prices and pack sizes, review price per unit, and choose individual products.":"تساعد تطبيقات التسوق المتسوق على البحث، ومقارنة الأسعار وأحجام العبوات، ومراجعة السعر لكل وحدة، واختيار كل منتج.","Once those products form a cart, the experience mainly presents the selected items, the total, and checkout.":"بعد أن تتكوّن السلة، تقتصر التجربة غالبًا على عرض المنتجات المختارة والإجمالي والانتقال إلى إتمام الشراء.","If shoppers want to lower the total or get better value, they often have to return to earlier shopping steps and repeat work they have already completed.":"إذا أراد المتسوق خفض الإجمالي أو الحصول على قيمة أفضل، فعليه غالبًا العودة إلى خطوات سابقة وإعادة ما أنجزه من بحث ومقارنة.","Opportunity question":"السؤال الذي يقود الحل","How might we help shoppers improve the cart without restarting the shopping journey?":"كيف يمكننا مساعدة المتسوق على تحسين السلة من دون إعادة رحلة التسوق من البداية؟","02 · Audience and impact":"02 · المتسوق وتأثير المشكلة","The need becomes most visible when budget-conscious shoppers have built the cart and seen the total.":"تظهر الحاجة بوضوح أكبر عندما ينتهي المتسوق المهتم بميزانيته من بناء السلة ويرى الإجمالي.","Working audience":"الفئة التي تركز عليها الدراسة","A budget-conscious grocery shopper who builds a regular household cart and checks the total before checkout.":"متسوق يشتري احتياجات المنزل بانتظام، ويراعي ميزانيته، ويراجع إجمالي السلة قبل إتمام الشراء.","At that point, they may want to lower the total, get more for a similar spend, or choose a slightly higher-priced option that offers better value per unit.":"في هذه المرحلة، قد يرغب في خفض الإجمالي، أو الحصول على كمية أكبر مقابل مبلغ قريب، أو اختيار منتج أعلى سعرًا قليلًا لكنه يقدم قيمة أفضل لكل وحدة.","Why it matters to the shopper":"كيف تؤثر المشكلة على المتسوق؟","They have to return to search and repeat comparisons after already building the cart.":"يُضطر إلى العودة للبحث وتكرار المقارنات بعد أن أنهى بناء السلة بالفعل.","Relevant product details and trade-offs are spread across several pages.":"تتوزع تفاصيل المنتجات والمفاضلات المهمة بين عدة صفحات.","They may need to calculate manually how each alternative would affect the total.":"قد يحتاج إلى حساب تأثير كل بديل على الإجمالي يدويًا.","They may remove a product they still need because suitable alternatives are difficult to find.":"قد يحذف منتجًا ما زال يحتاج إليه لأن العثور على بديل مناسب يتطلب مجهودًا إضافيًا.","Why it may matter to the business":"لماذا قد تهم هذه المشكلة المتجر؟","Repeating search, comparison, and calculation may create more hesitation before checkout.":"تكرار البحث والمقارنة والحساب قد يزيد تردد المتسوق قبل إتمام الشراء.","The order may be delayed or left incomplete.":"قد يتأخر الطلب أو لا يكتمل.","Lower-priced or private-label alternatives may remain undiscovered even when they offer a clear shopper benefit.":"قد تبقى البدائل الأقل سعرًا أو خيارات Private Label غير مكتشفة، رغم أنها تقدم فائدة واضحة للمتسوق.","Business hypothesis · unproven":"Business hypothesis · unproven","These outcomes would require behavioral data and live testing.":"تحتاج هذه النتائج إلى بيانات سلوكية واختبار فعلي لإثباتها.","03 · Current journey gap":"03 · الفجوة في الرحلة الحالية","The main friction appears after shoppers have selected their products, added them to the cart, and seen the total.":"تظهر نقطة الاحتكاك الأساسية بعد أن يختار المتسوق منتجاته، ويضيفها إلى السلة، ويرى الإجمالي.","Browse products":"تصفح المنتجات","Search, filters, offers, recommendations, and related products help shoppers find products.":"تساعد أدوات البحث والفلاتر والعروض والتوصيات والمنتجات ذات الصلة المتسوق على العثور على المنتجات.","Compare and add items":"مقارنة المنتجات وإضافتها","Product information, prices, pack sizes, and prices per unit help shoppers choose each item.":"تساعد معلومات المنتج والأسعار وأحجام العبوات والسعر لكل وحدة المتسوق على اختيار كل منتج.","Review the cart":"مراجعة السلة","The shopper sees the selected products and total, then considers whether the cart still meets their priorities.":"يرى المتسوق المنتجات المختارة والإجمالي، ثم يراجع ما إذا كانت السلة ما زالت تناسب أولوياته.","Return to search":"العودة إلى البحث","If the shopper wants to change the cart, they must return to product pages and find and compare alternatives manually.":"إذا أراد تعديل السلة، فعليه العودة إلى صفحات المنتجات والعثور على البدائل ومقارنتها يدويًا.","Decide whether to continue":"تحديد الخطوة التالية","The shopper may remove products they still need, delay the order, leave without checking out, or continue with a cart they are not satisfied with.":"قد يحذف المتسوق منتجات ما زال يحتاج إليها، أو يؤجل الطلب، أو يغادر من دون إتمام الشراء، أو يُكمل الشراء بسلة غير راضٍ عنها.","Where existing patterns stop":"أين تتوقف الحلول الحالية؟","Promotions and recommendations":"العروض والتوصيات","They help with":"تساعد في","Discovering products and adding more items during shopping.":"اكتشاف المنتجات وإضافة منتجات أخرى أثناء التسوق.","They do not help with":"لا تساعد في","Reconsidering products already in the cart when the shopper wants to reduce the total or improve value.":"إعادة النظر في المنتجات الموجودة داخل السلة عندما يريد المتسوق خفض الإجمالي أو الحصول على قيمة أفضل.","Product comparison and unit pricing":"مقارنة المنتجات والسعر لكل وحدة","Comparing products during an individual product decision.":"مقارنة المنتجات أثناء اتخاذ قرار بشأن منتج واحد.","Comparing suitable alternatives while keeping the completed cart in context.":"مقارنة البدائل المناسبة مع إبقاء السلة المكتملة وإجماليها ضمن سياق القرار.","Cart total and savings summary":"إجمالي السلة وملخص التوفير","Showing the current total and applied discounts.":"عرض الإجمالي الحالي والخصومات المطبقة.","Identifying which products could be changed and showing how each change would affect the total.":"تحديد المنتجات التي يمكن تغييرها، وتوضيح تأثير كل تغيير على الإجمالي.","Out-of-stock replacements":"بدائل المنتجات غير المتوفرة","Replacing a product that cannot be fulfilled.":"استبدال منتج لا يمكن توفيره.","Offering optional alternatives based on price, pack size, private label, or price per unit.":"تقديم بدائل اختيارية بناءً على السعر أو حجم العبوة أو Private Label أو السعر لكل وحدة.","While shopping":"أثناء التسوق","“Which product should I choose?”":"«أي منتج أختار؟»","In the cart":"داخل السلة","“What could I change to lower the total or get better value?”":"«ما الذي يمكنني تغييره لخفض الإجمالي أو الحصول على قيمة أفضل؟»","Journey insight":"الاستنتاج الرئيسي","The gap is not missing product information. The existing information is no longer organized around the completed cart when the shopper needs to lower the total or improve value.":"الفجوة ليست في غياب معلومات المنتجات، بل في أن المعلومات الموجودة لم تعد منظّمة حول السلة المكتملة في اللحظة التي يحتاج فيها المتسوق إلى خفض الإجمالي أو تحسين القيمة.","04 · Choosing the first direction":"04 · اختيار الاتجاه الأول","Start inside the cart, then expand after shoppers trust the recommendations.":"نبدأ من داخل السلة، ثم نتوسع بعد أن يثق المتسوق بالتوصيات.","Direction 1":"الاتجاه الأول","Budget-First Shopping":"Budget-First Shopping","Future direction":"اتجاه لاحق","Shoppers would set a total budget and category limits before or during shopping.":"يحدد المتسوق ميزانية إجمالية وحدودًا للفئات قبل التسوق أو أثناءه.","What it could offer":"ما الذي يمكن أن يقدمه؟","Show the remaining total and category budgets while shopping.":"عرض الميزانية المتبقية وحدود الفئات أثناء التسوق.","Warn shoppers when spending approaches a limit.":"تنبيه المتسوق عندما يقترب الإنفاق من أحد الحدود التي حددها.","Suggest alternatives that support the limits they set.":"اقتراح بدائل تساعده على الالتزام بهذه الحدود.","Why it comes later":"لماذا يأتي لاحقًا؟","It introduces a new planning pattern from the start of the journey.":"يقدم طريقة جديدة للتخطيط منذ بداية رحلة التسوق.","It asks shoppers to manage limits while they shop.":"يطلب من المتسوق متابعة الميزانية والحدود أثناء التسوق.","It requires trust in the recommendation system before that trust has been earned.":"يتطلب من المتسوق أن يثق في نظام التوصيات قبل أن يثبت النظام فائدته له.","Direction 2":"الاتجاه الثاني","Selected":"الاتجاه المختار","An optional tool inside the cart that shows a small number of transparent alternatives.":"أداة اختيارية داخل السلة تعرض عددًا محدودًا من البدائل، مع توضيح سبب اقتراح كل بديل.","Best price per unit":"أفضل سعر لكل وحدة","Store brand (private label), lower price":"علامة المتجر (Private Label)، بسعر أقل","Why it comes first":"لماذا نبدأ به؟","The Basket Optimizer addresses this friction inside the cart, where the shopper first sees the combined effect of their choices.":"يعالج Basket Optimizer نقطة الاحتكاك داخل السلة، وهي اللحظة التي يرى فيها المتسوق الأثر الكامل لاختياراته.","It fits the current journey without teaching a new shopping pattern.":"يندمج مع الرحلة الحالية من دون أن يطلب من المتسوق تعلم طريقة جديدة للتسوق.","Shoppers choose when to use it and confirm every change.":"يختار المتسوق متى يستخدمه، ويؤكد كل تغيير بنفسه.","It can begin with limited categories and clear comparison rules.":"يمكن البدء به في فئات محددة وبقواعد مقارنة واضحة.","What it needs to prove":"ما الذي يجب أن تثبته الفكرة؟","The alternatives feel genuinely comparable.":"أن تبدو البدائل قابلة للمقارنة فعلًا.","The benefit of each option is easy to understand.":"أن تكون فائدة كل خيار واضحة وسهلة الفهم.","Using the feature requires less effort than manually finding and comparing alternatives.":"أن يتطلب استخدام الأداة مجهودًا أقل من العثور على البدائل ومقارنتها يدويًا.","The recommendations feel useful rather than commercially biased.":"أن تبدو التوصيات مفيدة للمتسوق وليست منحازة لمصلحة تجارية.","Product evolution":"كيف يمكن أن تتطور الفكرة؟","Test transparent, optional recommendations inside the cart.":"اختبار توصيات اختيارية وواضحة داخل السلة.","Save as an Optimized Basket":"حفظها كـ Optimized Basket","Let shoppers preserve and reuse the work they completed in the Basket Optimizer.":"السماح للمتسوق بحفظ التعديلات التي أجراها داخل Basket Optimizer وإعادة استخدامها.","Use evidence from repeated use of Optimized Baskets to shape total and category spending limits.":"استخدام البيانات الناتجة عن الاستخدام المتكرر لـ Optimized Baskets لتحديد شكل حدود الإنفاق الإجمالية وحدود الفئات لاحقًا.","Working hypothesis · unproven":"فرضية مبدئية · غير مثبتة","If shoppers understand and trust the recommendations, they may use the Basket Optimizer again and become more comfortable with proactive budget guidance later.":"إذا فهم المتسوق التوصيات ووثق بها، فقد يعود إلى استخدام Basket Optimizer ويصبح أكثر تقبلًا لإرشادات استباقية للميزانية لاحقًا.","05 · Designing the experience":"05 · تصميم التجربة","Compare alternatives and update the cart without returning to earlier shopping steps.":"تتيح التجربة مقارنة البدائل وتحديث السلة من دون العودة إلى خطوات التسوق السابقة.","Smart Basket Optimizer appears as an optional action inside the cart. Shoppers can leave the Basket Optimizer and return to checkout at any time.":"يظهر Smart Basket Optimizer كخيار إضافي داخل السلة. ويمكن للمتسوق مغادرته والعودة إلى إتمام الشراء في أي وقت.","The first version focuses on categories where price, pack size, price per unit, and availability support a fair comparison.":"يركز الإصدار الأول على الفئات التي تتوفر فيها بيانات موثوقة عن السعر وحجم العبوة والسعر لكل وحدة والتوفر، بما يسمح بإجراء مقارنة عادلة.","Core flow":"المسار الأساسي","Open Optimize basket":"فتح Optimize basket","The shopper opens the feature from the completed cart or continues directly to checkout.":"يفتح المتسوق الأداة من السلة المكتملة، أو يتابع مباشرة إلى إتمام الشراء.","Review eligible items":"مراجعة المنتجات التي تتوفر لها بدائل","Only products with at least one suitable alternative are shown.":"تظهر فقط المنتجات التي يتوفر لها بديل مناسب واحد على الأقل.","Compare alternatives":"مقارنة البدائل","The current item stays visible while the shopper compares price, quantity, price per unit, and the reason for each suggestion.":"يبقى المنتج الحالي ظاهرًا أثناء مقارنة السعر والكمية والسعر لكل وحدة وسبب اقتراح كل بديل.","Preview the cart impact":"معاينة تأثير البديل على السلة","The shopper sees the price difference and new cart total before making a change.":"يرى المتسوق فرق السعر وإجمالي السلة الجديد قبل تنفيذ أي تغيير.","Confirm or keep":"تأكيد الاستبدال أو الاحتفاظ بالمنتج","Nothing changes automatically. The shopper can apply the replacement or keep the current item.":"لا يتغير أي شيء تلقائيًا؛ يختار المتسوق تطبيق الاستبدال أو الاحتفاظ بالمنتج الحالي.","Review and undo":"مراجعة النتيجة أو التراجع","The updated cart shows the result, and the original item can be restored without searching again.":"تعرض السلة النتيجة بعد التغيير، ويمكن استعادة المنتج الأصلي من دون البحث عنه مرة أخرى.","Key design decisions":"أهم قرارات التصميم","Decision":"قرار","Show only fair comparisons":"عرض مقارنات عادلة فقط","Do not show an alternative unless the product type, intended use, size, price, and available data support a reasonable comparison.":"لا يظهر أي بديل إلا عندما تسمح طبيعة المنتج واستخدامه وحجمه وسعره والبيانات المتاحة بإجراء مقارنة منطقية.","Explain the benefit":"توضيح فائدة كل بديل","Use specific labels such as “Same size, lower price” instead of vague labels such as “Recommended.”":"استخدام تسميات دقيقة مثل «الحجم نفسه، بسعر أقل» بدلًا من عبارات عامة مثل «موصى به».","Separate immediate saving from unit value":"الفصل بين التوفير الفوري والسعر لكل وحدة","Use “save” only when the current cart total decreases. Show better price per unit as a different benefit.":"استخدام وصف «توفير» فقط عندما ينخفض إجمالي السلة، وعرض السعر الأفضل لكل وحدة كفائدة مختلفة.","Keep the current item visible":"الإبقاء على المنتج الحالي ظاهرًا","Let shoppers compare both products using the same information without remembering details or reopening product pages.":"تمكين المتسوق من مقارنة المنتجين باستخدام المعلومات نفسها، من دون تذكر التفاصيل أو إعادة فتح صفحات المنتجات.","Keep every change reversible":"إمكانية التراجع عن كل تغيير","Require confirmation before replacement and provide undo from the updated cart.":"اشتراط التأكيد قبل الاستبدال، وإتاحة التراجع من السلة بعد تحديثها.","Focused MVP":"نسخة MVP محدودة النطاق","Limited categories, reliable catalog data, a small number of transparent alternatives, preview of the new total, confirmation, and undo.":"فئات محددة، وبيانات منتجات موثوقة، وعدد محدود من البدائل الواضحة، ومعاينة للإجمالي الجديد، ثم التأكيد وإمكانية التراجع.","06 · Validation and next steps":"06 · اختبار الفكرة والخطوات التالية","Validate the need, then compare the current journey with the Basket Optimizer.":"نبدأ بالتحقق من الحاجة، ثم نقارن الرحلة الحالية بتجربة Basket Optimizer.","Assumption 1":"الافتراض الأول","The need is frequent enough to address":"الحاجة تتكرر بما يكفي لتبرير الحل","Shoppers regularly want to lower the total, get more for a similar spend, or choose a slightly higher-priced option that offers better value per unit.":"يرغب المتسوقون بصورة متكررة في خفض الإجمالي، أو الحصول على كمية أكبر مقابل مبلغ قريب، أو اختيار منتج أعلى سعرًا قليلًا لكنه يقدم قيمة أفضل لكل وحدة.","Assumption 2":"الافتراض الثاني","The alternatives earn trust":"البدائل تكسب ثقة المتسوق","Shoppers understand why each option appears and consider it a reasonable replacement.":"يفهم المتسوق سبب ظهور كل خيار، ويراه بديلًا منطقيًا للمنتج الحالي.","Assumption 3":"الافتراض الثالث","The Basket Optimizer reduces effort":"يقلل Basket Optimizer المجهود المطلوب","Reviewing alternatives inside the cart requires less searching, comparison, and calculation than finding them manually.":"تحتاج مراجعة البدائل داخل السلة إلى بحث ومقارنة وحساب أقل من العثور عليها يدويًا.","How I would test the direction":"كيف سأختبر هذا الاتجاه؟","Validation approach":"منهجية الاختبار","Step 1 — Confirm the need":"الخطوة 1 — التحقق من الحاجة","Use product data and recent-shopping interviews to understand what shoppers do after seeing the cart total, how often they reconsider products, and which value trade-offs matter to them.":"استخدام بيانات المنتج ومقابلات حول تجارب شراء حديثة لفهم ما يفعله المتسوق بعد رؤية إجمالي السلة، ومدى تكرار مراجعته للمنتجات، وأي مفاضلات في القيمة تهمه.","Step 2 — Compare the two journeys":"الخطوة 2 — مقارنة الرحلتين","Give shoppers the same completed cart and ask them to adjust it in two ways: by returning to search and by using Smart Basket Optimizer.":"إعطاء المتسوق السلة المكتملة نفسها، وطلب تعديلها بطريقتين: الأولى بالعودة إلى البحث، والثانية باستخدام Smart Basket Optimizer.","What I would evaluate":"معايير التقييم","Time and effort":"الوقت والمجهود","Does the Basket Optimizer reduce the time and effort spent searching, comparing, and calculating?":"هل يقلل Basket Optimizer الوقت والمجهود المبذولين في البحث والمقارنة والحساب؟","Understanding":"وضوح الفكرة","Do shoppers understand what Optimize basket will do and why each alternative appears?":"هل يفهم المتسوق ما الذي سيحدث عند اختيار Optimize basket، ولماذا يظهر كل بديل؟","Value choices":"التمييز بين أنواع القيمة","Can shoppers distinguish between a lower total, better price per unit, and a lower-priced private-label option?":"هل يستطيع المتسوق التمييز بين إجمالي أقل، وسعر أفضل لكل وحدة، وخيار Private Label أقل سعرًا؟","Trust and control":"الثقة والتحكم","Do shoppers understand what changed and remain comfortable because every replacement is confirmed and reversible?":"هل يفهم المتسوق ما الذي تغير، ويشعر بالتحكم لأن كل استبدال يحتاج إلى تأكيد ويمكن التراجع عنه؟","Next step":"الخطوة التالية","The next step is to validate whether shoppers need this support and whether the comparison flow reduces the effort of finding alternatives manually.":"الخطوة التالية هي التحقق من حاجة المتسوق إلى هذا الدعم، وما إذا كان مسار المقارنة يقلل مجهود العثور على البدائل يدويًا.","If shoppers understand and trust the recommendations, the next extension would let them save the optimized cart as a reusable":"إذا فهم المتسوق التوصيات ووثق بها، فالخطوة التالية في تطوير الفكرة هي السماح له بحفظ السلة بعد تحسينها كـ","Optimized Basket":"Optimized Basket","Repeated use could then provide evidence about shopping frequency, category spending, and which replacements shoppers accept or reverse. That evidence could help shape a future":"يمكن للاستخدام المتكرر بعد ذلك أن يوفر بيانات عن تكرار التسوق، والإنفاق حسب الفئة، والبدائل التي يقبلها المتسوق أو يتراجع عنها. ويمكن أن تساعد هذه البيانات في تشكيل تجربة مستقبلية باسم","experience with total and category spending limits.":"تتضمن حدودًا للإنفاق الإجمالي وحدودًا للفئات.","Interested in the thinking behind this concept? Let’s connect.":"مهتم بطريقة التفكير وراء هذه الفكرة؟ لنتواصل.","Product design case study by":"دراسة حالة في Product Design من إعداد","Islam Ashraf":"Islam Ashraf","Smart Basket Optimizer · Discount grocery e-commerce · 2026":"Smart Basket Optimizer · Discount Grocery E-commerce · 2026","LinkedIn":"LinkedIn","GitHub":"GitHub","Email":"Email","Sections":"الأقسام","Open Islam Ashraf’s LinkedIn profile":"فتح حساب Islam Ashraf على LinkedIn","Open Islam Ashraf’s GitHub profile":"فتح حساب Islam Ashraf على GitHub","Email Islam Ashraf at islameliwa@gmail.com":"إرسال رسالة إلى Islam Ashraf عبر islameliwa@gmail.com","Contact links":"روابط التواصل","Cart-Level Decisions — Product Design Case Study":"قرارات السلة — دراسة حالة في Product Design","Cart-Level Decisions":"قرارات السلة","This case study explores the gap between the support available while choosing each product and the decisions shoppers face after seeing the completed cart.":"تستكشف دراسة الحالة الفجوة بين الدعم المتاح عند اختيار كل منتج والقرارات التي يواجهها المتسوق بعد رؤية السلة مكتملة.","I explored two directions for supporting decisions at the cart level.":"استكشفت اتجاهين لدعم القرارات بعد اكتمال السلة.","The first changes how shoppers plan from the start. The second supports them after the cart is already built.":"يغيّر الاتجاه الأول طريقة تخطيط المتسوق منذ بداية الرحلة، بينما يدعمه الاتجاه الثاني بعد اكتمال السلة.","How the selected direction works":"كيف يعمل الاتجاه المختار؟"};
+    var originalAttrs = new WeakMap();
+    var buttons = Array.prototype.slice.call(document.querySelectorAll('[data-language]'));
+    var current = 'en';
+
+    function isExcluded(node){
+      var el = node.nodeType === 1 ? node : node.parentElement;
+      return !el || !!el.closest('.proto, .lang-switch, script, style');
+    }
+
+    function preserveSpacing(original, replacement){
+      var lead = (original.match(/^\s*/) || [''])[0];
+      var trail = (original.match(/\s*$/) || [''])[0];
+      return lead + replacement + trail;
+    }
+
+    function translateTextNode(node, toArabic){
+      if(isExcluded(node)) return;
+      if(typeof node.__englishText === 'undefined') node.__englishText = node.nodeValue;
+      if(!toArabic){
+        node.nodeValue = node.__englishText;
+        return;
+      }
+      var original = node.__englishText;
+      var key = original.trim();
+      if(AR[key]) node.nodeValue = preserveSpacing(original, AR[key]);
+    }
+
+    function translateTree(root, toArabic){
+      if(!root) return;
+      if(root.nodeType === 3){ translateTextNode(root, toArabic); return; }
+      if(root.nodeType !== 1 || isExcluded(root)) return;
+      var walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+      var node;
+      while((node = walker.nextNode())) translateTextNode(node, toArabic);
+    }
+
+    function translateAttributes(toArabic){
+      var attrs = ['aria-label','title','data-label'];
+      document.querySelectorAll('[aria-label],[title],[data-label]').forEach(function(el){
+        if(isExcluded(el)) return;
+        var saved = originalAttrs.get(el) || {};
+        attrs.forEach(function(attr){
+          if(!el.hasAttribute(attr)) return;
+          if(typeof saved[attr] === 'undefined') saved[attr] = el.getAttribute(attr);
+          var original = saved[attr];
+          el.setAttribute(attr, toArabic && AR[original] ? AR[original] : original);
+        });
+        originalAttrs.set(el,saved);
+      });
+    }
+
+    function setLanguage(lang, persist){
+      current = lang === 'ar' ? 'ar' : 'en';
+      var ar = current === 'ar';
+      document.body.classList.toggle('lang-ar', ar);
+      document.documentElement.lang = ar ? 'ar' : 'en';
+      document.documentElement.dir = ar ? 'rtl' : 'ltr';
+      translateTree(document.body, ar);
+      translateAttributes(ar);
+      document.title = ar ? AR['Cart-Level Decisions — Product Design Case Study'] : 'Cart-Level Decisions — Product Design Case Study';
+      buttons.forEach(function(btn){
+        var active = btn.getAttribute('data-language') === current;
+        btn.classList.toggle('active', active);
+        btn.setAttribute('aria-pressed', active ? 'true' : 'false');
+      });
+      if(persist){ try{ localStorage.setItem('basket-case-study-language', current); }catch(e){} }
+    }
+
+    buttons.forEach(function(btn){
+      btn.addEventListener('click', function(){ setLanguage(btn.getAttribute('data-language'), true); });
+    });
+
+    var observer = new MutationObserver(function(records){
+      if(current !== 'ar') return;
+      records.forEach(function(record){
+        record.addedNodes.forEach(function(node){ translateTree(node, true); });
+      });
+    });
+    observer.observe(document.body,{childList:true,subtree:true});
+
+    var saved = 'en';
+    try{ saved = localStorage.getItem('basket-case-study-language') || 'en'; }catch(e){}
+    setLanguage(saved, false);
+  })();
+</script>
+
 </body>
 </html>
