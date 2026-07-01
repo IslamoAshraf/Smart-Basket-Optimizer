@@ -1218,14 +1218,19 @@
   .behance-label-ar{display:none;}
   body.lang-ar .behance-label-en{display:none;}
   body.lang-ar .behance-label-ar{display:inline;}
-  .behance-float.is-hidden{
-    opacity:0;
-    visibility:hidden;
-    pointer-events:none;
-    transform:translateY(10px);
+
+  /* Mirror the floating button for the RTL Arabic layout. */
+  body.lang-ar .behance-float{
+    right:auto;
+    left:max(1.5rem,calc((100vw - var(--maxw)) / 2 + 1.5rem));
   }
+
   @media (max-width:1180px){
     .behance-float{right:1.25rem;}
+    body.lang-ar .behance-float{
+      right:auto;
+      left:1.25rem;
+    }
   }
   @media (max-width:760px){
     .behance-float{
@@ -1236,8 +1241,11 @@
       font-size:.72rem;
       transform:none;
     }
+    body.lang-ar .behance-float{
+      right:auto;
+      left:1rem;
+    }
     .behance-float:hover{transform:translateY(-2px);}
-    .behance-float.is-hidden{transform:translateY(10px);}
   }
 
 </style>
@@ -2015,43 +2023,6 @@
   })();
 </script>
 
-
-<script>
-  // Hide the floating Behance button when it may cover the prototype or footer
-  (function(){
-    var button = document.querySelector('.behance-float');
-    var prototypeSection = document.querySelector('.proto');
-    var footer = document.querySelector('footer.foot');
-
-    if(!button || !('IntersectionObserver' in window)) return;
-
-    var prototypeVisible = false;
-    var footerVisible = false;
-
-    function updateButton(){
-      button.classList.toggle('is-hidden', prototypeVisible || footerVisible);
-    }
-
-    if(prototypeSection){
-      var prototypeObserver = new IntersectionObserver(function(entries){
-        prototypeVisible = entries[0].isIntersecting;
-        updateButton();
-      },{
-        threshold:0.05,
-        rootMargin:'0px 0px -5% 0px'
-      });
-      prototypeObserver.observe(prototypeSection);
-    }
-
-    if(footer){
-      var footerObserver = new IntersectionObserver(function(entries){
-        footerVisible = entries[0].isIntersecting;
-        updateButton();
-      },{threshold:0.05});
-      footerObserver.observe(footer);
-    }
-  })();
-</script>
 
 </body>
 </html>
