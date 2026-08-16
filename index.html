@@ -232,12 +232,15 @@ p{margin:0}
 /* the applied change and its undo sit on the row they belong to, matching 05 */
 .hc-chg{grid-column:1/-1;margin-top:.5rem;padding:.45rem .6rem;border-radius:5px;
   background:var(--yellow-2);box-shadow:inset 3px 0 0 var(--yellow);
-  display:flex;align-items:baseline;gap:.7rem;
+  display:flex;align-items:center;gap:.7rem;
   font-family:var(--f-m);font-size:.78rem;line-height:1.4;color:var(--ink-2)}
-.hc-undo{margin-left:auto;flex:none;font-family:var(--f-h);font-size:.8rem;font-weight:700;
-  color:var(--ink);background:none;border:0;padding:0;cursor:pointer;
-  border-bottom:1.5px solid var(--ink)}
-.hc-undo:hover{border-bottom-color:var(--yellow)}
+/* the same correction as 05's undo, in this panel's own vocabulary: a small
+   outlined control like .hc-back, not an underlined word. The two rows are
+   built to match, so they cannot disagree about what a control looks like. */
+.hc-undo{margin-left:auto;flex:none;padding:.24rem .6rem;border:1px solid var(--line-2);
+  border-radius:5px;background:#fff;font-family:var(--f-h);font-size:.76rem;font-weight:700;
+  color:var(--ink-2);cursor:pointer}
+.hc-undo:hover{border-color:var(--ink);color:var(--ink)}
 .hc-sum{margin-top:.55rem;font-family:var(--f-m);font-size:.95rem;line-height:1.5;color:var(--ink-2)}
 .hc-sum b{font-weight:600;color:var(--save)}
 
@@ -970,9 +973,17 @@ p{margin:0}
 .ios-chg{flex-basis:100%;margin:8px 0 1px 52px;padding:6px 8px;border-radius:9px;
   background:var(--yellow-2);box-shadow:inset 3px 0 0 var(--yellow);
   display:flex;flex-direction:column;gap:2px;letter-spacing:-.01em}
-.ios-chg-r{display:flex;align-items:baseline;gap:8px;font-size:10.2px;color:var(--ios-label)}
-.ios-chg-r u{margin-left:auto;text-decoration:none;font-weight:700;white-space:nowrap;
-  border-bottom:1.5px solid var(--ios-label)}
+.ios-chg-r{display:flex;align-items:center;gap:8px;font-size:10.2px;color:var(--ios-label)}
+/* Undo is a control, so it takes the capsule every other control in these
+   frames takes — .opt-go and .qty are the same shape. It was the one
+   underlined word in the mockups, which is a web idiom and read as a link
+   rather than something tappable. Shape carries "you can press this"; colour
+   keeps it under the reason beside it, which is the information and should
+   stay the darker of the two. */
+.ios-chg-r u{margin-left:auto;flex:none;padding:2.5px 7px;border-radius:999px;
+  background:var(--px-card);box-shadow:inset 0 0 0 1px var(--ios-label3);
+  text-decoration:none;font-family:var(--f-h);font-size:9.2px;font-weight:700;
+  letter-spacing:-.01em;color:var(--ios-label2);white-space:nowrap}
 .ios-chg-w{font-family:var(--f-m);font-size:8.6px;font-weight:500;letter-spacing:.04em;
   color:var(--ios-label2)}
 
