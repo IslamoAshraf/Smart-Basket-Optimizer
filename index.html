@@ -237,10 +237,10 @@ p{margin:0}
 /* the same correction as 05's undo, in this panel's own vocabulary: a small
    outlined control like .hc-back, not an underlined word. The two rows are
    built to match, so they cannot disagree about what a control looks like. */
-.hc-undo{margin-left:auto;flex:none;padding:.24rem .6rem;border:1px solid var(--line-2);
-  border-radius:5px;background:#fff;font-family:var(--f-h);font-size:.76rem;font-weight:700;
-  color:var(--ink-2);cursor:pointer}
-.hc-undo:hover{border-color:var(--ink);color:var(--ink)}
+.hc-undo{margin-left:auto;flex:none;padding:.24rem .62rem;border:1px solid rgba(107,85,0,.3);
+  border-radius:5px;background:none;font-family:var(--f-h);font-size:.76rem;font-weight:700;
+  color:var(--yellow-ink);cursor:pointer}
+.hc-undo:hover{border-color:var(--yellow-ink)}
 .hc-sum{margin-top:.55rem;font-family:var(--f-m);font-size:.95rem;line-height:1.5;color:var(--ink-2)}
 .hc-sum b{font-weight:600;color:var(--save)}
 
@@ -970,20 +970,29 @@ p{margin:0}
    and an unprefixed rule here reached inside them and put a yellow rail on the
    task flow. Mockup classes stay unreachable from page-level selectors. */
 .ios-c.is-chg{flex-wrap:wrap}
-.ios-chg{flex-basis:100%;margin:8px 0 1px 52px;padding:6px 8px;border-radius:9px;
+/* The control is a sibling of the text, not a word inside its first line, so
+   it centres against the whole strip the way a trailing action centres in a
+   real multi-line cell. Sitting in the first row left it floating above the
+   strip's optical centre. */
+.ios-chg{flex-basis:100%;margin:8px 0 1px 52px;padding:7px 8px 7px 10px;border-radius:9px;
   background:var(--yellow-2);box-shadow:inset 3px 0 0 var(--yellow);
-  display:flex;flex-direction:column;gap:2px;letter-spacing:-.01em}
-.ios-chg-r{display:flex;align-items:center;gap:8px;font-size:10.2px;color:var(--ios-label)}
+  display:flex;align-items:center;gap:10px;letter-spacing:-.01em}
+.ios-chg-t{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.ios-chg-r{font-size:10.2px;color:var(--ios-label)}
 /* Undo is a control, so it takes the capsule every other control in these
    frames takes — .opt-go and .qty are the same shape. It was the one
    underlined word in the mockups, which is a web idiom and read as a link
-   rather than something tappable. Shape carries "you can press this"; colour
-   keeps it under the reason beside it, which is the information and should
-   stay the darker of the two. */
-.ios-chg-r u{margin-left:auto;flex:none;padding:2.5px 7px;border-radius:999px;
-  background:var(--px-card);box-shadow:inset 0 0 0 1px var(--ios-label3);
+   rather than something tappable.
+   The ring and the label are drawn from the band's own ink instead of the
+   grey scale, and the fill is dropped. A white capsule was the only cool,
+   opaque object in a warm tinted strip, which made the escape hatch the
+   highest-contrast thing in the band — louder than the reason it annotates.
+   Tonal, it still reads as pressable by shape while the reason stays the
+   darkest thing in the strip, which is the right way round. */
+.ios-chg u{flex:none;padding:3px 8px;border-radius:999px;background:none;
+  box-shadow:inset 0 0 0 1px rgba(23,20,0,.3);
   text-decoration:none;font-family:var(--f-h);font-size:9.2px;font-weight:700;
-  letter-spacing:-.01em;color:var(--ios-label2);white-space:nowrap}
+  letter-spacing:-.01em;color:rgba(23,20,0,.78);white-space:nowrap}
 .ios-chg-w{font-family:var(--f-m);font-size:8.6px;font-weight:500;letter-spacing:.04em;
   color:var(--ios-label2)}
 
@@ -1689,7 +1698,7 @@ body[data-half="b"] .sbd-core{margin-top:0}
           <div class="ph" aria-hidden="true">
             <div class="sb"><span class="sb-l"><time>9:41</time></span><span class="di"></span><span class="sb-r" style="color:var(--ios-label)"><svg viewBox="0 0 17 12" width="11" height="8" aria-hidden="true"><rect y="8" width="3" height="4" rx="1"/><rect x="4.7" y="5.6" width="3" height="6.4" rx="1"/><rect x="9.4" y="3" width="3" height="9" rx="1"/><rect x="14.1" width="3" height="12" rx="1"/></svg><svg viewBox="0 0 16 12" width="11" height="8" aria-hidden="true"><circle cx="8" cy="9.6" r="1.5"/><path d="M4.7 6.9a4.9 4.9 0 0 1 6.6 0" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><path d="M2.2 4.3a8.5 8.5 0 0 1 11.6 0" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg><svg viewBox="0 0 26 12" width="17" height="8" aria-hidden="true"><rect x=".6" y=".6" width="21.8" height="10.8" rx="3.4" fill="none" stroke="currentColor" stroke-width="1.1" opacity=".35"/><rect x="2.2" y="2.2" width="13.5" height="7.6" rx="2.1"/><path d="M24.1 4.3a2.1 2.1 0 0 1 0 3.4z" opacity=".35"/></svg></span></div><div class="ph-hh"><div class="ph-h"></div><div class="ph-lt">Cart</div></div>
             <div class="ph-b">
-              <div class="ios-g" style="margin-top:12px"><div class="ios-c pad is-chg"><span class="pi"><svg viewBox="0 0 40 40"><use href="#p-milk"/></svg></span><div class="tx"><div class="t1">Milk</div><div class="t2">Golden Dairy &middot; 2 L</div><div class="ios-u">SAR 14.00 / L</div></div><span class="rt"><span class="val b">SAR 28</span><span class="qty"><i>&minus;</i>1<i>+</i></span></span><span class="ios-chg"><span class="ios-chg-r">Lower price per litre<u>Undo</u></span><span class="ios-chg-w">was Golden Dairy &middot; 1.5 L &middot; SAR 24</span></span></div><div class="ios-c pad"><span class="pi"><svg viewBox="0 0 40 40"><use href="#p-rice"/></svg></span><div class="tx"><div class="t1">Rice</div><div class="t2">Golden Field &middot; 2 kg</div></div><span class="rt"><span class="val b">SAR 19</span><span class="qty"><i>&minus;</i>1<i>+</i></span></span></div><div class="ios-c pad"><span class="pi"><svg viewBox="0 0 40 40"><use href="#p-soap"/></svg></span><div class="tx"><div class="t1">Dish soap</div><div class="t2">CleanPro &middot; 750 ml</div></div><span class="rt"><span class="val b">SAR 14</span><span class="qty"><i>&minus;</i>1<i>+</i></span></span></div><div class="ios-c pad"><span class="pi"><svg viewBox="0 0 40 40"><use href="#p-flake"/></svg></span><div class="tx"><div class="t1">Cornflakes</div><div class="t2">Morning Co &middot; 500 g</div></div><span class="rt"><span class="val b">SAR 18</span><span class="qty"><i>&minus;</i>1<i>+</i></span></span></div><div class="ios-c pad"><span class="pi is-more">+2</span><div class="tx"><div class="t1">2 more items</div><div class="t2">Pasta, olive oil</div></div><span class="val b">SAR 29</span></div></div>
+              <div class="ios-g" style="margin-top:12px"><div class="ios-c pad is-chg"><span class="pi"><svg viewBox="0 0 40 40"><use href="#p-milk"/></svg></span><div class="tx"><div class="t1">Milk</div><div class="t2">Golden Dairy &middot; 2 L</div><div class="ios-u">SAR 14.00 / L</div></div><span class="rt"><span class="val b">SAR 28</span><span class="qty"><i>&minus;</i>1<i>+</i></span></span><span class="ios-chg"><span class="ios-chg-t"><span class="ios-chg-r">Lower price per litre</span><span class="ios-chg-w">was 1.5 L &middot; SAR 24</span></span><u>Undo</u></span></div><div class="ios-c pad"><span class="pi"><svg viewBox="0 0 40 40"><use href="#p-rice"/></svg></span><div class="tx"><div class="t1">Rice</div><div class="t2">Golden Field &middot; 2 kg</div></div><span class="rt"><span class="val b">SAR 19</span><span class="qty"><i>&minus;</i>1<i>+</i></span></span></div><div class="ios-c pad"><span class="pi"><svg viewBox="0 0 40 40"><use href="#p-soap"/></svg></span><div class="tx"><div class="t1">Dish soap</div><div class="t2">CleanPro &middot; 750 ml</div></div><span class="rt"><span class="val b">SAR 14</span><span class="qty"><i>&minus;</i>1<i>+</i></span></span></div><div class="ios-c pad"><span class="pi"><svg viewBox="0 0 40 40"><use href="#p-flake"/></svg></span><div class="tx"><div class="t1">Cornflakes</div><div class="t2">Morning Co &middot; 500 g</div></div><span class="rt"><span class="val b">SAR 18</span><span class="qty"><i>&minus;</i>1<i>+</i></span></span></div><div class="ios-c pad"><span class="pi is-more">+2</span><div class="tx"><div class="t1">2 more items</div><div class="t2">Pasta, olive oil</div></div><span class="val b">SAR 29</span></div></div>
             </div>
             <div class="ph-f">
               <div class="ios-tot"><span>Total</span><b>SAR 108</b></div>
