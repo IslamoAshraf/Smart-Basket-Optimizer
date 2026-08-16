@@ -10,7 +10,7 @@
 <meta property="og:description" content="A discount grocery product design concept: showing relevant alternatives and their effect on the cart total, without sending the customer back through shopping.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800;900&family=Instrument+Serif:ital@1&family=Inter:wght@400;500;600&family=Spline+Sans+Mono:wght@500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Almarai:wght@300;400;700;800&family=Archivo:wght@400;500;600;700;800;900&family=Instrument+Serif:ital@1&family=Inter:wght@400;500;600&family=Spline+Sans+Mono:wght@500;600&display=swap" rel="stylesheet">
 <style>
 :root{
   --paper:#FCFCFA; --paper-2:#F3F3EF; --paper-3:#E9E9E3;
@@ -35,9 +35,9 @@
   /* two surfaces and two elevations: content sits on cards, cards sit on the app
      background. Warm greys, not iOS's cool system grey, so the frames belong to
      the same paper family as the page around them. */
-  --px-bg:#F1F0EA; --px-card:#FFFFFF; --px-stock:#FFFFFF; --px-stock-2:#F7F7F3;
+  --px-bg:#EEEDE6; --px-card:#FFFFFF; --px-stock:#FFFFFF; --px-stock-2:#FAFAF7;
   --px-rule:#E7E7E0; --px-edge:#D3D3CD; --px-band-ink:#171400;
-  --px-e1:0 1px 1px rgba(17,17,20,.03),0 2px 6px -2px rgba(17,17,20,.10);
+  --px-e1:0 1px 1px rgba(17,17,20,.04),0 4px 12px -4px rgba(17,17,20,.14);
   --px-e2:0 -6px 18px -12px rgba(17,17,20,.30);
 }
 *,*::before,*::after{box-sizing:border-box}
@@ -228,19 +228,24 @@ p{margin:0}
 /* ---- state 3: applied, back in the cart it changed ---- */
 .hc-done{display:inline-block;padding:.4rem .7rem;border-radius:5px;background:var(--save-2);
   font-family:var(--f-h);font-size:.88rem;font-weight:700;color:var(--save)}
-.hc-new{margin-top:1rem;border-bottom:0}
+/* the changed row is marked the way 05 marks it: the row is the container,
+   tinted with a rail on its own edge, so the note inside needs no block */
+.hc-new{position:relative;margin-top:1rem;border-bottom:0;
+  margin-inline:-.7rem;padding:.6rem .7rem;border-radius:6px;background:#FFFDF3}
+.hc-new::after{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;
+  border-radius:3px 0 0 3px;background:var(--yellow)}
 /* the applied change and its undo sit on the row they belong to, matching 05 */
-.hc-chg{grid-column:1/-1;margin-top:.5rem;padding:.45rem .6rem;border-radius:5px;
-  background:var(--yellow-2);box-shadow:inset 3px 0 0 var(--yellow);
+.hc-chg{grid-column:1/-1;margin-top:.55rem;padding-top:.5rem;
+  border-top:1px solid var(--line);
   display:flex;align-items:center;gap:.7rem;
   font-family:var(--f-m);font-size:.78rem;line-height:1.4;color:var(--ink-2)}
 /* the same correction as 05's undo, in this panel's own vocabulary: a small
    outlined control like .hc-back, not an underlined word. The two rows are
    built to match, so they cannot disagree about what a control looks like. */
-.hc-undo{margin-left:auto;flex:none;padding:.24rem .62rem;border:1px solid rgba(107,85,0,.3);
-  border-radius:5px;background:none;font-family:var(--f-h);font-size:.76rem;font-weight:700;
-  color:var(--yellow-ink);cursor:pointer}
-.hc-undo:hover{border-color:var(--yellow-ink)}
+.hc-undo{margin-left:auto;flex:none;padding:.24rem .62rem;border:1px solid var(--line-2);
+  border-radius:5px;background:#fff;font-family:var(--f-h);font-size:.76rem;font-weight:700;
+  color:var(--ink-2);cursor:pointer}
+.hc-undo:hover{border-color:var(--ink);color:var(--ink)}
 .hc-sum{margin-top:.55rem;font-family:var(--f-m);font-size:.95rem;line-height:1.5;color:var(--ink-2)}
 .hc-sum b{font-weight:600;color:var(--save)}
 
@@ -725,8 +730,6 @@ p{margin:0}
   font-weight:700;letter-spacing:-.024em;line-height:1.4;color:var(--ink)}
 .why-p{margin:.75rem 0 0;font-size:1rem;line-height:1.6;color:var(--ink-2)}
 
-
-
 /* ---- the one dependency worth stating here ----
    05 demonstrates eligibility, reasons, projected totals and customer control
    concretely, so listing them here as requirements would preview that section
@@ -735,7 +738,6 @@ p{margin:0}
    opening a new frame. */
 .dep{margin-top:2.4rem;padding-top:1.25rem;border-top:1px solid var(--line);max-width:66ch}
 .dep-t{margin:.55rem 0 0;font-size:1rem;line-height:1.6;color:var(--ink-2)}
-
 
 @media(max-width:900px){
   /* six columns stop being legible: everything falls into one column in DOM
@@ -823,24 +825,11 @@ p{margin:0}
 .sbd-d span{display:block;margin-bottom:.3rem}
 .sbd-d p{font-size:.88rem;line-height:1.5;color:var(--ink-2)}
 
-.ph{position:relative;width:100%;max-width:300px;aspect-ratio:9/19.5;display:flex;flex-direction:column;
-  border:1px solid var(--px-edge);border-radius:30px;overflow:hidden;background:var(--px-bg);
-  box-shadow:0 1px 2px rgba(17,17,20,.05),0 20px 38px -26px rgba(17,17,20,.55);
-  /* SF on Apple hardware, a close metric fallback elsewhere */
-  font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Helvetica Neue",Inter,sans-serif;
-  font-size:12.7px;line-height:1.3;color:var(--ios-label);letter-spacing:-.01em}
-.ph::after{content:"";position:absolute;bottom:6px;left:50%;transform:translateX(-50%);
-  width:88px;height:4px;border-radius:2px;background:rgba(0,0,0,.28);z-index:4}
-
 /* Status bar. On an Island device the bar is three zones: the clock centred in
    the left ear, the Island, and the indicators centred in the right ear. Pushing
    the clock and indicators to the screen edges is the tell that it is not iOS.
    Glyphs are drawn, not typed — a guillemet is not a chevron. */
 .sb{position:relative;z-index:5;display:flex;align-items:center;height:40px;padding:0 8px;flex:none}
-.sb-l,.sb-r{flex:1;display:flex;align-items:center;justify-content:center;gap:4px}
-.sb time{font-size:12.4px;font-weight:600;letter-spacing:-.03em;font-variant-numeric:tabular-nums}
-.sb svg{display:block;fill:var(--ios-label)}
-.di{position:relative;flex:none;width:93px;height:28px;border-radius:14px;background:#08080A}
 
 /* navigation bar — iOS structure, ticket styling: the back affordance reads in
    ink, and the title takes the app's own grotesque rather than system SF */
@@ -855,34 +844,33 @@ p{margin:0}
   letter-spacing:-.02em;flex:none}
 .ph-h .bk i{flex:none;width:6.5px;height:6.5px;border-left:1.8px solid var(--ios-label2);
   border-bottom:1.8px solid var(--ios-label2);transform:rotate(45deg);margin:0 3px 0 1px}
-.ph-h b{position:absolute;left:50%;transform:translateX(-50%);font-family:var(--f-h);
-  font-size:12.4px;font-weight:700;letter-spacing:-.02em}
-.ph-hh{position:relative;flex:none}
 /* large title, the way a root screen opens */
 .ph-lt{padding:2px 15px 7px;font-family:var(--f-h);font-size:23px;font-weight:800;
   letter-spacing:-.045em;flex:none}
-
-.ph-b{flex:1;min-height:0;padding:0 12px 8px;overflow:hidden}
 /* Rows live on elevated white cards over the tinted app background — the grouped
    -list structure a shipped iOS app actually uses. The shelf-ticket language is
    carried by the type and the colour, not by stripping the surfaces out. */
-.ios-h{padding:12px 4px 5px;font-family:var(--f-m);font-size:8.6px;font-weight:600;letter-spacing:.13em;
+/* Section headers take the app's own face, not the case study's monospace.
+   Monospace is the loudest wireframe tell there is — shipped grocery apps set
+   prices and labels in their brand face with tabular figures, and mono reads
+   as a spec sheet the moment a real shopper sees it. */
+.ios-h{padding:11px 3px 5px;font-size:8.8px;font-weight:700;letter-spacing:.05em;
   text-transform:uppercase;color:var(--ios-label2)}
-.ios-g{border-radius:14px;background:var(--px-card);overflow:hidden;box-shadow:var(--px-e1)}
-.ios-c{display:flex;align-items:center;gap:10px;padding:9px 11px;position:relative}
-.ios-c + .ios-c::before{content:"";position:absolute;top:0;left:11px;right:0;height:1px;background:var(--px-rule)}
-.ios-c.pad + .ios-c::before{left:63px}
+.ios-c.pad + .ios-c::before{left:68px}
 .ios-c .tx{flex:1;min-width:0}
-.ios-c .t1{font-size:12.4px;font-weight:500;letter-spacing:-.02em}
-.ios-c .t2{margin-top:1.5px;font-size:10.2px;color:var(--ios-label2);letter-spacing:-.01em}
-/* unit price, set as the fine print it is on a real ticket */
-.ios-u{margin-top:2.5px;font-family:var(--f-m);font-size:8.6px;font-weight:500;letter-spacing:.07em;
-  text-transform:uppercase;color:var(--ios-label2);font-variant-numeric:tabular-nums}
-/* price over its control, right-aligned, the way a cart row stacks them */
+.ios-c .t1{font-size:12.6px;font-weight:600;letter-spacing:-.022em}
+.ios-c .t2{margin-top:1.5px;font-size:10.4px;color:var(--ios-label2);letter-spacing:-.012em}
+/* unit price: the number a discount shopper actually compares on, so it reads
+   as quiet product data in the app's own face rather than ticket stencilling */
+.ios-u{margin-top:2px;font-size:9.4px;font-weight:500;letter-spacing:-.005em;
+  color:var(--ios-label3);font-variant-numeric:tabular-nums}
+/* price over its control, right-aligned, the way a cart row stacks them.
+   Price is the loudest thing on a discount grocer's row, so it takes the
+   brand grotesque at a real weight with tabular figures. */
 .ios-c .rt{flex:none;display:flex;flex-direction:column;align-items:flex-end;gap:5px}
-.ios-c .val{font-family:var(--f-m);font-size:12px;font-weight:600;color:var(--ios-label2);
-  letter-spacing:-.02em;white-space:nowrap;font-variant-numeric:tabular-nums}
-.ios-c .val.b{color:var(--ios-label)}
+.ios-c .val{font-family:var(--f-h);font-size:12.8px;font-weight:700;color:var(--ios-label2);
+  letter-spacing:-.028em;white-space:nowrap;font-variant-numeric:tabular-nums}
+.ios-c .val.b{color:var(--ios-label);font-weight:800}
 .ios-c .chev{flex:none;width:5.5px;height:5.5px;border-right:1.6px solid var(--ios-label3);
   border-bottom:1.6px solid var(--ios-label3);transform:rotate(-45deg);margin-left:4px}
 /* The prototype gives every option its own action and no persistent selected
@@ -896,58 +884,52 @@ p{margin:0}
    Named is-sel, not sel: a page-level `.sel` rule once set a 3px ink border and
    a top margin on this row from outside the frame. Mockup modifiers take the
    is- prefix so page-level classes cannot reach inside a device frame again. */
-/* the chosen option is tinted as well as railed, the way a real selected cell is */
-.ios-c.is-sel{background:#FFFDF3;padding-left:12px}
-.ios-c.is-sel::after{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--yellow)}
-.ios-f{padding:6px 4px 0;font-size:9.6px;line-height:1.35;color:var(--ios-label2)}
+/* One treatment for "this is the cell the customer acted on", used in both
+   places it occurs: the option chosen in 03, and the item changed in 05. A
+   warm near-white ground and a yellow rail on the cell's own edge — the cell
+   is the container, so nothing needs to be nested inside it. */
+.ios-c.is-sel,.ios-c.is-chg{background:#FFFDF3;padding-left:12px}
+.ios-c.is-sel::after,.ios-c.is-chg::after{content:"";position:absolute;left:0;top:0;bottom:0;
+  width:3px;background:var(--yellow)}
 
 /* Product art. Real packaging, drawn in colour and reused from one sprite —
    a shipped grocery app shows the product, and a grey placeholder is the single
    clearest tell that a mockup is unfinished. The tile is the neutral tray these
    sit in so mixed package heights still align down the row. */
-.pi{flex:none;width:42px;height:42px;border-radius:11px;display:grid;place-items:center;
-  background:var(--px-stock-2);box-shadow:inset 0 0 0 1px var(--px-rule)}
-.pi svg{display:block;width:40px;height:40px}
+.pi{flex:none;width:50px;height:50px;border-radius:10px;display:grid;place-items:center;
+  background:var(--px-stock)}
 /* a collapsed row stands for several products, so it counts them instead */
-.pi.is-more{font-family:var(--f-m);font-size:11px;font-weight:600;color:var(--ios-label2);
+.pi.is-more{font-family:var(--f-h);font-size:11.5px;font-weight:800;color:var(--ios-label2);
   letter-spacing:-.02em}
 /* quantity is one of the two controls the cart already gives the customer, and
    section 01 is the screen that argues those two are not enough — so it shows it */
 .qty{flex:none;display:flex;align-items:center;gap:7px;padding:2.5px 7px;border-radius:999px;
   background:var(--px-card);box-shadow:inset 0 0 0 1px var(--px-rule);
-  font-family:var(--f-m);font-size:10px;font-weight:600;color:var(--ios-label);
+  font-family:var(--f-h);font-size:10.5px;font-weight:700;color:var(--ios-label);
   font-variant-numeric:tabular-nums}
-.qty i{font-style:normal;color:var(--ios-label2);font-size:11px;line-height:1}
 
 /* Reason labels. Three levels, each looking like itself: a section caption is
    letterspaced mono caps, the pivotal reason — better unit price, the option the
    flow actually applies — takes the promo band, and every other reason is plain
    sentence-case fine print. Uppercase mono is reserved for captions so a reason
    can never be mistaken for a heading. */
-.ios-tag{display:inline-block;padding:2.5px 6px;border-radius:5px;font-family:var(--f-m);
-  font-size:8.4px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;line-height:1.25}
-/* the option the flow applies takes the filled band */
-.tag-unit{background:var(--yellow);color:var(--px-band-ink)}
+.ios-tag{display:inline-block;padding:3px 6.5px;border-radius:5px;
+  font-size:8.6px;font-weight:800;letter-spacing:.045em;text-transform:uppercase;line-height:1.25}
 /* the others are still tags, ranked by weight rather than by more colours */
 .tag-save{background:transparent;color:var(--ios-label);box-shadow:inset 0 0 0 1px var(--ios-label)}
-.tag-own{background:var(--px-stock-2);color:var(--ios-label2);box-shadow:inset 0 0 0 1px var(--px-rule)}
-.ios-d{font-family:var(--f-m);font-weight:600;white-space:nowrap;font-variant-numeric:tabular-nums}
 .ios-d.less{color:var(--save)}
 /* paying more is a neutral fact here, not a warning, so it stays in ink */
 .ios-d.more{color:var(--ios-label)}
 /* the markdown device, borrowed straight off the ticket */
-.ios-was{font-family:var(--f-m);font-weight:500;color:var(--ios-label2);text-decoration:line-through;
+.ios-was{font-family:var(--f-h);font-weight:600;color:var(--ios-label3);text-decoration:line-through;
   font-variant-numeric:tabular-nums}
-.ios-now{font-family:var(--f-m);font-weight:600;color:var(--ios-label);font-variant-numeric:tabular-nums}
 
 /* bottom bar above the home indicator: a real floating action bar, lifted off the
    content with its own shadow rather than divided from it by a line */
-.ph-f{flex:none;padding:10px 12px 20px;background:rgba(255,255,255,.92);
+.ph-f{flex:none;padding:9px 11px 10px;background:rgba(255,255,255,.94);
   -webkit-backdrop-filter:saturate(180%) blur(14px);backdrop-filter:saturate(180%) blur(14px);
   border-top:1px solid var(--px-rule);box-shadow:var(--px-e2);
   display:flex;flex-direction:column;gap:7px}
-.ios-btn{padding:11px 12px;border-radius:12px;text-align:center;font-family:var(--f-h);
-  font-size:12.7px;font-weight:700;letter-spacing:-.015em}
 /* the concept's own actions take the promo colour; checkout stays the shop's */
 .ios-btn.fill,.ios-btn.tint{background:var(--yellow);color:var(--px-band-ink);
   box-shadow:0 1px 1px rgba(17,17,20,.05),0 6px 14px -8px rgba(184,152,0,.75)}
@@ -955,11 +937,73 @@ p{margin:0}
 .ios-btn.is-ink{background:var(--ios-label);color:#fff;
   box-shadow:0 1px 1px rgba(17,17,20,.10),0 6px 14px -8px rgba(17,17,20,.60)}
 .ios-btn.plain{color:var(--ios-label2);font-weight:600}
-.ios-tot{display:flex;align-items:baseline;gap:8px;padding:1px 3px 4px}
-.ios-tot span{font-family:var(--f-m);font-size:8.6px;font-weight:600;letter-spacing:.13em;
-  text-transform:uppercase;color:var(--ios-label2)}
-.ios-tot b{margin-left:auto;font-family:var(--f-h);font-size:19px;font-weight:800;
-  letter-spacing:-.04em;font-variant-numeric:tabular-nums}
+
+/* ============ THE HOST RETAILER'S SYSTEM (pilot: screen 01) ============
+   A standalone grocery product, designed on its own terms. Nothing here comes
+   from the case study: not the yellow, not the ink, not Archivo. A product that
+   borrows the document's palette and typeface will always read as an artefact
+   of the document.
+
+   Basket is the shop; Basket Optimizer is a feature inside it, so the feature
+   owns no colour — it is identifiable by its title and its entry point, and
+   everything inside it speaks the shop's own language.
+
+   Colour: the brand teal carries identity — app bar, primary action, active
+   tab, count. Saving is green, because saving is a different idea from brand.
+   The price itself is never coloured; colouring prices is a portfolio tell.
+
+   Contrast: the supplied tone #3F94A9 gives 3.3:1 with white, which passes for
+   a large title but fails AA on button and tab labels. The working brand is a
+   deeper shade of the same hue at 4.9:1, and the supplied tone stays as the
+   lighter accent, so the family is intact and the small text is legible.
+
+   Scoped to .v2 while the other four states stay on the old system. */
+.ph.v2{
+  --b:#2E7688; --b-lite:#3F94A9; --b-deep:#245D6C; --b-tint:#E9F3F6; --b-ink:#22596A;
+  --ink:#13191C; --ink2:#5B6A70; --ink3:#93A2A8;
+  --rule:#E4EBEC; --ground:#F3F6F7; --save:#1F8A4C;
+  background:#fff;color:var(--ink);border-color:#D5DDDF}
+
+/* the top region is one brand block: a white iOS large title reads as generic
+   chrome, and a coloured app bar is what actually gives a regional grocery app
+   its face. The status bar sits inside it, so its glyphs invert. */
+.ph.v2 .sb{background:var(--b)}
+.ph.v2 .ios-c.pad + .ios-c::before{left:75px}
+.ph.v2 .pi.is-more{font-family:inherit;font-size:12px;font-weight:700;color:var(--ink3);
+  background:var(--ground);border-radius:10px}
+.ph.v2 .ios-c .tx{padding-top:2px}
+.ph.v2 .ios-c .t1{font-size:13px;font-weight:600;letter-spacing:-.015em;color:var(--ink)}
+.ph.v2 .ios-c .t2{margin-top:2px;font-size:11px;font-weight:400;letter-spacing:0;color:var(--ink2)}
+/* value block: price, with what the shopper compares on locked beneath it */
+.ph.v2 .ios-c .rt{align-items:flex-end;gap:6px;padding-top:1px}
+.ph.v2 .ios-c .val{font-family:inherit;font-size:13.5px;font-weight:700;letter-spacing:-.025em;
+  color:var(--ink)}
+/* the stepper is a brand control, the way it is in a shipped grocery app */
+.ph.v2 .qty{font-family:inherit;font-size:11px;font-weight:700;gap:9px;padding:3px 8px;
+  background:var(--b-tint);box-shadow:none;color:var(--b-ink)}
+
+/* action bar: the shop's primary is never demoted, and the feature is offered
+   beside it in the shop's own tinted secondary rather than in a colour of its own */
+.ph.v2 .ph-f{padding:9px 14px;background:#fff;border-top:1px solid var(--rule);
+  box-shadow:none;gap:7px}
+.ph.v2 .ios-btn.tint{background:var(--b-tint);color:var(--b-ink)}
+.ph.v2 .ios-btn.is-ink{background:var(--b);color:#fff}
+.ph.v2 .tb.is-on{color:var(--b)}
+
+/* ---- tab bar ----
+   The reason a cropped screen still read as a prototype: shipped apps have
+   navigation, and this had none. A grocery cart lives above a tab bar, and its
+   absence is the first thing missing when you put one of these next to a real
+   screenshot. Root screens carry it; pushed screens (the optimizer and the two
+   decision views) hide it, which is what iOS does and what makes the set read
+   as one app with a real hierarchy rather than five loose canvases. */
+.ph-tab{flex:none;display:flex;padding:5px 2px 15px;background:rgba(255,255,255,.94);
+  -webkit-backdrop-filter:saturate(180%) blur(14px);backdrop-filter:saturate(180%) blur(14px);
+  border-top:1px solid var(--px-rule)}
+.tb.is-on{color:var(--ios-label);font-weight:700}
+/* the count is the brand's one appearance in the chrome; yellow on ink so it
+   stays legible at badge size, where yellow-on-white would not be */
+.tb-w{position:relative}
 /* An applied change belongs to the item it changed, not to the cart. A bar
    above the whole list says the opposite — that undoing reverts everything —
    which is wrong here, because each item is reviewed and applied separately.
@@ -970,12 +1014,14 @@ p{margin:0}
    and an unprefixed rule here reached inside them and put a yellow rail on the
    task flow. Mockup classes stay unreachable from page-level selectors. */
 .ios-c.is-chg{flex-wrap:wrap}
-/* The control is a sibling of the text, not a word inside its first line, so
-   it centres against the whole strip the way a trailing action centres in a
-   real multi-line cell. Sitting in the first row left it floating above the
-   strip's optical centre. */
-.ios-chg{flex-basis:100%;margin:8px 0 1px 52px;padding:7px 8px 7px 10px;border-radius:9px;
-  background:var(--yellow-2);box-shadow:inset 3px 0 0 var(--yellow);
+/* The note is a note, not a callout. A tinted, railed, rounded block sitting
+   inside an already-marked cell was two containers doing one job, and the
+   inner one shouted louder than the row it belonged to. What is left is a
+   hairline and a line of text, indented to the cell's own text column, with
+   the control centred against it the way a trailing action centres in a real
+   multi-line cell. */
+.ios-chg{flex-basis:100%;margin:7px 0 0 52px;padding-top:7px;
+  border-top:1px solid var(--px-rule);
   display:flex;align-items:center;gap:10px;letter-spacing:-.01em}
 .ios-chg-t{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
 .ios-chg-r{font-size:10.2px;color:var(--ios-label)}
@@ -987,13 +1033,15 @@ p{margin:0}
    grey scale, and the fill is dropped. A white capsule was the only cool,
    opaque object in a warm tinted strip, which made the escape hatch the
    highest-contrast thing in the band — louder than the reason it annotates.
-   Tonal, it still reads as pressable by shape while the reason stays the
-   darkest thing in the strip, which is the right way round. */
-.ios-chg u{flex:none;padding:3px 8px;border-radius:999px;background:none;
-  box-shadow:inset 0 0 0 1px rgba(23,20,0,.3);
+   Now that the note sits on the cell's own pale ground rather than a
+   saturated block, it can take the standard control colours — the same
+   capsule as .opt-go, which is the one every other pressable thing in these
+   frames uses. */
+.ios-chg u{flex:none;padding:3px 8px;border-radius:999px;background:var(--px-card);
+  box-shadow:inset 0 0 0 1px var(--ios-label3);
   text-decoration:none;font-family:var(--f-h);font-size:9.2px;font-weight:700;
-  letter-spacing:-.01em;color:rgba(23,20,0,.78);white-space:nowrap}
-.ios-chg-w{font-family:var(--f-m);font-size:8.6px;font-weight:500;letter-spacing:.04em;
+  letter-spacing:-.01em;color:var(--ios-label2);white-space:nowrap}
+.ios-chg-w{font-size:9.4px;font-weight:500;letter-spacing:-.005em;font-variant-numeric:tabular-nums;
   color:var(--ios-label2)}
 
 @media(max-width:960px){
@@ -1003,13 +1051,10 @@ p{margin:0}
   .sbd-row{gap:2.2rem}
   .sbd-set,.sbd-core,.sbd-res,.sbd-core .sbd-row{width:auto;max-width:none}
   .sbd-s,.sbd-core .sbd-s{width:100%;max-width:340px}
-  .sbd-core .ph{zoom:1;width:100%;max-width:340px}
-  .sbd-core .sbd-n{font-size:.86rem}
+    .sbd-core .sbd-n{font-size:.86rem}
   .sbd-core .sbd-d p{font-size:.86rem}
   .sbd-s::after{content:none}
-  .ph{max-width:340px;aspect-ratio:9/19.5}
 }
-
 
 /* ============ 06 — validation ============
    A decision gate, not a test plan. 04 ends on a sequence — Repeat Basket
@@ -1170,6 +1215,570 @@ body[data-half="b"] .sbd-core{margin-top:0}
 }
 
 @media print{.nav,.hc-btn,.hc-back,.hc-note{display:none}.sec{break-inside:avoid}}
+
+
+
+
+
+/* ============ SECTION 05 — THE PRODUCT, AS BUILT ============
+   GENERATED by embed-frames.py from the five approved screen files. Do not
+   edit these rules here; edit the screen and re-run.
+
+   The app's tokens live on .appui rather than :root, because the document owns
+   --ink and --paper too and hoisting the app's would repaint the page. Each
+   screen's rules are scoped under its own id, which outranks every page-level
+   class, so neither side can reach into the other.
+
+   The frames are drawings of a product, not controls: pointer-events are off
+   and the wrapper is inert, so the real <button> elements inside cannot take
+   focus from inside an aria-hidden region. */
+.appui{
+--shop:#FFC400; --shop-deep:#E0A600; --shop-pale:#FFF3D6;
+  --ink:#171512; --ink-2:#5C574E; --ink-3:#7B7468;
+  --paper:#FAF7F1; --white:#FFFFFF; --rule:#E7E1D6;
+  position:relative;pointer-events:none;margin-inline:auto;
+  font:400 15px/1.35 "Almarai",system-ui,sans-serif;color:var(--ink);
+  font-variant-numeric:tabular-nums;-webkit-font-smoothing:antialiased;
+  /* the frame sits in the same 300px slot the old one did, so the connectors
+     between states keep their positions */
+  zoom:.76336}
+.sbd-core .appui{zoom:.96947}
+/* below the document's frame breakpoint both rows share one slot, so both
+   frames share one step. Two more steps carry it down to a small phone, where
+   the slot is the page width less its gutters rather than the 340 cap. */
+@media(max-width:960px){.appui,.sbd-core .appui{zoom:.865}}
+@media(max-width:420px){.appui,.sbd-core .appui{zoom:.80}}
+@media(max-width:360px){.appui,.sbd-core .appui{zoom:.68}}
+.appui *,.appui *::before,.appui *::after{box-sizing:border-box}
+/* ---- containment ----
+   Scoping under an id stops the document overriding the screens, but not the
+   other direction: where a document rule sets a property the screen never
+   sets, it wins by default and the value inherits down. That is how the page
+   footer's grey reached the pay bar — the document's .foot and the screen's
+   .foot are the same class name.
+
+   These are the collisions the build found. Each document rule is neutralised
+   inside a frame; the scoped screen rules, carrying an id, still outrank both.
+   build reports any new collision, so this list cannot silently go stale. */
+.appui .foot{color:inherit;background:none;padding-block:0;font-size:inherit}
+.appui .nav{position:relative;top:auto;z-index:auto;background:none;border-bottom:0;
+  -webkit-backdrop-filter:none;backdrop-filter:none}
+.appui .sb{position:relative;z-index:auto;height:auto;align-items:stretch;padding:0}
+.appui h1{font-family:inherit;font-weight:inherit;letter-spacing:inherit;
+  line-height:inherit;margin:0}
+.appui button{font:inherit;color:inherit}
+.appui p{margin:0}
+.appui svg{max-width:none}
+/* ---- _cart-v4.html ---- */
+#sc-s1 .phone{width:393px;height:852px;background:var(--white);border-radius:44px;overflow:hidden;
+  display:flex;flex-direction:column;position:relative;
+  box-shadow:0 30px 70px -30px rgba(30,24,10,.5)}
+#sc-s1 .sb{flex:none;height:54px;position:relative;z-index:3;background:var(--shop);
+  color:var(--ink);
+  font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Helvetica Neue",Helvetica,sans-serif}
+#sc-s1 .sb-di{position:absolute;top:11px;left:50%;transform:translateX(-50%);
+  width:126px;height:37.33px;border-radius:18.66px;background:#000}
+#sc-s1 .sb-t{position:absolute;top:11px;left:0;width:133.5px;height:37.33px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:17px;font-weight:600;letter-spacing:-.2px;line-height:1;
+  font-variant-numeric:proportional-nums}
+#sc-s1 .sb-i{position:absolute;top:11px;right:20px;height:37.33px;
+  display:flex;align-items:center;gap:6.5px}
+#sc-s1 .sb-i svg{display:block;fill:currentColor}
+#sc-s1 .appbar{flex:none;background:var(--shop);padding:0 16px 12px;
+  display:flex;align-items:baseline;gap:9px}
+#sc-s1 .appbar h1{margin:0;font-size:24px;font-weight:800;letter-spacing:-.035em}
+#sc-s1 .appbar span{font-size:12.5px;font-weight:700;color:#5A4600}
+#sc-s1 .list{flex:1;min-height:0;overflow:hidden;background:var(--white)}
+#sc-s1 .row{display:grid;grid-template-columns:52px 1fr auto;gap:11px;
+  align-items:start;padding:10px 16px}
+#sc-s1 .row + .row{border-top:1px solid var(--rule)}
+#sc-s1 .pack{width:52px;height:52px;display:grid;place-items:center}
+#sc-s1 .pack svg{width:50px;height:50px;display:block}
+#sc-s1 .nm{display:block;font-size:14.5px;font-weight:800;letter-spacing:-.022em;line-height:1.18}
+#sc-s1 .meta{display:block;margin-top:1px;font-size:12.5px;font-weight:400;line-height:1.3;color:var(--ink-2)}
+#sc-s1 .own{font-weight:800;font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;
+  color:var(--ink);box-shadow:inset 0 -1px 0 var(--ink)}
+#sc-s1 .ctl{margin-top:7px;display:flex;align-items:center}
+#sc-s1 .step{display:inline-flex;align-items:center;gap:13px;height:27px;padding:0 10px;
+  border-radius:999px;border:1px solid var(--rule);background:var(--white);
+  font-size:12px;font-weight:800;color:var(--ink)}
+#sc-s1 .step i{font-style:normal;font-size:14px;font-weight:700;color:var(--ink-2);line-height:1}
+#sc-s1 .val{display:flex;flex-direction:column;align-items:flex-end;padding-top:1px}
+#sc-s1 .fslot{height:15px;margin-bottom:4px;display:flex;align-items:center}
+#sc-s1 .flash{display:inline-block;padding:2.5px 5px;border-radius:3px;background:var(--shop);
+  color:var(--ink);font-size:10px;font-weight:800;letter-spacing:.07em;text-transform:uppercase}
+#sc-s1 .tk{display:inline-flex;flex-direction:column;align-items:flex-end}
+#sc-s1 .tk .amt{display:flex;align-items:flex-start;gap:.16em;line-height:.92}
+#sc-s1 .tk .cur{font-size:10px;font-weight:800;letter-spacing:.07em;color:var(--ink-2);align-self:flex-start}
+#sc-s1 .tk .maj{font-size:19px;font-weight:800;letter-spacing:-.045em}
+#sc-s1 .tk .strip{margin-top:4px;padding-top:3px;border-top:1px solid var(--rule);align-self:stretch;
+  display:flex;justify-content:flex-end;gap:.6em;white-space:nowrap;
+  font-size:11.5px;font-weight:800;letter-spacing:.07em;text-transform:uppercase}
+#sc-s1 .tk .strip .b{color:var(--ink-3)}
+#sc-s1 .tk .strip .u{color:var(--ink-2)}
+#sc-s1 .foot{flex:none;padding:10px 16px 12px;border-top:1px solid var(--rule);background:var(--white);
+  box-shadow:0 -6px 18px -14px rgba(23,21,18,.55)}
+#sc-s1 .entry{width:100%;display:flex;align-items:center;gap:10px;padding:9px 11px;border:0;
+  border-radius:4px;background:var(--shop-pale);text-align:left;font:inherit;color:inherit;
+  cursor:pointer}
+#sc-s1 .entry .et{flex:1;min-width:0}
+#sc-s1 .entry .e1{display:block;font-size:13px;font-weight:800;letter-spacing:-.02em}
+#sc-s1 .entry .e2{display:block;margin-top:1px;font-size:12.5px;font-weight:400;color:var(--ink-2)}
+#sc-s1 .entry .ec{flex:none;font-size:16px;font-weight:800;color:var(--ink-2);line-height:1}
+#sc-s1 .entry:hover{background:#FFEFC8}
+#sc-s1 .pay{display:flex;align-items:flex-end;gap:14px;margin-top:11px}
+#sc-s1 .pay .tot{flex:1}
+#sc-s1 .pay .tl{display:block;font-size:10px;font-weight:800;letter-spacing:.11em;
+  text-transform:uppercase;color:var(--ink-3);margin-bottom:3px}
+#sc-s1 .pay .tk .cur{font-size:11px}
+#sc-s1 .pay .tk .maj{font-size:26px}
+#sc-s1 .cta{flex:none;padding:12px 26px;border:0;border-radius:999px;background:var(--ink);
+  color:var(--white);font:inherit;font-size:14px;font-weight:800;letter-spacing:-.02em;
+  cursor:pointer}
+#sc-s1 .cta:hover{background:#000}
+#sc-s1 .tabs{flex:none;display:flex;padding:6px 4px 16px;border-top:1px solid var(--rule);
+  background:var(--white)}
+#sc-s1 .tab{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;
+  font-size:10.5px;font-weight:700;color:var(--ink-3)}
+#sc-s1 .tab svg{width:21px;height:21px;fill:none;stroke:currentColor;stroke-width:1.7;
+  stroke-linecap:round;stroke-linejoin:round}
+#sc-s1 .tab.on{color:var(--ink);font-weight:800}
+#sc-s1 .tw{position:relative}
+#sc-s1 .tb{position:absolute;top:-4px;left:11px;min-width:15px;height:15px;padding:0 4px;
+  border-radius:999px;background:var(--shop);color:var(--ink);font-size:10px;font-weight:800;
+  line-height:15px;text-align:center;font-style:normal}
+#sc-s1 .hi{position:absolute;bottom:8px;left:50%;transform:translateX(-50%);
+  width:140px;height:5px;border-radius:3px;background:rgba(23,21,18,.26)}
+#sc-s1 button,#sc-s1 .item,#sc-s1 .opt{cursor:pointer;-webkit-tap-highlight-color:transparent;
+  touch-action:manipulation}
+#sc-s1 .item,#sc-s1 .opt{transition:background-color .13s ease}
+#sc-s1 .item:hover,#sc-s1 .opt:hover{background:#FCFAF4}
+#sc-s1 .item:active,#sc-s1 .opt:active{background:#F3EFE4}
+#sc-s1 .opt:hover .go{background:var(--ink);color:var(--white)}
+#sc-s1 .entry{transition:background-color .13s ease,transform .07s ease}
+#sc-s1 .entry:hover{background:#FFEFC8}
+#sc-s1 .entry:active{background:#FAE3AC;transform:scale(.995)}
+#sc-s1 .cta,#sc-s1 .apply,#sc-s1 .go,#sc-s1 .keep,#sc-s1 .exit,#sc-s1 .cancel,#sc-s1 .undo{transition:background-color .13s ease,color .13s ease,border-color .13s ease,transform .07s ease}
+#sc-s1 .cta:active,#sc-s1 .apply:active{background:#000;transform:scale(.97)}
+#sc-s1 .go:active,#sc-s1 .keep:active,#sc-s1 .exit:active,#sc-s1 .undo:active{background:var(--ink);border-color:var(--ink);color:var(--white);transform:scale(.97)}
+#sc-s1 .cancel:active{border-color:var(--ink-2);color:var(--ink);transform:scale(.97)}
+#sc-s1 .back{border-radius:999px;transition:background-color .13s ease}
+#sc-s1 .back:hover{background:rgba(23,21,18,.07)}
+#sc-s1 .back:active{background:rgba(23,21,18,.14)}
+#sc-s1 .tab{cursor:pointer;-webkit-tap-highlight-color:transparent;transition:color .13s ease}
+#sc-s1 .tab:not(.on):hover{color:var(--ink-2)}
+#sc-s1 .tab:active{color:var(--ink)}
+#sc-s1 .step{cursor:default}
+/* ---- _optimize-v4.html ---- */
+#sc-s2 .phone{width:393px;height:852px;background:var(--paper);border-radius:44px;overflow:hidden;
+  display:flex;flex-direction:column;position:relative;
+  box-shadow:0 30px 70px -30px rgba(30,24,10,.5)}
+#sc-s2 .sb{flex:none;height:54px;position:relative;z-index:3;background:var(--shop);
+  color:var(--ink);
+  font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Helvetica Neue",Helvetica,sans-serif}
+#sc-s2 .sb-di{position:absolute;top:11px;left:50%;transform:translateX(-50%);
+  width:126px;height:37.33px;border-radius:18.66px;background:#000}
+#sc-s2 .sb-t{position:absolute;top:11px;left:0;width:133.5px;height:37.33px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:17px;font-weight:600;letter-spacing:-.2px;line-height:1;
+  font-variant-numeric:proportional-nums}
+#sc-s2 .sb-i{position:absolute;top:11px;right:20px;height:37.33px;
+  display:flex;align-items:center;gap:6.5px}
+#sc-s2 .sb-i svg{display:block;fill:currentColor}
+#sc-s2 .nav{flex:none;height:44px;position:relative;background:var(--shop);
+  display:flex;align-items:center;padding:0 8px}
+#sc-s2 .nav h1{position:absolute;left:64px;right:64px;margin:0;text-align:center;
+  font-size:17px;font-weight:800;letter-spacing:-.022em;line-height:1.1;
+  pointer-events:none}
+#sc-s2 .back{position:relative;z-index:1;display:inline-flex;align-items:center;gap:2px;
+  padding:4px 6px 4px 2px;border:0;background:none;font:inherit;font-size:14px;
+  font-weight:700;letter-spacing:-.01em;color:var(--ink);cursor:pointer}
+#sc-s2 .back svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2.6;
+  stroke-linecap:round;stroke-linejoin:round}
+#sc-s2 .body{flex:1;min-height:0;overflow:hidden;display:flex;flex-direction:column}
+#sc-s2 .sl{flex:none;padding:12px 16px 5px;font-size:10px;font-weight:800;letter-spacing:.12em;
+  text-transform:uppercase;color:var(--ink-3)}
+#sc-s2 .list{flex:none;background:var(--white);border-block:1px solid var(--rule)}
+#sc-s2 .item{display:grid;grid-template-columns:56px 1fr auto 14px;column-gap:12px;align-items:center;
+  padding:13px 16px;width:100%;text-align:left;background:none;border:0;font:inherit;color:inherit}
+#sc-s2 .item + .item{border-top:1px solid var(--rule)}
+#sc-s2 .item:hover{background:#FDFCF9}
+#sc-s2 .pack{display:grid;place-items:center;width:56px;height:56px}
+#sc-s2 .pack svg{width:56px;height:56px;display:block}
+#sc-s2 .nm{display:block;font-size:14.5px;font-weight:800;letter-spacing:-.022em;line-height:1.2}
+#sc-s2 .meta{display:block;margin-top:1px;font-size:12.5px;font-weight:400;color:var(--ink-2)}
+#sc-s2 .offer{grid-column:2 / -1;margin-top:6px;font-size:12.5px;line-height:1.3;color:var(--ink-3)}
+#sc-s2 .val{display:flex;flex-direction:column;align-items:flex-end}
+#sc-s2 .fslot{height:15px;margin-bottom:4px;display:flex;align-items:center}
+#sc-s2 .flash{display:inline-block;padding:2.5px 5px;border-radius:3px;background:var(--shop);
+  color:var(--ink);font-size:10px;font-weight:800;letter-spacing:.07em;text-transform:uppercase}
+#sc-s2 .tk{display:inline-flex;flex-direction:column;align-items:flex-end}
+#sc-s2 .tk .amt{display:flex;align-items:flex-start;gap:.16em;line-height:.92}
+#sc-s2 .tk .cur-m{font-size:10px;font-weight:800;letter-spacing:.07em;color:var(--ink-2);align-self:flex-start}
+#sc-s2 .tk .maj{font-size:19px;font-weight:800;letter-spacing:-.045em}
+#sc-s2 .tk .strip{margin-top:4px;padding-top:3px;border-top:1px solid var(--rule);align-self:stretch;
+  display:flex;justify-content:flex-end;gap:.6em;white-space:nowrap;
+  font-size:11.5px;font-weight:800;letter-spacing:.07em;text-transform:uppercase}
+#sc-s2 .tk .strip .b{color:var(--ink-3)}
+#sc-s2 .tk .strip .u{color:var(--ink-2)}
+#sc-s2 .chev{width:8px;height:8px;border-right:2px solid var(--ink-3);border-bottom:2px solid var(--ink-3);
+  transform:rotate(-45deg);justify-self:end}
+#sc-s2 .none{flex:none;background:var(--paper)}
+#sc-s2 .nrow{display:grid;grid-template-columns:56px 1fr;gap:12px;align-items:center;padding:7px 16px}
+#sc-s2 .nrow .pack{width:56px;height:38px}
+#sc-s2 .nrow .pack svg{width:38px;height:38px}
+#sc-s2 .nrow .nm{font-size:13.5px;display:inline}
+#sc-s2 .nrow .meta{display:inline;margin:0}
+#sc-s2 .foot{flex:none;padding:14px 16px 0;background:var(--paper)}
+#sc-s2 .exit{width:100%;padding:12px;border:1px solid var(--ink);border-radius:999px;background:none;
+  font:inherit;font-size:13.5px;font-weight:800;letter-spacing:-.015em;color:var(--ink);cursor:pointer}
+#sc-s2 .exit:hover{background:var(--ink);color:var(--white)}
+#sc-s2 .hi{position:absolute;bottom:8px;left:50%;transform:translateX(-50%);
+  width:140px;height:5px;border-radius:3px;background:rgba(23,21,18,.26)}
+#sc-s2 button,#sc-s2 .item,#sc-s2 .opt{cursor:pointer;-webkit-tap-highlight-color:transparent;
+  touch-action:manipulation}
+#sc-s2 .item,#sc-s2 .opt{transition:background-color .13s ease}
+#sc-s2 .item:hover,#sc-s2 .opt:hover{background:#FCFAF4}
+#sc-s2 .item:active,#sc-s2 .opt:active{background:#F3EFE4}
+#sc-s2 .opt:hover .go{background:var(--ink);color:var(--white)}
+#sc-s2 .entry{transition:background-color .13s ease,transform .07s ease}
+#sc-s2 .entry:hover{background:#FFEFC8}
+#sc-s2 .entry:active{background:#FAE3AC;transform:scale(.995)}
+#sc-s2 .cta,#sc-s2 .apply,#sc-s2 .go,#sc-s2 .keep,#sc-s2 .exit,#sc-s2 .cancel,#sc-s2 .undo{transition:background-color .13s ease,color .13s ease,border-color .13s ease,transform .07s ease}
+#sc-s2 .cta:active,#sc-s2 .apply:active{background:#000;transform:scale(.97)}
+#sc-s2 .go:active,#sc-s2 .keep:active,#sc-s2 .exit:active,#sc-s2 .undo:active{background:var(--ink);border-color:var(--ink);color:var(--white);transform:scale(.97)}
+#sc-s2 .cancel:active{border-color:var(--ink-2);color:var(--ink);transform:scale(.97)}
+#sc-s2 .back{border-radius:999px;transition:background-color .13s ease}
+#sc-s2 .back:hover{background:rgba(23,21,18,.07)}
+#sc-s2 .back:active{background:rgba(23,21,18,.14)}
+#sc-s2 .tab{cursor:pointer;-webkit-tap-highlight-color:transparent;transition:color .13s ease}
+#sc-s2 .tab:not(.on):hover{color:var(--ink-2)}
+#sc-s2 .tab:active{color:var(--ink)}
+#sc-s2 .step{cursor:default}
+/* ---- _options-v4.html ---- */
+#sc-s3 .phone{width:393px;height:852px;background:var(--paper);border-radius:44px;overflow:hidden;
+  display:flex;flex-direction:column;position:relative;
+  box-shadow:0 30px 70px -30px rgba(30,24,10,.5)}
+#sc-s3 .sb{flex:none;height:54px;position:relative;z-index:3;background:var(--shop);
+  color:var(--ink);
+  font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Helvetica Neue",Helvetica,sans-serif}
+#sc-s3 .sb-di{position:absolute;top:11px;left:50%;transform:translateX(-50%);
+  width:126px;height:37.33px;border-radius:18.66px;background:#000}
+#sc-s3 .sb-t{position:absolute;top:11px;left:0;width:133.5px;height:37.33px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:17px;font-weight:600;letter-spacing:-.2px;line-height:1;
+  font-variant-numeric:proportional-nums}
+#sc-s3 .sb-i{position:absolute;top:11px;right:20px;height:37.33px;
+  display:flex;align-items:center;gap:6.5px}
+#sc-s3 .sb-i svg{display:block;fill:currentColor}
+#sc-s3 .nav{flex:none;height:44px;position:relative;background:var(--shop);
+  display:flex;align-items:center;padding:0 8px}
+#sc-s3 .nav h1{position:absolute;left:64px;right:64px;margin:0;text-align:center;
+  font-size:17px;font-weight:800;letter-spacing:-.022em;line-height:1.1;
+  pointer-events:none}
+#sc-s3 .back{position:relative;z-index:1;display:inline-flex;align-items:center;gap:2px;
+  padding:4px 6px 4px 2px;border:0;background:none;font:inherit;font-size:14px;
+  font-weight:700;letter-spacing:-.01em;color:var(--ink);cursor:pointer}
+#sc-s3 .back svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2.6;
+  stroke-linecap:round;stroke-linejoin:round}
+#sc-s3 .body{flex:1;min-height:0;overflow:hidden;display:flex;flex-direction:column}
+#sc-s3 .sl{flex:none;padding:9px 16px 4px;font-size:10px;font-weight:800;letter-spacing:.12em;
+  text-transform:uppercase;color:var(--ink-3)}
+#sc-s3 .cur{flex:none;display:grid;grid-template-columns:56px 1fr auto;gap:12px;align-items:center;
+  padding:5px 16px 8px;background:var(--paper)}
+#sc-s3 .cur .pack{width:56px;height:40px}
+#sc-s3 .cur .pack svg{width:40px;height:40px}
+#sc-s3 .cur .nm{display:inline;font-size:13.5px}
+#sc-s3 .cur .meta{display:inline;margin:0}
+#sc-s3 .cur .tk .maj{font-size:17px}
+#sc-s3 .cur .tk .strip{margin-top:3px;padding-top:2px;font-size:10.5px}
+#sc-s3 .opts{flex:none;background:var(--white);border-block:1px solid var(--rule)}
+#sc-s3 .opt{display:flex;flex-direction:column;padding:14px 16px;width:100%;text-align:left;
+  background:none;border:0;font:inherit;color:inherit}
+#sc-s3 .opt + .opt{border-top:1px solid var(--rule)}
+#sc-s3 .reason{display:block;margin-bottom:8px}
+#sc-s3 .prod{display:grid;grid-template-columns:56px 1fr auto;gap:12px;align-items:center}
+#sc-s3 .pack{display:grid;place-items:center}
+#sc-s3 .opt .pack{width:56px;height:56px}
+#sc-s3 .opt .pack svg{width:56px;height:56px;display:block}
+#sc-s3 .outcome{display:grid;grid-template-columns:56px 1fr auto;column-gap:12px;
+  align-items:center;margin-top:12px}
+#sc-s3 .oc{min-width:0}
+#sc-s3 .oc1{display:block;font-size:14px;font-weight:800;letter-spacing:-.025em;color:var(--ink)}
+#sc-s3 .oc2{display:block;margin-top:2px;font-size:12.5px;line-height:1.3;color:var(--ink-3)}
+#sc-s3 .oc2 b{font-weight:700;color:var(--ink-2)}
+#sc-s3 .go{flex:none;display:inline-flex;align-items:center;height:27px;padding:0 14px;border-radius:999px;
+  border:1px solid var(--ink);background:var(--white);
+  font-size:12px;font-weight:800;letter-spacing:-.01em;color:var(--ink)}
+#sc-s3 .opt:hover .go{background:var(--ink);color:var(--white)}
+#sc-s3 .opt:hover{background:#FDFCF9}
+#sc-s3 .nm{display:block;font-size:14.5px;font-weight:800;letter-spacing:-.022em;line-height:1.2}
+#sc-s3 .meta{display:block;margin-top:1px;font-size:12.5px;font-weight:400;color:var(--ink-2)}
+#sc-s3 .own{font-weight:800;font-size:10.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--ink)}
+#sc-s3 .chip{display:inline-block;padding:3px 5.5px;border-radius:3px;
+  font-size:9.5px;font-weight:800;letter-spacing:.07em;text-transform:uppercase;line-height:1.3}
+#sc-s3 .c1{background:var(--shop);color:var(--ink)}
+#sc-s3 .c2{box-shadow:inset 0 0 0 1px var(--ink);color:var(--ink)}
+#sc-s3 .c3{box-shadow:inset 0 0 0 1px var(--rule);background:var(--paper);color:var(--ink-2)}
+#sc-s3 .val{display:flex;flex-direction:column;align-items:flex-end}
+#sc-s3 .tk{display:inline-flex;flex-direction:column;align-items:flex-end}
+#sc-s3 .tk .amt{display:flex;align-items:flex-start;gap:.16em;line-height:.92}
+#sc-s3 .tk .cur-m{font-size:10px;font-weight:800;letter-spacing:.07em;color:var(--ink-2);align-self:flex-start}
+#sc-s3 .tk .maj{font-size:23px;font-weight:800;letter-spacing:-.045em}
+#sc-s3 .cur .tk .cur-m{font-size:9.5px}
+#sc-s3 .tk .strip{margin-top:4px;padding-top:3px;border-top:1px solid var(--rule);align-self:stretch;
+  display:flex;justify-content:flex-end;gap:.6em;white-space:nowrap;
+  font-size:11.5px;font-weight:800;letter-spacing:.07em;text-transform:uppercase}
+#sc-s3 .tk .strip .b{color:var(--ink-3)}
+#sc-s3 .tk .strip .u{color:var(--ink-2)}
+#sc-s3 .foot{flex:none;padding:12px 16px 0;background:var(--paper)}
+#sc-s3 .keep{width:100%;padding:12px;border:1px solid var(--ink);border-radius:999px;background:none;
+  font:inherit;font-size:13.5px;font-weight:800;letter-spacing:-.015em;color:var(--ink);cursor:pointer}
+#sc-s3 .keep:hover{background:var(--ink);color:var(--white)}
+#sc-s3 .fn{display:block;margin-top:8px;text-align:center;font-size:10.5px;color:var(--ink-3)}
+#sc-s3 .hi{position:absolute;bottom:8px;left:50%;transform:translateX(-50%);
+  width:140px;height:5px;border-radius:3px;background:rgba(23,21,18,.26)}
+#sc-s3 button,#sc-s3 .item,#sc-s3 .opt{cursor:pointer;-webkit-tap-highlight-color:transparent;
+  touch-action:manipulation}
+#sc-s3 .item,#sc-s3 .opt{transition:background-color .13s ease}
+#sc-s3 .item:hover,#sc-s3 .opt:hover{background:#FCFAF4}
+#sc-s3 .item:active,#sc-s3 .opt:active{background:#F3EFE4}
+#sc-s3 .opt:hover .go{background:var(--ink);color:var(--white)}
+#sc-s3 .entry{transition:background-color .13s ease,transform .07s ease}
+#sc-s3 .entry:hover{background:#FFEFC8}
+#sc-s3 .entry:active{background:#FAE3AC;transform:scale(.995)}
+#sc-s3 .cta,#sc-s3 .apply,#sc-s3 .go,#sc-s3 .keep,#sc-s3 .exit,#sc-s3 .cancel,#sc-s3 .undo{transition:background-color .13s ease,color .13s ease,border-color .13s ease,transform .07s ease}
+#sc-s3 .cta:active,#sc-s3 .apply:active{background:#000;transform:scale(.97)}
+#sc-s3 .go:active,#sc-s3 .keep:active,#sc-s3 .exit:active,#sc-s3 .undo:active{background:var(--ink);border-color:var(--ink);color:var(--white);transform:scale(.97)}
+#sc-s3 .cancel:active{border-color:var(--ink-2);color:var(--ink);transform:scale(.97)}
+#sc-s3 .back{border-radius:999px;transition:background-color .13s ease}
+#sc-s3 .back:hover{background:rgba(23,21,18,.07)}
+#sc-s3 .back:active{background:rgba(23,21,18,.14)}
+#sc-s3 .tab{cursor:pointer;-webkit-tap-highlight-color:transparent;transition:color .13s ease}
+#sc-s3 .tab:not(.on):hover{color:var(--ink-2)}
+#sc-s3 .tab:active{color:var(--ink)}
+#sc-s3 .step{cursor:default}
+/* ---- _confirm-v4.html ---- */
+#sc-s4 .phone{width:393px;height:852px;background:var(--paper);border-radius:44px;overflow:hidden;
+  display:flex;flex-direction:column;position:relative;
+  box-shadow:0 30px 70px -30px rgba(30,24,10,.5)}
+#sc-s4 .sb{flex:none;height:54px;position:relative;z-index:3;background:var(--shop);
+  color:var(--ink);
+  font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Helvetica Neue",Helvetica,sans-serif}
+#sc-s4 .sb-di{position:absolute;top:11px;left:50%;transform:translateX(-50%);
+  width:126px;height:37.33px;border-radius:18.66px;background:#000}
+#sc-s4 .sb-t{position:absolute;top:11px;left:0;width:133.5px;height:37.33px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:17px;font-weight:600;letter-spacing:-.2px;line-height:1;
+  font-variant-numeric:proportional-nums}
+#sc-s4 .sb-i{position:absolute;top:11px;right:20px;height:37.33px;
+  display:flex;align-items:center;gap:6.5px}
+#sc-s4 .sb-i svg{display:block;fill:currentColor}
+#sc-s4 .nav{flex:none;height:44px;position:relative;background:var(--shop);
+  display:flex;align-items:center;padding:0 8px}
+#sc-s4 .nav h1{position:absolute;left:64px;right:64px;margin:0;text-align:center;
+  font-size:17px;font-weight:800;letter-spacing:-.022em;line-height:1.1;
+  pointer-events:none}
+#sc-s4 .back{position:relative;z-index:1;display:inline-flex;align-items:center;gap:2px;
+  padding:4px 6px 4px 2px;border:0;background:none;font:inherit;font-size:14px;
+  font-weight:700;letter-spacing:-.01em;color:var(--ink);cursor:pointer}
+#sc-s4 .back svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2.6;
+  stroke-linecap:round;stroke-linejoin:round}
+#sc-s4 .body{flex:1;min-height:0;overflow:hidden;display:flex;flex-direction:column}
+#sc-s4 .mid{margin-block:auto}
+#sc-s4 .card{flex:none;margin:0 16px;background:var(--white);border:1px solid var(--rule);
+  border-radius:4px;overflow:hidden}
+#sc-s4 .now{display:grid;grid-template-columns:64px 1fr auto;gap:12px;align-items:center;
+  padding:11px 16px 12px;background:var(--paper)}
+#sc-s4 .nk{display:block;font-size:9.5px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;
+  color:var(--ink-3);margin-bottom:2px}
+#sc-s4 .now .pack{width:64px;height:38px}
+#sc-s4 .now .pack svg{width:38px;height:38px}
+#sc-s4 .now .nm{display:inline;font-size:13.5px;color:var(--ink-2)}
+#sc-s4 .now .meta{display:inline;margin:0}
+#sc-s4 .now .tk .maj{font-size:17px;color:var(--ink-2)}
+#sc-s4 .now .tk .cur-m{font-size:9.5px}
+#sc-s4 .now .tk .strip{margin-top:3px;padding-top:2px;font-size:10.5px}
+#sc-s4 .arrow{padding:7px 16px 0;width:96px;display:flex;justify-content:center}
+#sc-s4 .arrow svg{width:15px;height:15px;fill:none;stroke:var(--ink-3);stroke-width:2.2;
+  stroke-linecap:round;stroke-linejoin:round}
+#sc-s4 .to{padding:2px 16px 16px}
+#sc-s4 .reason{display:block;margin-bottom:9px}
+#sc-s4 .chip{display:inline-block;padding:3px 5.5px;border-radius:3px;
+  font-size:9.5px;font-weight:800;letter-spacing:.07em;text-transform:uppercase;line-height:1.3}
+#sc-s4 .c1{background:var(--shop);color:var(--ink)}
+#sc-s4 .c2{box-shadow:inset 0 0 0 1px var(--ink);color:var(--ink)}
+#sc-s4 .c3{box-shadow:inset 0 0 0 1px var(--rule);background:var(--paper);color:var(--ink-2)}
+#sc-s4 .prod{display:grid;grid-template-columns:64px 1fr auto;column-gap:12px;align-items:center}
+#sc-s4 .pack{display:grid;place-items:center;width:64px;height:64px}
+#sc-s4 .pack svg{width:64px;height:64px;display:block}
+#sc-s4 .nm{display:block;font-size:15px;font-weight:800;letter-spacing:-.022em;line-height:1.2}
+#sc-s4 .meta{display:block;margin-top:1px;font-size:12.5px;font-weight:400;color:var(--ink-2)}
+#sc-s4 .own{font-weight:800;font-size:10.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--ink)}
+#sc-s4 .tk{display:inline-flex;flex-direction:column;align-items:flex-end}
+#sc-s4 .tk .amt{display:flex;align-items:flex-start;gap:.16em;line-height:.92}
+#sc-s4 .tk .cur-m{font-size:10px;font-weight:800;letter-spacing:.07em;color:var(--ink-2);align-self:flex-start}
+#sc-s4 .tk .maj{font-size:28px;font-weight:800;letter-spacing:-.045em}
+#sc-s4 .tk .strip{margin-top:4px;padding-top:3px;border-top:1px solid var(--rule);align-self:stretch;
+  display:flex;justify-content:flex-end;gap:.6em;white-space:nowrap;
+  font-size:11.5px;font-weight:800;letter-spacing:.07em;text-transform:uppercase}
+#sc-s4 .tk .strip .b{color:var(--ink-3)}
+#sc-s4 .tk .strip .u{color:var(--ink-2)}
+#sc-s4 .what{margin-top:16px;padding-top:14px;border-top:1px solid var(--rule)}
+#sc-s4 .w1{display:block;font-size:15px;font-weight:800;letter-spacing:-.025em;color:var(--ink)}
+#sc-s4 .w1 + .w1{margin-top:4px}
+#sc-s4 .w2{display:block;margin-top:8px;font-size:12.5px;line-height:1.35;color:var(--ink-3)}
+#sc-s4 .w2 b{font-weight:700;color:var(--ink-2)}
+#sc-s4 .was{font-weight:700;color:var(--ink-3);text-decoration:line-through;text-decoration-thickness:1px}
+#sc-s4 .yet{display:block;margin-top:10px;font-size:11.5px;color:var(--ink-3)}
+#sc-s4 .foot{flex:none;padding:16px 16px 30px;background:var(--paper);text-align:center}
+#sc-s4 .apply{width:100%;padding:13px;border:0;border-radius:999px;background:var(--ink);
+  color:var(--white);font:inherit;font-size:14px;font-weight:800;letter-spacing:-.02em;cursor:pointer}
+#sc-s4 .apply:hover{background:#000}
+#sc-s4 .cancel{margin-top:10px;padding:9px 22px;border:1px solid var(--rule);border-radius:999px;
+  background:none;font:inherit;font-size:12.5px;font-weight:700;letter-spacing:-.01em;
+  color:var(--ink-2);cursor:pointer}
+#sc-s4 .cancel:hover{border-color:var(--ink-2);color:var(--ink)}
+#sc-s4 .hi{position:absolute;bottom:8px;left:50%;transform:translateX(-50%);
+  width:140px;height:5px;border-radius:3px;background:rgba(23,21,18,.26)}
+#sc-s4 button,#sc-s4 .item,#sc-s4 .opt{cursor:pointer;-webkit-tap-highlight-color:transparent;
+  touch-action:manipulation}
+#sc-s4 .item,#sc-s4 .opt{transition:background-color .13s ease}
+#sc-s4 .item:hover,#sc-s4 .opt:hover{background:#FCFAF4}
+#sc-s4 .item:active,#sc-s4 .opt:active{background:#F3EFE4}
+#sc-s4 .opt:hover .go{background:var(--ink);color:var(--white)}
+#sc-s4 .entry{transition:background-color .13s ease,transform .07s ease}
+#sc-s4 .entry:hover{background:#FFEFC8}
+#sc-s4 .entry:active{background:#FAE3AC;transform:scale(.995)}
+#sc-s4 .cta,#sc-s4 .apply,#sc-s4 .go,#sc-s4 .keep,#sc-s4 .exit,#sc-s4 .cancel,#sc-s4 .undo{transition:background-color .13s ease,color .13s ease,border-color .13s ease,transform .07s ease}
+#sc-s4 .cta:active,#sc-s4 .apply:active{background:#000;transform:scale(.97)}
+#sc-s4 .go:active,#sc-s4 .keep:active,#sc-s4 .exit:active,#sc-s4 .undo:active{background:var(--ink);border-color:var(--ink);color:var(--white);transform:scale(.97)}
+#sc-s4 .cancel:active{border-color:var(--ink-2);color:var(--ink);transform:scale(.97)}
+#sc-s4 .back{border-radius:999px;transition:background-color .13s ease}
+#sc-s4 .back:hover{background:rgba(23,21,18,.07)}
+#sc-s4 .back:active{background:rgba(23,21,18,.14)}
+#sc-s4 .tab{cursor:pointer;-webkit-tap-highlight-color:transparent;transition:color .13s ease}
+#sc-s4 .tab:not(.on):hover{color:var(--ink-2)}
+#sc-s4 .tab:active{color:var(--ink)}
+#sc-s4 .step{cursor:default}
+/* ---- _cart-applied-v4.html ---- */
+#sc-s5 .phone{width:393px;height:852px;background:var(--white);border-radius:44px;overflow:hidden;
+  display:flex;flex-direction:column;position:relative;
+  box-shadow:0 30px 70px -30px rgba(30,24,10,.5)}
+#sc-s5 .sb{flex:none;height:54px;position:relative;z-index:3;background:var(--shop);
+  color:var(--ink);
+  font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Helvetica Neue",Helvetica,sans-serif}
+#sc-s5 .sb-di{position:absolute;top:11px;left:50%;transform:translateX(-50%);
+  width:126px;height:37.33px;border-radius:18.66px;background:#000}
+#sc-s5 .sb-t{position:absolute;top:11px;left:0;width:133.5px;height:37.33px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:17px;font-weight:600;letter-spacing:-.2px;line-height:1;
+  font-variant-numeric:proportional-nums}
+#sc-s5 .sb-i{position:absolute;top:11px;right:20px;height:37.33px;
+  display:flex;align-items:center;gap:6.5px}
+#sc-s5 .sb-i svg{display:block;fill:currentColor}
+#sc-s5 .appbar{flex:none;background:var(--shop);padding:0 16px 12px;
+  display:flex;align-items:baseline;gap:9px}
+#sc-s5 .appbar h1{margin:0;font-size:24px;font-weight:800;letter-spacing:-.035em}
+#sc-s5 .appbar span{font-size:12.5px;font-weight:700;color:#5A4600}
+#sc-s5 .list{flex:1;min-height:0;overflow:hidden;background:var(--white)}
+#sc-s5 .row{display:grid;grid-template-columns:52px 1fr auto;gap:11px;
+  align-items:start;padding:8px 16px}
+#sc-s5 .row + .row{border-top:1px solid var(--rule)}
+#sc-s5 .row.is-chg{background:var(--shop-pale);flex-wrap:wrap}
+#sc-s5 .row.is-chg + .row{border-top-color:#EFE0B8}
+#sc-s5 .chg{grid-column:1 / -1;margin:6px 0 0 63px;padding-top:6px;border-top:1px solid #EFE0B8;
+  display:flex;align-items:center;gap:10px}
+#sc-s5 .chg span{flex:1;min-width:0;font-size:12px;line-height:1.35;color:var(--ink-2)}
+#sc-s5 .chg b{font-weight:800;color:var(--ink)}
+#sc-s5 .undo{flex:none;height:26px;padding:0 13px;border:1px solid var(--ink-2);border-radius:999px;
+  background:none;font:inherit;font-size:12px;font-weight:800;letter-spacing:-.01em;
+  color:var(--ink);cursor:pointer}
+#sc-s5 .undo:hover{background:var(--ink);border-color:var(--ink);color:var(--white)}
+#sc-s5 .pack{width:52px;height:52px;display:grid;place-items:center}
+#sc-s5 .pack svg{width:50px;height:50px;display:block}
+#sc-s5 .nm{display:block;font-size:14.5px;font-weight:800;letter-spacing:-.022em;line-height:1.18}
+#sc-s5 .meta{display:block;margin-top:1px;font-size:12.5px;font-weight:400;line-height:1.3;color:var(--ink-2)}
+#sc-s5 .own{font-weight:800;font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;
+  color:var(--ink);box-shadow:inset 0 -1px 0 var(--ink)}
+#sc-s5 .ctl{margin-top:7px;display:flex;align-items:center}
+#sc-s5 .step{display:inline-flex;align-items:center;gap:13px;height:27px;padding:0 10px;
+  border-radius:999px;border:1px solid var(--rule);background:var(--white);
+  font-size:12px;font-weight:800;color:var(--ink)}
+#sc-s5 .step i{font-style:normal;font-size:14px;font-weight:700;color:var(--ink-2);line-height:1}
+#sc-s5 .val{display:flex;flex-direction:column;align-items:flex-end;padding-top:1px}
+#sc-s5 .fslot{height:15px;margin-bottom:4px;display:flex;align-items:center}
+#sc-s5 .flash{display:inline-block;padding:2.5px 5px;border-radius:3px;background:var(--shop);
+  color:var(--ink);font-size:10px;font-weight:800;letter-spacing:.07em;text-transform:uppercase}
+#sc-s5 .tk{display:inline-flex;flex-direction:column;align-items:flex-end}
+#sc-s5 .tk .amt{display:flex;align-items:flex-start;gap:.16em;line-height:.92}
+#sc-s5 .tk .cur{font-size:10px;font-weight:800;letter-spacing:.07em;color:var(--ink-2);align-self:flex-start}
+#sc-s5 .tk .maj{font-size:19px;font-weight:800;letter-spacing:-.045em}
+#sc-s5 .tk .strip{margin-top:4px;padding-top:3px;border-top:1px solid var(--rule);align-self:stretch;
+  display:flex;justify-content:flex-end;gap:.6em;white-space:nowrap;
+  font-size:11.5px;font-weight:800;letter-spacing:.07em;text-transform:uppercase}
+#sc-s5 .tk .strip .b{color:var(--ink-3)}
+#sc-s5 .tk .strip .u{color:var(--ink-2)}
+#sc-s5 .foot{flex:none;padding:7px 16px 9px;border-top:1px solid var(--rule);background:var(--white);
+  box-shadow:0 -6px 18px -14px rgba(23,21,18,.55)}
+#sc-s5 .entry{width:100%;display:flex;align-items:center;gap:10px;padding:9px 11px;border:0;
+  border-radius:4px;background:var(--shop-pale);text-align:left;font:inherit;color:inherit;
+  cursor:pointer}
+#sc-s5 .entry .et{flex:1;min-width:0}
+#sc-s5 .entry .e1{display:block;font-size:13px;font-weight:800;letter-spacing:-.02em}
+#sc-s5 .entry .e2{display:block;margin-top:1px;font-size:12.5px;font-weight:400;color:var(--ink-2)}
+#sc-s5 .entry .ec{flex:none;font-size:16px;font-weight:800;color:var(--ink-2);line-height:1}
+#sc-s5 .entry:hover{background:#FFEFC8}
+#sc-s5 .pay{display:flex;align-items:flex-end;gap:14px;margin-top:9px}
+#sc-s5 .pay .tot{flex:1}
+#sc-s5 .pay .tl{display:block;font-size:10px;font-weight:800;letter-spacing:.11em;
+  text-transform:uppercase;color:var(--ink-3);margin-bottom:3px}
+#sc-s5 .pay .tk .cur{font-size:11px}
+#sc-s5 .pay .tk .maj{font-size:26px}
+#sc-s5 .cta{flex:none;padding:12px 26px;border:0;border-radius:999px;background:var(--ink);
+  color:var(--white);font:inherit;font-size:14px;font-weight:800;letter-spacing:-.02em;
+  cursor:pointer}
+#sc-s5 .cta:hover{background:#000}
+#sc-s5 .tabs{flex:none;display:flex;padding:6px 4px 16px;border-top:1px solid var(--rule);
+  background:var(--white)}
+#sc-s5 .tab{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;
+  font-size:10.5px;font-weight:700;color:var(--ink-3)}
+#sc-s5 .tab svg{width:21px;height:21px;fill:none;stroke:currentColor;stroke-width:1.7;
+  stroke-linecap:round;stroke-linejoin:round}
+#sc-s5 .tab.on{color:var(--ink);font-weight:800}
+#sc-s5 .tw{position:relative}
+#sc-s5 .tb{position:absolute;top:-4px;left:11px;min-width:15px;height:15px;padding:0 4px;
+  border-radius:999px;background:var(--shop);color:var(--ink);font-size:10px;font-weight:800;
+  line-height:15px;text-align:center;font-style:normal}
+#sc-s5 .hi{position:absolute;bottom:8px;left:50%;transform:translateX(-50%);
+  width:140px;height:5px;border-radius:3px;background:rgba(23,21,18,.26)}
+#sc-s5 button,#sc-s5 .item,#sc-s5 .opt{cursor:pointer;-webkit-tap-highlight-color:transparent;
+  touch-action:manipulation}
+#sc-s5 .item,#sc-s5 .opt{transition:background-color .13s ease}
+#sc-s5 .item:hover,#sc-s5 .opt:hover{background:#FCFAF4}
+#sc-s5 .item:active,#sc-s5 .opt:active{background:#F3EFE4}
+#sc-s5 .opt:hover .go{background:var(--ink);color:var(--white)}
+#sc-s5 .entry{transition:background-color .13s ease,transform .07s ease}
+#sc-s5 .entry:hover{background:#FFEFC8}
+#sc-s5 .entry:active{background:#FAE3AC;transform:scale(.995)}
+#sc-s5 .cta,#sc-s5 .apply,#sc-s5 .go,#sc-s5 .keep,#sc-s5 .exit,#sc-s5 .cancel,#sc-s5 .undo{transition:background-color .13s ease,color .13s ease,border-color .13s ease,transform .07s ease}
+#sc-s5 .cta:active,#sc-s5 .apply:active{background:#000;transform:scale(.97)}
+#sc-s5 .go:active,#sc-s5 .keep:active,#sc-s5 .exit:active,#sc-s5 .undo:active{background:var(--ink);border-color:var(--ink);color:var(--white);transform:scale(.97)}
+#sc-s5 .cancel:active{border-color:var(--ink-2);color:var(--ink);transform:scale(.97)}
+#sc-s5 .back{border-radius:999px;transition:background-color .13s ease}
+#sc-s5 .back:hover{background:rgba(23,21,18,.07)}
+#sc-s5 .back:active{background:rgba(23,21,18,.14)}
+#sc-s5 .tab{cursor:pointer;-webkit-tap-highlight-color:transparent;transition:color .13s ease}
+#sc-s5 .tab:not(.on):hover{color:var(--ink-2)}
+#sc-s5 .tab:active{color:var(--ink)}
+#sc-s5 .step{cursor:default}
+
+/* the document's own frame treatment. Written at the screens' own specificity
+   and after them, because a .appui .phone rule cannot outrank an id and equal
+   specificity is decided by order. */
+#sc-s1 .phone,#sc-s2 .phone,#sc-s3 .phone,#sc-s4 .phone,#sc-s5 .phone{border:1px solid var(--px-edge);box-shadow:0 1px 2px rgba(17,17,20,.05),0 20px 38px -26px rgba(17,17,20,.55)}
+/* ============ END SECTION 05 FRAMES ============ */
 </style>
 </head>
 <body>
@@ -1177,40 +1786,73 @@ body[data-half="b"] .sbd-core{margin-top:0}
      so six packages cost six definitions instead of eighteen inline copies.
      Decorative: each device frame is already aria-hidden. -->
 <svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false"><defs>
+  <!-- Each package carries the four things that separate packaging from an icon:
+       a contact shadow so it sits on the shelf, a highlight down one side so it
+       has form, a label panel, and a brand block with type bars on that label.
+       Flat two-tone silhouettes are what made the rows read as placeholders. -->
   <symbol id="p-milk" viewBox="0 0 40 40">
-    <path d="M11.5 15.5h17V32a1.7 1.7 0 0 1-1.7 1.7H13.2A1.7 1.7 0 0 1 11.5 32z" fill="#F4F8FC" stroke="#C9D4DF" stroke-width=".9"/>
-    <path d="M11.5 15.5 20 7l8.5 8.5z" fill="#E4EDF5" stroke="#C9D4DF" stroke-width=".9"/>
-    <path d="M20 7.6v7.9" stroke="#C9D4DF" stroke-width=".8"/>
-    <rect x="11.5" y="21" width="17" height="6.6" fill="#2F6FB5"/>
-    <rect x="14.6" y="22.7" width="10.8" height="3.2" rx=".8" fill="#F4F8FC"/>
+    <ellipse cx="20" cy="34.5" rx="8.6" ry="1.4" fill="#111114" opacity=".10"/>
+    <path d="M11.8 15.2 20 6.6l8.4 8.6z" fill="#DCE7F2"/>
+    <path d="M11.8 15.2h16.6V32a1.8 1.8 0 0 1-1.8 1.8H13.6A1.8 1.8 0 0 1 11.8 32z" fill="#F2F7FC"/>
+    <path d="M11.8 15.2h5.6v18.6h-3.8A1.8 1.8 0 0 1 11.8 32z" fill="#fff" opacity=".8"/>
+    <rect x="18.4" y="4.4" width="3.2" height="2.8" rx=".9" fill="#2F6FB5"/>
+    <path d="M20 7.2v8" stroke="#C3D2E0" stroke-width=".8"/>
+    <rect x="11.8" y="20.4" width="16.6" height="7.6" fill="#2F6FB5"/>
+    <rect x="14.2" y="22.3" width="9.6" height="1.8" rx=".9" fill="#F2F7FC"/>
+    <rect x="14.2" y="25" width="6.2" height="1.2" rx=".6" fill="#8FB6DC"/>
+    <path d="M11.8 15.2h16.6V32a1.8 1.8 0 0 1-1.8 1.8H13.6A1.8 1.8 0 0 1 11.8 32z" fill="none" stroke="#BFCFDE" stroke-width=".9"/>
+    <path d="M11.8 15.2 20 6.6l8.4 8.6z" fill="none" stroke="#BFCFDE" stroke-width=".9"/>
   </symbol>
   <symbol id="p-rice" viewBox="0 0 40 40">
-    <path d="M13 14.5c0-3.1 3.1-4.5 7-4.5s7 1.4 7 4.5V31a1.6 1.6 0 0 1-1.6 1.6H14.6A1.6 1.6 0 0 1 13 31z" fill="#CBA771" stroke="#AE8A55" stroke-width=".9"/>
-    <rect x="13" y="19.2" width="14" height="6" fill="#B98F55"/>
-    <rect x="16" y="20.7" width="8" height="3" rx=".8" fill="#F2E9D6"/>
+    <ellipse cx="20" cy="34.4" rx="8.2" ry="1.4" fill="#111114" opacity=".10"/>
+    <path d="M13.2 13.8c0-3 3-4.4 6.8-4.4s6.8 1.4 6.8 4.4v17.6a2 2 0 0 1-2 2H15.2a2 2 0 0 1-2-2z" fill="#D3AE77"/>
+    <path d="M13.2 13.8c0-2.4 1.9-3.8 4.4-4.2v23.8H15.2a2 2 0 0 1-2-2z" fill="#fff" opacity=".3"/>
+    <rect x="13.2" y="18.4" width="13.6" height="7.4" fill="#B38B52"/>
+    <rect x="15.6" y="20.2" width="8.4" height="1.8" rx=".9" fill="#F7EFE1"/>
+    <rect x="15.6" y="22.8" width="5.4" height="1.2" rx=".6" fill="#E3CFA9"/>
+    <path d="M13.2 13.8c0-3 3-4.4 6.8-4.4s6.8 1.4 6.8 4.4v17.6a2 2 0 0 1-2 2H15.2a2 2 0 0 1-2-2z" fill="none" stroke="#A8813F" stroke-width=".9"/>
   </symbol>
   <symbol id="p-soap" viewBox="0 0 40 40">
-    <rect x="18.6" y="7" width="2.8" height="5" fill="#8E8E96"/>
-    <rect x="16.2" y="11" width="7.6" height="3" rx="1" fill="#6E6E78"/>
-    <path d="M14 17.5c0-2.2 1.6-3.5 6-3.5s6 1.3 6 3.5V31a1.6 1.6 0 0 1-1.6 1.6h-8.8A1.6 1.6 0 0 1 14 31z" fill="#3E9A6E" stroke="#2E7D57" stroke-width=".9"/>
-    <rect x="16.6" y="21" width="6.8" height="7" rx="1" fill="#F4FAF6"/>
+    <ellipse cx="20" cy="34.4" rx="7.2" ry="1.3" fill="#111114" opacity=".10"/>
+    <rect x="18.5" y="5.2" width="3" height="4.6" rx="1" fill="#7C7C86"/>
+    <rect x="16.2" y="9.3" width="7.6" height="3.4" rx="1.2" fill="#5F5F6B"/>
+    <path d="M14.2 17c0-2.3 1.7-3.6 5.8-3.6s5.8 1.3 5.8 3.6v14.4a2 2 0 0 1-2 2h-7.6a2 2 0 0 1-2-2z" fill="#2F9469"/>
+    <path d="M14.2 17c0-1.9 1.2-3.1 3.6-3.5v19.9h-1.6a2 2 0 0 1-2-2z" fill="#fff" opacity=".28"/>
+    <rect x="16.4" y="20.3" width="7.2" height="8.4" rx="1.2" fill="#F3FAF6"/>
+    <rect x="17.7" y="22.3" width="4.6" height="1.5" rx=".75" fill="#2F9469"/>
+    <rect x="17.7" y="24.8" width="3.2" height="1.1" rx=".55" fill="#A8D8C2"/>
+    <path d="M14.2 17c0-2.3 1.7-3.6 5.8-3.6s5.8 1.3 5.8 3.6v14.4a2 2 0 0 1-2 2h-7.6a2 2 0 0 1-2-2z" fill="none" stroke="#237552" stroke-width=".9"/>
   </symbol>
   <symbol id="p-flake" viewBox="0 0 40 40">
-    <rect x="12" y="10" width="16" height="22.6" rx="1.4" fill="#E28B2E" stroke="#C17320" stroke-width=".9"/>
-    <rect x="14.6" y="12.8" width="10.8" height="8.2" rx="1" fill="#F7DCAE"/>
-    <circle cx="20" cy="16.9" r="2.6" fill="#C96C1C"/>
-    <rect x="14.6" y="23.6" width="10.8" height="2.2" rx=".8" fill="#F7DCAE"/>
+    <ellipse cx="20" cy="34.4" rx="8.4" ry="1.3" fill="#111114" opacity=".10"/>
+    <rect x="11.8" y="8.6" width="16.4" height="24.8" rx="1.7" fill="#E08A2C"/>
+    <path d="M13.4 8.6h4.4v24.8h-4.4z" fill="#fff" opacity=".22"/>
+    <rect x="14.2" y="11.4" width="11.6" height="9.8" rx="1.2" fill="#FBE3B8"/>
+    <circle cx="20" cy="16.3" r="3" fill="#C96C1C"/>
+    <circle cx="20" cy="16.3" r="1.35" fill="#F7C67E"/>
+    <rect x="14.2" y="23.6" width="11.6" height="2.4" rx="1.2" fill="#FBE3B8"/>
+    <rect x="14.2" y="27.2" width="7.4" height="1.6" rx=".8" fill="#F0B368"/>
+    <rect x="11.8" y="8.6" width="16.4" height="24.8" rx="1.7" fill="none" stroke="#BE6E1C" stroke-width=".9"/>
   </symbol>
   <symbol id="p-pasta" viewBox="0 0 40 40">
-    <rect x="14" y="10" width="12" height="22.6" rx="1.2" fill="#E9C34D" stroke="#CDA636" stroke-width=".9"/>
-    <rect x="16.4" y="13.8" width="7.2" height="10" fill="#F6EBC4"/>
-    <g fill="#D8A93B"><rect x="17.3" y="14.6" width="1.2" height="8.4"/><rect x="19.4" y="14.6" width="1.2" height="8.4"/><rect x="21.5" y="14.6" width="1.2" height="8.4"/></g>
-    <rect x="14" y="26.4" width="12" height="2.4" fill="#CDA636"/>
+    <ellipse cx="20" cy="34.4" rx="7.4" ry="1.3" fill="#111114" opacity=".10"/>
+    <rect x="13.6" y="8.4" width="12.8" height="25" rx="1.7" fill="#E9C34D"/>
+    <path d="M15 8.4h3.6v25H15z" fill="#fff" opacity=".24"/>
+    <rect x="16" y="12.2" width="8" height="11.6" rx=".9" fill="#F8F0D2"/>
+    <g fill="#D8A93B"><rect x="16.9" y="13.1" width="1.3" height="9.8" rx=".65"/><rect x="19.05" y="13.1" width="1.3" height="9.8" rx=".65"/><rect x="21.2" y="13.1" width="1.3" height="9.8" rx=".65"/></g>
+    <rect x="16" y="26.4" width="8" height="2.2" rx="1.1" fill="#F8F0D2"/>
+    <rect x="13.6" y="8.4" width="12.8" height="25" rx="1.7" fill="none" stroke="#C9A335" stroke-width=".9"/>
   </symbol>
   <symbol id="p-oil" viewBox="0 0 40 40">
-    <rect x="18.6" y="7" width="2.8" height="6.2" fill="#3D5622"/>
-    <path d="M15 18.4c0-2.4 3-3.2 3-5.2h4c0 2 3 2.8 3 5.2V31a1.6 1.6 0 0 1-1.6 1.6h-6.8A1.6 1.6 0 0 1 15 31z" fill="#4A6B2A" stroke="#3A551F" stroke-width=".9"/>
-    <rect x="15.7" y="21.6" width="8.6" height="6" fill="#D9BA5D"/>
+    <ellipse cx="20" cy="34.4" rx="6.4" ry="1.3" fill="#111114" opacity=".10"/>
+    <rect x="18.6" y="4.8" width="2.8" height="3.2" rx=".7" fill="#33481D"/>
+    <rect x="18.2" y="7.4" width="3.6" height="5.6" fill="#4A6B2A"/>
+    <path d="M15.2 18.2c0-2.4 3-3.2 3-5.2h3.6c0 2 3 2.8 3 5.2v13.2a2 2 0 0 1-2 2h-5.6a2 2 0 0 1-2-2z" fill="#4A6B2A"/>
+    <path d="M15.2 18.2c0-1.8 1.6-2.7 2.4-4.1v19.3h-.4a2 2 0 0 1-2-2z" fill="#fff" opacity=".24"/>
+    <rect x="15.8" y="21.3" width="8.4" height="6.8" rx=".8" fill="#E5CE7A"/>
+    <rect x="17.2" y="23.1" width="5.6" height="1.4" rx=".7" fill="#4A6B2A"/>
+    <rect x="17.2" y="25.4" width="3.8" height="1" rx=".5" fill="#8B9A56"/>
+    <path d="M15.2 18.2c0-2.4 3-3.2 3-5.2h3.6c0 2 3 2.8 3 5.2v13.2a2 2 0 0 1-2 2h-5.6a2 2 0 0 1-2-2z" fill="none" stroke="#38521F" stroke-width=".9"/>
   </symbol>
 </defs></svg>
 
@@ -1219,7 +1861,7 @@ body[data-half="b"] .sbd-core{margin-top:0}
   <div class="nav-links">
     <a href="#s1">Current cart</a><a href="#s2">Patterns</a><a href="#s3">Reframe</a>
     <a href="#s4">Direction</a><a href="#s5">Design</a><a href="#s6">Validation</a>
-    <a class="nav-cta" href="Smart-Basket-Interactive-Prototype.html" target="_blank" rel="noopener">Prototype ↗</a>
+    <a class="nav-cta" href="prototype.html" target="_blank" rel="noopener">Prototype ↗</a>
   </div>
 </div></nav>
 
@@ -1625,32 +2267,191 @@ body[data-half="b"] .sbd-core{margin-top:0}
     <div class="sbd-row sbd-set">
       <div class="sbd-s">
           <p class="sbd-n"><i>01</i>Cart entry</p>
-          <div class="ph" aria-hidden="true">
-            <div class="sb"><span class="sb-l"><time>9:41</time></span><span class="di"></span><span class="sb-r" style="color:var(--ios-label)"><svg viewBox="0 0 17 12" width="11" height="8" aria-hidden="true"><rect y="8" width="3" height="4" rx="1"/><rect x="4.7" y="5.6" width="3" height="6.4" rx="1"/><rect x="9.4" y="3" width="3" height="9" rx="1"/><rect x="14.1" width="3" height="12" rx="1"/></svg><svg viewBox="0 0 16 12" width="11" height="8" aria-hidden="true"><circle cx="8" cy="9.6" r="1.5"/><path d="M4.7 6.9a4.9 4.9 0 0 1 6.6 0" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><path d="M2.2 4.3a8.5 8.5 0 0 1 11.6 0" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg><svg viewBox="0 0 26 12" width="17" height="8" aria-hidden="true"><rect x=".6" y=".6" width="21.8" height="10.8" rx="3.4" fill="none" stroke="currentColor" stroke-width="1.1" opacity=".35"/><rect x="2.2" y="2.2" width="13.5" height="7.6" rx="2.1"/><path d="M24.1 4.3a2.1 2.1 0 0 1 0 3.4z" opacity=".35"/></svg></span></div><div class="ph-hh"><div class="ph-h"></div><div class="ph-lt">Cart</div></div>
-            <div class="ph-b">
-              <div class="ios-g"><div class="ios-c pad"><span class="pi"><svg viewBox="0 0 40 40"><use href="#p-milk"/></svg></span><div class="tx"><div class="t1">Milk</div><div class="t2">Golden Dairy &middot; 1.5 L</div></div><span class="rt"><span class="val b">SAR 24</span><span class="qty"><i>&minus;</i>1<i>+</i></span></span></div><div class="ios-c pad"><span class="pi"><svg viewBox="0 0 40 40"><use href="#p-rice"/></svg></span><div class="tx"><div class="t1">Rice</div><div class="t2">Golden Field &middot; 2 kg</div></div><span class="rt"><span class="val b">SAR 19</span><span class="qty"><i>&minus;</i>1<i>+</i></span></span></div><div class="ios-c pad"><span class="pi"><svg viewBox="0 0 40 40"><use href="#p-soap"/></svg></span><div class="tx"><div class="t1">Dish soap</div><div class="t2">CleanPro &middot; 750 ml</div></div><span class="rt"><span class="val b">SAR 14</span><span class="qty"><i>&minus;</i>1<i>+</i></span></span></div><div class="ios-c pad"><span class="pi"><svg viewBox="0 0 40 40"><use href="#p-flake"/></svg></span><div class="tx"><div class="t1">Cornflakes</div><div class="t2">Morning Co &middot; 500 g</div></div><span class="rt"><span class="val b">SAR 18</span><span class="qty"><i>&minus;</i>1<i>+</i></span></span></div><div class="ios-c pad"><span class="pi is-more">+2</span><div class="tx"><div class="t1">2 more items</div><div class="t2">Pasta, olive oil</div></div><span class="val b">SAR 29</span></div></div>
-              <p class="ios-f">3 items have better-value options.</p>
-            </div>
-            <div class="ph-f">
-              <div class="ios-tot"><span>Total</span><b>SAR 104</b></div>
-              <div class="ios-btn tint">Optimize basket</div>
-              <div class="ios-btn is-ink">Checkout</div>
-            </div>
-          </div>
+          <div class="appui" id="sc-s1" inert aria-hidden="true">
+<div class="phone">
+  <div class="sb">
+    <span class="sb-t">9:41</span>
+    <span class="sb-di"></span>
+    <span class="sb-i">
+      <svg width="17.4" height="11" viewBox="0 0 17.4 11" aria-hidden="true"><rect x="0" y="7.4" width="3" height="3.6" rx="1"/><rect x="4.8" y="5.1" width="3" height="5.9" rx="1"/><rect x="9.6" y="2.6" width="3" height="8.4" rx="1"/><rect x="14.4" y="0" width="3" height="11" rx="1"/></svg>
+      <svg width="17" height="13" viewBox="0 0 17 13" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M3.13 6.23a7.6 7.6 0 0 1 10.74 0"/><path d="M5.67 8.77a4 4 0 0 1 5.66 0"/></g><circle cx="8.5" cy="11.1" r="1.5"/></svg>
+      <svg width="27.4" height="13" viewBox="0 0 27.4 13" aria-hidden="true"><rect x=".5" y=".5" width="24" height="12" rx="4.2" fill="none" stroke="currentColor" stroke-width="1" opacity=".36"/><path d="M26 4.6v3.8a2 2 0 0 0 0-3.8z" opacity=".4"/><rect x="2" y="2" width="21" height="9" rx="2.8"/></svg>
+    </span>
+  </div>
+
+  <div class="appbar"><h1>Cart</h1><span>6 items</span></div>
+
+  <div class="list">
+
+    <!-- three eligible items. The row stays white; the flash on the ticket is
+         the whole eligibility signal, and it counts rather than giving a
+         reason — the reason belongs to the option, not to the basket item. -->
+    <article class="row">
+      <span class="pack"><svg viewBox="0 0 40 40" aria-hidden="true"><ellipse cx="20" cy="34.5" rx="8.6" ry="1.4" fill="#111114" opacity=".13"/><path d="M11.8 15.2 20 6.6l8.4 8.6z" fill="#DCE7F2"/><path d="M11.8 15.2h16.6V32a1.8 1.8 0 0 1-1.8 1.8H13.6A1.8 1.8 0 0 1 11.8 32z" fill="#F2F7FC"/><path d="M11.8 15.2h5.6v18.6h-3.8A1.8 1.8 0 0 1 11.8 32z" fill="#fff" opacity=".8"/><rect x="18.4" y="4.4" width="3.2" height="2.8" rx=".9" fill="#2F6FB5"/><rect x="11.8" y="20.4" width="16.6" height="7.6" fill="#2F6FB5"/><rect x="14.2" y="22.3" width="9.6" height="1.8" rx=".9" fill="#F2F7FC"/><path d="M11.8 15.2h16.6V32a1.8 1.8 0 0 1-1.8 1.8H13.6A1.8 1.8 0 0 1 11.8 32z" fill="none" stroke="#BFCFDE" stroke-width=".9"/><path d="M11.8 15.2 20 6.6l8.4 8.6z" fill="none" stroke="#BFCFDE" stroke-width=".9"/></svg></span>
+      <span><span class="nm">Milk</span><span class="meta">Golden Dairy · 1.5 L</span>
+        <span class="ctl"><span class="step"><i>−</i>1<i>+</i></span></span></span>
+      <span class="val"><span class="fslot"><span class="flash">3 options</span></span>
+        <span class="tk"><span class="amt"><span class="cur">SAR</span><span class="maj">24</span></span>
+          <span class="strip"><span class="b">Per L</span><span class="u">SAR 16.00</span></span></span></span>
+    </article>
+
+    <article class="row">
+      <span class="pack"><svg viewBox="0 0 40 40" aria-hidden="true"><ellipse cx="20" cy="34.4" rx="8.2" ry="1.4" fill="#111114" opacity=".13"/><path d="M13.2 13.8c0-3 3-4.4 6.8-4.4s6.8 1.4 6.8 4.4v17.6a2 2 0 0 1-2 2H15.2a2 2 0 0 1-2-2z" fill="#D3AE77"/><path d="M13.2 13.8c0-2.4 1.9-3.8 4.4-4.2v23.8H15.2a2 2 0 0 1-2-2z" fill="#fff" opacity=".3"/><rect x="13.2" y="18.4" width="13.6" height="7.4" fill="#B38B52"/><rect x="15.6" y="20.2" width="8.4" height="1.8" rx=".9" fill="#F7EFE1"/><path d="M13.2 13.8c0-3 3-4.4 6.8-4.4s6.8 1.4 6.8 4.4v17.6a2 2 0 0 1-2 2H15.2a2 2 0 0 1-2-2z" fill="none" stroke="#A8813F" stroke-width=".9"/></svg></span>
+      <span><span class="nm">Rice</span><span class="meta">Golden Field · 2 kg</span>
+        <span class="ctl"><span class="step"><i>−</i>1<i>+</i></span></span></span>
+      <span class="val"><span class="fslot"><span class="flash">2 options</span></span>
+        <span class="tk"><span class="amt"><span class="cur">SAR</span><span class="maj">19</span></span>
+          <span class="strip"><span class="b">Per kg</span><span class="u">SAR 9.50</span></span></span></span>
+    </article>
+
+    <article class="row">
+      <span class="pack"><svg viewBox="0 0 40 40" aria-hidden="true"><ellipse cx="20" cy="34.4" rx="7.2" ry="1.3" fill="#111114" opacity=".13"/><rect x="18.5" y="5.2" width="3" height="4.6" rx="1" fill="#7C7C86"/><rect x="16.2" y="9.3" width="7.6" height="3.4" rx="1.2" fill="#5F5F6B"/><path d="M14.2 17c0-2.3 1.7-3.6 5.8-3.6s5.8 1.3 5.8 3.6v14.4a2 2 0 0 1-2 2h-7.6a2 2 0 0 1-2-2z" fill="#2F9469"/><path d="M14.2 17c0-1.9 1.2-3.1 3.6-3.5v19.9h-1.6a2 2 0 0 1-2-2z" fill="#fff" opacity=".28"/><rect x="16.4" y="20.3" width="7.2" height="8.4" rx="1.2" fill="#F3FAF6"/><rect x="17.7" y="22.3" width="4.6" height="1.5" rx=".75" fill="#2F9469"/><path d="M14.2 17c0-2.3 1.7-3.6 5.8-3.6s5.8 1.3 5.8 3.6v14.4a2 2 0 0 1-2 2h-7.6a2 2 0 0 1-2-2z" fill="none" stroke="#237552" stroke-width=".9"/></svg></span>
+      <span><span class="nm">Dish soap</span><span class="meta">CleanPro · 750 ml</span>
+        <span class="ctl"><span class="step"><i>−</i>1<i>+</i></span></span></span>
+      <span class="val"><span class="fslot"><span class="flash">1 option</span></span>
+        <span class="tk"><span class="amt"><span class="cur">SAR</span><span class="maj">14</span></span>
+          <span class="strip"><span class="b">Per L</span><span class="u">SAR 18.67</span></span></span></span>
+    </article>
+
+    <!-- three items with no options: no flash, and the ticket is unchanged.
+         Nothing is added to fill the slot the flash leaves empty. -->
+    <article class="row">
+      <span class="pack"><svg viewBox="0 0 40 40" aria-hidden="true"><ellipse cx="20" cy="34.4" rx="8.4" ry="1.3" fill="#111114" opacity=".13"/><rect x="11.8" y="8.6" width="16.4" height="24.8" rx="1.7" fill="#E08A2C"/><path d="M13.4 8.6h4.4v24.8h-4.4z" fill="#fff" opacity=".22"/><rect x="14.2" y="11.4" width="11.6" height="9.8" rx="1.2" fill="#FBE3B8"/><circle cx="20" cy="16.3" r="3" fill="#C96C1C"/><circle cx="20" cy="16.3" r="1.35" fill="#F7C67E"/><rect x="14.2" y="23.6" width="11.6" height="2.4" rx="1.2" fill="#FBE3B8"/><rect x="11.8" y="8.6" width="16.4" height="24.8" rx="1.7" fill="none" stroke="#BE6E1C" stroke-width=".9"/></svg></span>
+      <span><span class="nm">Cornflakes</span><span class="meta">Morning Co · 500 g</span>
+        <span class="ctl"><span class="step"><i>−</i>1<i>+</i></span></span></span>
+      <span class="val"><span class="fslot"></span>
+        <span class="tk"><span class="amt"><span class="cur">SAR</span><span class="maj">18</span></span>
+          <span class="strip"><span class="b">Per kg</span><span class="u">SAR 36.00</span></span></span></span>
+    </article>
+
+    <article class="row">
+      <span class="pack"><svg viewBox="0 0 40 40" aria-hidden="true"><ellipse cx="20" cy="34.4" rx="7.4" ry="1.3" fill="#111114" opacity=".13"/><rect x="13.6" y="8.4" width="12.8" height="25" rx="1.7" fill="#E9C34D"/><path d="M15 8.4h3.6v25H15z" fill="#fff" opacity=".24"/><rect x="16" y="12.2" width="8" height="11.6" rx=".9" fill="#F8F0D2"/><g fill="#D8A93B"><rect x="16.9" y="13.1" width="1.3" height="9.8" rx=".65"/><rect x="19.05" y="13.1" width="1.3" height="9.8" rx=".65"/><rect x="21.2" y="13.1" width="1.3" height="9.8" rx=".65"/></g><rect x="13.6" y="8.4" width="12.8" height="25" rx="1.7" fill="none" stroke="#C9A335" stroke-width=".9"/></svg></span>
+      <span><span class="nm">Pasta</span><span class="meta">Napoli Co · 1 kg</span>
+        <span class="ctl"><span class="step"><i>−</i>1<i>+</i></span></span></span>
+      <span class="val"><span class="fslot"></span>
+        <span class="tk"><span class="amt"><span class="cur">SAR</span><span class="maj">11</span></span>
+          <span class="strip"><span class="b">Per kg</span><span class="u">SAR 11.00</span></span></span></span>
+    </article>
+
+    <article class="row">
+      <span class="pack"><svg viewBox="0 0 40 40" aria-hidden="true"><ellipse cx="20" cy="34.4" rx="6.4" ry="1.3" fill="#111114" opacity=".13"/><rect x="18.6" y="4.8" width="2.8" height="3.2" rx=".7" fill="#33481D"/><rect x="18.2" y="7.4" width="3.6" height="5.6" fill="#4A6B2A"/><path d="M15.2 18.2c0-2.4 3-3.2 3-5.2h3.6c0 2 3 2.8 3 5.2v13.2a2 2 0 0 1-2 2h-5.6a2 2 0 0 1-2-2z" fill="#4A6B2A"/><path d="M15.2 18.2c0-1.8 1.6-2.7 2.4-4.1v19.3h-.4a2 2 0 0 1-2-2z" fill="#fff" opacity=".24"/><rect x="15.8" y="21.3" width="8.4" height="6.8" rx=".8" fill="#E5CE7A"/><rect x="17.2" y="23.1" width="5.6" height="1.4" rx=".7" fill="#4A6B2A"/><path d="M15.2 18.2c0-2.4 3-3.2 3-5.2h3.6c0 2 3 2.8 3 5.2v13.2a2 2 0 0 1-2 2h-5.6a2 2 0 0 1-2-2z" fill="none" stroke="#38521F" stroke-width=".9"/></svg></span>
+      <span><span class="nm">Olive oil</span><span class="meta">Olea Verde · 500 ml</span>
+        <span class="ctl"><span class="step"><i>−</i>1<i>+</i></span></span></span>
+      <span class="val"><span class="fslot"></span>
+        <span class="tk"><span class="amt"><span class="cur">SAR</span><span class="maj">18</span></span>
+          <span class="strip"><span class="b">Per L</span><span class="u">SAR 36.00</span></span></span></span>
+    </article>
+
+  </div>
+
+  <div class="foot">
+    <button class="entry" type="button">
+      <span class="et"><span class="e1">Optimize basket</span>
+        <span class="e2">3 items have better-value options</span></span>
+      <span class="ec">›</span>
+    </button>
+    <div class="pay">
+      <span class="tot"><span class="tl">Total</span>
+        <span class="tk"><span class="amt"><span class="cur">SAR</span><span class="maj">104</span></span></span></span>
+      <button class="cta" type="button">Checkout</button>
+    </div>
+  </div>
+
+  <div class="tabs">
+    <span class="tab"><svg viewBox="0 0 24 24"><path d="M3 10.5 12 4l9 6.5V20a1 1 0 0 1-1 1h-4v-6H8v6H4a1 1 0 0 1-1-1z"/></svg>Home</span>
+    <span class="tab"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"/><path d="m16 16 4.5 4.5"/></svg>Search</span>
+    <span class="tab"><svg viewBox="0 0 24 24"><path d="M12.6 3.4H20v7.4a2 2 0 0 1-.6 1.4l-7 7a2 2 0 0 1-2.8 0l-4.8-4.8a2 2 0 0 1 0-2.8l7-7a2 2 0 0 1 1.4-.6z"/><circle cx="16.3" cy="7.7" r="1.2"/></svg>Offers</span>
+    <span class="tab on"><span class="tw"><svg viewBox="0 0 24 24"><path d="M4.5 7.5h15l-1.4 10.2a2 2 0 0 1-2 1.8H7.9a2 2 0 0 1-2-1.8z"/><path d="M8.8 7.5a3.2 3.2 0 0 1 6.4 0"/></svg><i class="tb">6</i></span>Cart</span>
+    <span class="tab"><svg viewBox="0 0 24 24"><circle cx="12" cy="8.6" r="3.6"/><path d="M5.5 20a6.5 6.5 0 0 1 13 0"/></svg>Account</span>
+  </div>
+  <span class="hi"></span>
+</div>
+</div>
           <div class="sbd-d"><span>Decision</span><p>Optimizing the basket is optional. Checkout stays available.</p></div>
       </div>
       <div class="sbd-s">
-          <p class="sbd-n"><i>02</i>Items with options</p>
-          <div class="ph" aria-hidden="true">
-            <div class="sb"><span class="sb-l"><time>9:41</time></span><span class="di"></span><span class="sb-r" style="color:var(--ios-label)"><svg viewBox="0 0 17 12" width="11" height="8" aria-hidden="true"><rect y="8" width="3" height="4" rx="1"/><rect x="4.7" y="5.6" width="3" height="6.4" rx="1"/><rect x="9.4" y="3" width="3" height="9" rx="1"/><rect x="14.1" width="3" height="12" rx="1"/></svg><svg viewBox="0 0 16 12" width="11" height="8" aria-hidden="true"><circle cx="8" cy="9.6" r="1.5"/><path d="M4.7 6.9a4.9 4.9 0 0 1 6.6 0" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><path d="M2.2 4.3a8.5 8.5 0 0 1 11.6 0" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg><svg viewBox="0 0 26 12" width="17" height="8" aria-hidden="true"><rect x=".6" y=".6" width="21.8" height="10.8" rx="3.4" fill="none" stroke="currentColor" stroke-width="1.1" opacity=".35"/><rect x="2.2" y="2.2" width="13.5" height="7.6" rx="2.1"/><path d="M24.1 4.3a2.1 2.1 0 0 1 0 3.4z" opacity=".35"/></svg></span></div><div class="ph-hh"><div class="ph-h"><span class="bk"><i></i>Cart</span><b>Basket Optimizer</b></div></div>
-            <div class="ph-b">
-              <p class="ios-h">3 items with better-value options</p>
-              <div class="ios-g"><div class="ios-c pad"><span class="pi"><svg viewBox="0 0 40 40"><use href="#p-milk"/></svg></span><div class="tx"><div class="t1">Milk &middot; 1.5 L</div><div class="t2">3 options &middot; pay less or get better unit value</div></div><span class="chev"></span></div><div class="ios-c pad"><span class="pi"><svg viewBox="0 0 40 40"><use href="#p-rice"/></svg></span><div class="tx"><div class="t1">Rice &middot; 2 kg</div><div class="t2">2 options &middot; pay less or get better unit value</div></div><span class="chev"></span></div><div class="ios-c pad"><span class="pi"><svg viewBox="0 0 40 40"><use href="#p-soap"/></svg></span><div class="tx"><div class="t1">Dish soap &middot; 750 ml</div><div class="t2">1 option &middot; store brand at SAR 4 less</div></div><span class="chev"></span></div></div>
-              <p class="ios-h">No comparable options</p>
-              <div class="ios-g"><div class="ios-c pad"><span class="pi"><svg viewBox="0 0 40 40"><use href="#p-flake"/></svg></span><div class="tx"><div class="t1">Cornflakes &middot; 500 g</div></div></div><div class="ios-c pad"><span class="pi"><svg viewBox="0 0 40 40"><use href="#p-pasta"/></svg></span><div class="tx"><div class="t1">Pasta &middot; 1 kg</div></div></div><div class="ios-c pad"><span class="pi"><svg viewBox="0 0 40 40"><use href="#p-oil"/></svg></span><div class="tx"><div class="t1">Olive oil &middot; 500 ml</div></div></div></div>
-            </div>
-            <div class="ph-f"><div class="ios-btn plain">Back to Cart</div></div>
-          </div>
+          <p class="sbd-n"><i>02</i>Optimize basket</p>
+          <div class="appui" id="sc-s2" inert aria-hidden="true">
+<div class="phone">
+  <div class="sb">
+    <span class="sb-t">9:41</span>
+    <span class="sb-di"></span>
+    <span class="sb-i">
+      <svg width="17.4" height="11" viewBox="0 0 17.4 11" aria-hidden="true"><rect x="0" y="7.4" width="3" height="3.6" rx="1"/><rect x="4.8" y="5.1" width="3" height="5.9" rx="1"/><rect x="9.6" y="2.6" width="3" height="8.4" rx="1"/><rect x="14.4" y="0" width="3" height="11" rx="1"/></svg>
+      <svg width="17" height="13" viewBox="0 0 17 13" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M3.13 6.23a7.6 7.6 0 0 1 10.74 0"/><path d="M5.67 8.77a4 4 0 0 1 5.66 0"/></g><circle cx="8.5" cy="11.1" r="1.5"/></svg>
+      <svg width="27.4" height="13" viewBox="0 0 27.4 13" aria-hidden="true"><rect x=".5" y=".5" width="24" height="12" rx="4.2" fill="none" stroke="currentColor" stroke-width="1" opacity=".36"/><path d="M26 4.6v3.8a2 2 0 0 0 0-3.8z" opacity=".4"/><rect x="2" y="2" width="21" height="9" rx="2.8"/></svg>
+    </span>
+  </div>
+
+  <div class="nav">
+    <button class="back" type="button"><svg viewBox="0 0 24 24"><path d="M15 5 8 12l7 7"/></svg>Cart</button>
+    <h1>Optimize basket</h1>
+  </div>
+
+  <div class="body">
+
+    <p class="sl">Items with options</p>
+    <div class="list">
+
+      <button class="item" type="button">
+        <span class="pack"><svg viewBox="0 0 40 40" aria-hidden="true"><ellipse cx="20" cy="34.5" rx="8.6" ry="1.4" fill="#111114" opacity=".13"/><path d="M11.8 15.2 20 6.6l8.4 8.6z" fill="#DCE7F2"/><path d="M11.8 15.2h16.6V32a1.8 1.8 0 0 1-1.8 1.8H13.6A1.8 1.8 0 0 1 11.8 32z" fill="#F2F7FC"/><path d="M11.8 15.2h5.6v18.6h-3.8A1.8 1.8 0 0 1 11.8 32z" fill="#fff" opacity=".8"/><rect x="18.4" y="4.4" width="3.2" height="2.8" rx=".9" fill="#2F6FB5"/><rect x="11.8" y="20.4" width="16.6" height="7.6" fill="#2F6FB5"/><rect x="14.2" y="22.3" width="9.6" height="1.8" rx=".9" fill="#F2F7FC"/><path d="M11.8 15.2h16.6V32a1.8 1.8 0 0 1-1.8 1.8H13.6A1.8 1.8 0 0 1 11.8 32z" fill="none" stroke="#BFCFDE" stroke-width=".9"/><path d="M11.8 15.2 20 6.6l8.4 8.6z" fill="none" stroke="#BFCFDE" stroke-width=".9"/></svg></span>
+        <span><span class="nm">Milk</span><span class="meta">Golden Dairy · 1.5 L</span>
+</span>
+        <span class="val"><span class="fslot"><span class="flash">3 options</span></span>
+          <span class="tk"><span class="amt"><span class="cur-m">SAR</span><span class="maj">24</span></span>
+            <span class="strip"><span class="b">Per L</span><span class="u">SAR 16.00</span></span></span></span>
+        <span class="chev"></span>
+        <span class="offer">Pay less or get better unit value</span>
+      </button>
+
+      <button class="item" type="button">
+        <span class="pack"><svg viewBox="0 0 40 40" aria-hidden="true"><ellipse cx="20" cy="34.4" rx="8.2" ry="1.4" fill="#111114" opacity=".13"/><path d="M13.2 13.8c0-3 3-4.4 6.8-4.4s6.8 1.4 6.8 4.4v17.6a2 2 0 0 1-2 2H15.2a2 2 0 0 1-2-2z" fill="#D3AE77"/><path d="M13.2 13.8c0-2.4 1.9-3.8 4.4-4.2v23.8H15.2a2 2 0 0 1-2-2z" fill="#fff" opacity=".3"/><rect x="13.2" y="18.4" width="13.6" height="7.4" fill="#B38B52"/><rect x="15.6" y="20.2" width="8.4" height="1.8" rx=".9" fill="#F7EFE1"/><path d="M13.2 13.8c0-3 3-4.4 6.8-4.4s6.8 1.4 6.8 4.4v17.6a2 2 0 0 1-2 2H15.2a2 2 0 0 1-2-2z" fill="none" stroke="#A8813F" stroke-width=".9"/></svg></span>
+        <span><span class="nm">Rice</span><span class="meta">Golden Field · 2 kg</span>
+</span>
+        <span class="val"><span class="fslot"><span class="flash">2 options</span></span>
+          <span class="tk"><span class="amt"><span class="cur-m">SAR</span><span class="maj">19</span></span>
+            <span class="strip"><span class="b">Per kg</span><span class="u">SAR 9.50</span></span></span></span>
+        <span class="chev"></span>
+        <span class="offer">Pay less or get better unit value</span>
+      </button>
+
+      <button class="item" type="button">
+        <span class="pack"><svg viewBox="0 0 40 40" aria-hidden="true"><ellipse cx="20" cy="34.4" rx="7.2" ry="1.3" fill="#111114" opacity=".13"/><rect x="18.5" y="5.2" width="3" height="4.6" rx="1" fill="#7C7C86"/><rect x="16.2" y="9.3" width="7.6" height="3.4" rx="1.2" fill="#5F5F6B"/><path d="M14.2 17c0-2.3 1.7-3.6 5.8-3.6s5.8 1.3 5.8 3.6v14.4a2 2 0 0 1-2 2h-7.6a2 2 0 0 1-2-2z" fill="#2F9469"/><path d="M14.2 17c0-1.9 1.2-3.1 3.6-3.5v19.9h-1.6a2 2 0 0 1-2-2z" fill="#fff" opacity=".28"/><rect x="16.4" y="20.3" width="7.2" height="8.4" rx="1.2" fill="#F3FAF6"/><rect x="17.7" y="22.3" width="4.6" height="1.5" rx=".75" fill="#2F9469"/><path d="M14.2 17c0-2.3 1.7-3.6 5.8-3.6s5.8 1.3 5.8 3.6v14.4a2 2 0 0 1-2 2h-7.6a2 2 0 0 1-2-2z" fill="none" stroke="#237552" stroke-width=".9"/></svg></span>
+        <span><span class="nm">Dish soap</span><span class="meta">CleanPro · 750 ml</span>
+</span>
+        <span class="val"><span class="fslot"><span class="flash">1 option</span></span>
+          <span class="tk"><span class="amt"><span class="cur-m">SAR</span><span class="maj">14</span></span>
+            <span class="strip"><span class="b">Per L</span><span class="u">SAR 18.67</span></span></span></span>
+        <span class="chev"></span>
+        <span class="offer">Own label at SAR 4 less</span>
+      </button>
+
+    </div>
+
+    <p class="sl">No better-value options</p>
+    <div class="none">
+      <div class="nrow">
+        <span class="pack"><svg viewBox="0 0 40 40" aria-hidden="true"><ellipse cx="20" cy="34.4" rx="8.4" ry="1.3" fill="#111114" opacity=".13"/><rect x="11.8" y="8.6" width="16.4" height="24.8" rx="1.7" fill="#E08A2C"/><path d="M13.4 8.6h4.4v24.8h-4.4z" fill="#fff" opacity=".22"/><rect x="14.2" y="11.4" width="11.6" height="9.8" rx="1.2" fill="#FBE3B8"/><circle cx="20" cy="16.3" r="3" fill="#C96C1C"/><circle cx="20" cy="16.3" r="1.35" fill="#F7C67E"/><rect x="14.2" y="23.6" width="11.6" height="2.4" rx="1.2" fill="#FBE3B8"/><rect x="11.8" y="8.6" width="16.4" height="24.8" rx="1.7" fill="none" stroke="#BE6E1C" stroke-width=".9"/></svg></span>
+        <span><span class="nm">Cornflakes</span><span class="meta"> · 500 g</span></span>
+      </div>
+      <div class="nrow">
+        <span class="pack"><svg viewBox="0 0 40 40" aria-hidden="true"><ellipse cx="20" cy="34.4" rx="7.4" ry="1.3" fill="#111114" opacity=".13"/><rect x="13.6" y="8.4" width="12.8" height="25" rx="1.7" fill="#E9C34D"/><path d="M15 8.4h3.6v25H15z" fill="#fff" opacity=".24"/><rect x="16" y="12.2" width="8" height="11.6" rx=".9" fill="#F8F0D2"/><g fill="#D8A93B"><rect x="16.9" y="13.1" width="1.3" height="9.8" rx=".65"/><rect x="19.05" y="13.1" width="1.3" height="9.8" rx=".65"/><rect x="21.2" y="13.1" width="1.3" height="9.8" rx=".65"/></g><rect x="13.6" y="8.4" width="12.8" height="25" rx="1.7" fill="none" stroke="#C9A335" stroke-width=".9"/></svg></span>
+        <span><span class="nm">Pasta</span><span class="meta"> · 1 kg</span></span>
+      </div>
+      <div class="nrow">
+        <span class="pack"><svg viewBox="0 0 40 40" aria-hidden="true"><ellipse cx="20" cy="34.4" rx="6.4" ry="1.3" fill="#111114" opacity=".13"/><rect x="18.6" y="4.8" width="2.8" height="3.2" rx=".7" fill="#33481D"/><rect x="18.2" y="7.4" width="3.6" height="5.6" fill="#4A6B2A"/><path d="M15.2 18.2c0-2.4 3-3.2 3-5.2h3.6c0 2 3 2.8 3 5.2v13.2a2 2 0 0 1-2 2h-5.6a2 2 0 0 1-2-2z" fill="#4A6B2A"/><path d="M15.2 18.2c0-1.8 1.6-2.7 2.4-4.1v19.3h-.4a2 2 0 0 1-2-2z" fill="#fff" opacity=".24"/><rect x="15.8" y="21.3" width="8.4" height="6.8" rx=".8" fill="#E5CE7A"/><rect x="17.2" y="23.1" width="5.6" height="1.4" rx=".7" fill="#4A6B2A"/><path d="M15.2 18.2c0-2.4 3-3.2 3-5.2h3.6c0 2 3 2.8 3 5.2v13.2a2 2 0 0 1-2 2h-5.6a2 2 0 0 1-2-2z" fill="none" stroke="#38521F" stroke-width=".9"/></svg></span>
+        <span><span class="nm">Olive oil</span><span class="meta"> · 500 ml</span></span>
+      </div>
+    </div>
+
+    <div class="foot">
+      <button class="exit" type="button">Back to cart</button>
+    </div>
+  </div>
+
+  <span class="hi"></span>
+</div>
+</div>
           <div class="sbd-d"><span>Decision</span><p>The customer can see which items have options and which do not, then choose what to review.</p></div>
       </div>
     </div>
@@ -1660,33 +2461,170 @@ body[data-half="b"] .sbd-core{margin-top:0}
       <div class="sbd-row">
         <div class="sbd-s">
           <p class="sbd-n"><i>03</i>Review options</p>
-          <div class="ph" aria-hidden="true">
-            <div class="sb"><span class="sb-l"><time>9:41</time></span><span class="di"></span><span class="sb-r" style="color:var(--ios-label)"><svg viewBox="0 0 17 12" width="11" height="8" aria-hidden="true"><rect y="8" width="3" height="4" rx="1"/><rect x="4.7" y="5.6" width="3" height="6.4" rx="1"/><rect x="9.4" y="3" width="3" height="9" rx="1"/><rect x="14.1" width="3" height="12" rx="1"/></svg><svg viewBox="0 0 16 12" width="11" height="8" aria-hidden="true"><circle cx="8" cy="9.6" r="1.5"/><path d="M4.7 6.9a4.9 4.9 0 0 1 6.6 0" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><path d="M2.2 4.3a8.5 8.5 0 0 1 11.6 0" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg><svg viewBox="0 0 26 12" width="17" height="8" aria-hidden="true"><rect x=".6" y=".6" width="21.8" height="10.8" rx="3.4" fill="none" stroke="currentColor" stroke-width="1.1" opacity=".35"/><rect x="2.2" y="2.2" width="13.5" height="7.6" rx="2.1"/><path d="M24.1 4.3a2.1 2.1 0 0 1 0 3.4z" opacity=".35"/></svg></span></div><div class="ph-hh"><div class="ph-h"><span class="bk"><i></i>Back</span><b>Milk</b></div></div>
-            <div class="ph-b">
-              <p class="ios-h">In your cart</p>
-              <div class="ios-g"><div class="ios-c pad"><span class="pi"><svg viewBox="0 0 40 40"><use href="#p-milk"/></svg></span><div class="tx"><div class="t1">Golden Dairy &middot; 1.5 L</div><div class="ios-u">SAR 16.00 / L</div></div><span class="val b">SAR 24</span></div></div>
-              <p class="ios-h">Options</p>
-              <div class="ios-g"><div class="ios-c"><div class="tx"><div class="t1"><span class="ios-tag tag-save">Same size, lower price</span></div><div class="t1" style="margin-top:4px">Value Milk &middot; 1.5 L</div><div class="ios-u">SAR 10.67 / L</div><div class="t2"><span class="ios-d less">Pay SAR 8 less</span> &middot; total SAR 96</div></div><span class="rt"><span class="val b">SAR 16</span><span class="opt-go">Review</span></span></div><div class="ios-c is-sel"><div class="tx"><div class="t1"><span class="ios-tag tag-unit">Lower price per litre</span></div><div class="t1" style="margin-top:4px">Golden Dairy &middot; 2 L</div><div class="ios-u">SAR 14.00 / L</div><div class="t2"><span class="ios-d more">Pay SAR 4 more</span> &middot; total SAR 108</div></div><span class="rt"><span class="val b">SAR 28</span><span class="opt-go">Review</span></span></div><div class="ios-c"><div class="tx"><div class="t1"><span class="ios-tag tag-own">Store brand, lower price</span></div><div class="t1" style="margin-top:4px">Basket Value &middot; 1.5 L</div><div class="ios-u">SAR 11.33 / L</div><div class="t2"><span class="ios-d less">Pay SAR 7 less</span> &middot; total SAR 97</div></div><span class="rt"><span class="val b">SAR 17</span><span class="opt-go">Review</span></span></div></div>
-            </div>
-            <div class="ph-f"><div class="ios-btn plain">Keep Current Item</div></div>
-          </div>
+          <div class="appui" id="sc-s3" inert aria-hidden="true">
+<div class="phone">
+  <div class="sb">
+    <span class="sb-t">9:41</span>
+    <span class="sb-di"></span>
+    <span class="sb-i">
+      <svg width="17.4" height="11" viewBox="0 0 17.4 11" aria-hidden="true"><rect x="0" y="7.4" width="3" height="3.6" rx="1"/><rect x="4.8" y="5.1" width="3" height="5.9" rx="1"/><rect x="9.6" y="2.6" width="3" height="8.4" rx="1"/><rect x="14.4" y="0" width="3" height="11" rx="1"/></svg>
+      <svg width="17" height="13" viewBox="0 0 17 13" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M3.13 6.23a7.6 7.6 0 0 1 10.74 0"/><path d="M5.67 8.77a4 4 0 0 1 5.66 0"/></g><circle cx="8.5" cy="11.1" r="1.5"/></svg>
+      <svg width="27.4" height="13" viewBox="0 0 27.4 13" aria-hidden="true"><rect x=".5" y=".5" width="24" height="12" rx="4.2" fill="none" stroke="currentColor" stroke-width="1" opacity=".36"/><path d="M26 4.6v3.8a2 2 0 0 0 0-3.8z" opacity=".4"/><rect x="2" y="2" width="21" height="9" rx="2.8"/></svg>
+    </span>
+  </div>
+
+  <div class="nav">
+    <button class="back" type="button"><svg viewBox="0 0 24 24"><path d="M15 5 8 12l7 7"/></svg>Back</button>
+    <h1>Milk</h1>
+  </div>
+
+  <div class="body">
+
+    <p class="sl">In your cart</p>
+    <div class="cur">
+      <span class="pack"><svg viewBox="0 0 40 40" aria-hidden="true"><ellipse cx="20" cy="34.5" rx="8.6" ry="1.4" fill="#111114" opacity=".13"/><path d="M11.8 15.2 20 6.6l8.4 8.6z" fill="#DCE7F2"/><path d="M11.8 15.2h16.6V32a1.8 1.8 0 0 1-1.8 1.8H13.6A1.8 1.8 0 0 1 11.8 32z" fill="#F2F7FC"/><path d="M11.8 15.2h5.6v18.6h-3.8A1.8 1.8 0 0 1 11.8 32z" fill="#fff" opacity=".8"/><rect x="18.4" y="4.4" width="3.2" height="2.8" rx=".9" fill="#2F6FB5"/><rect x="11.8" y="20.4" width="16.6" height="7.6" fill="#2F6FB5"/><rect x="14.2" y="22.3" width="9.6" height="1.8" rx=".9" fill="#F2F7FC"/><path d="M11.8 15.2h16.6V32a1.8 1.8 0 0 1-1.8 1.8H13.6A1.8 1.8 0 0 1 11.8 32z" fill="none" stroke="#BFCFDE" stroke-width=".9"/><path d="M11.8 15.2 20 6.6l8.4 8.6z" fill="none" stroke="#BFCFDE" stroke-width=".9"/></svg></span>
+      <span><span class="nm">Golden Dairy</span><span class="meta"> &middot; 1.5 L</span></span>
+      <span class="val"><span class="tk"><span class="amt"><span class="cur-m">SAR</span><span class="maj">24</span></span>
+        <span class="strip"><span class="b">Per L</span><span class="u">SAR 16.00</span></span></span></span>
+    </div>
+
+    <p class="sl">Options</p>
+    <div class="opts">
+
+      <!-- the largest saving, and the same pack size the customer already chose -->
+      <button class="opt" type="button">
+        <span class="reason"><span class="chip c2">Same size, lower price</span></span>
+        <span class="prod">
+          <span class="pack"><svg viewBox="0 0 40 40" aria-hidden="true"><ellipse cx="20" cy="34.5" rx="8.6" ry="1.4" fill="#111114" opacity=".13"/><path d="M11.8 15.2 20 6.6l8.4 8.6z" fill="#E4EDDD"/><path d="M11.8 15.2h16.6V32a1.8 1.8 0 0 1-1.8 1.8H13.6A1.8 1.8 0 0 1 11.8 32z" fill="#F4F9F0"/><path d="M11.8 15.2h5.6v18.6h-3.8A1.8 1.8 0 0 1 11.8 32z" fill="#fff" opacity=".8"/><rect x="18.4" y="4.4" width="3.2" height="2.8" rx=".9" fill="#4C8A3F"/><rect x="11.8" y="20.4" width="16.6" height="7.6" fill="#4C8A3F"/><rect x="14.2" y="22.3" width="9.6" height="1.8" rx=".9" fill="#F4F9F0"/><path d="M11.8 15.2h16.6V32a1.8 1.8 0 0 1-1.8 1.8H13.6A1.8 1.8 0 0 1 11.8 32z" fill="none" stroke="#C6D7BC" stroke-width=".9"/><path d="M11.8 15.2 20 6.6l8.4 8.6z" fill="none" stroke="#C6D7BC" stroke-width=".9"/></svg></span>
+          <span><span class="nm">Value Milk</span><span class="meta">1.5 L</span></span>
+          <span class="tk"><span class="amt"><span class="cur-m">SAR</span><span class="maj">16</span></span>
+            <span class="strip"><span class="b">Per L</span><span class="u">SAR 10.67</span></span></span>
+        </span>
+        <span class="outcome">
+          <span></span>
+          <span class="oc">
+            <span class="oc1">Pay SAR 8 less</span>
+            <span class="oc2">Your cart becomes <b>SAR 96</b></span>
+          </span>
+          <span class="go">Continue</span>
+        </span>
+      </button>
+
+      <!-- the recommendation, and it costs more. The chip carries the argument;
+           the item delta stays a plain fact and is not dressed up to agree with it -->
+      <button class="opt" type="button">
+        <span class="reason"><span class="chip c1">Lower price per litre</span></span>
+        <span class="prod">
+          <span class="pack"><svg viewBox="0 0 40 40" aria-hidden="true"><ellipse cx="20" cy="34.6" rx="9.4" ry="1.5" fill="#111114" opacity=".13"/><path d="M10.4 13.6 20 4.2l9.6 9.4z" fill="#DCE7F2"/><path d="M10.4 13.6h19.2v18.6a1.8 1.8 0 0 1-1.8 1.8H12.2a1.8 1.8 0 0 1-1.8-1.8z" fill="#F2F7FC"/><path d="M10.4 13.6h6v20.4h-4.2a1.8 1.8 0 0 1-1.8-1.8z" fill="#fff" opacity=".8"/><rect x="18.4" y="1.9" width="3.2" height="2.8" rx=".9" fill="#2F6FB5"/><rect x="10.4" y="19.4" width="19.2" height="8.4" fill="#2F6FB5"/><rect x="13" y="21.5" width="11" height="1.9" rx=".95" fill="#F2F7FC"/><path d="M10.4 13.6h19.2v18.6a1.8 1.8 0 0 1-1.8 1.8H12.2a1.8 1.8 0 0 1-1.8-1.8z" fill="none" stroke="#BFCFDE" stroke-width=".9"/><path d="M10.4 13.6 20 4.2l9.6 9.4z" fill="none" stroke="#BFCFDE" stroke-width=".9"/></svg></span>
+          <span><span class="nm">Golden Dairy</span><span class="meta">2 L</span></span>
+          <span class="tk"><span class="amt"><span class="cur-m">SAR</span><span class="maj">28</span></span>
+            <span class="strip"><span class="b">Per L</span><span class="u">SAR 14.00</span></span></span>
+        </span>
+        <span class="outcome">
+          <span></span>
+          <span class="oc">
+            <span class="oc1">Pay SAR 4 more</span>
+            <span class="oc2">Your cart becomes <b>SAR 108</b></span>
+          </span>
+          <span class="go">Continue</span>
+        </span>
+      </button>
+
+      <!-- own label. The mark on the brand line says it, so the chip does not -->
+      <button class="opt" type="button">
+        <span class="reason"><span class="chip c3">Lower price</span></span>
+        <span class="prod">
+          <span class="pack"><svg viewBox="0 0 40 40" aria-hidden="true"><ellipse cx="20" cy="34.5" rx="8.6" ry="1.4" fill="#111114" opacity=".13"/><path d="M11.8 15.2 20 6.6l8.4 8.6z" fill="#EDEAE1"/><path d="M11.8 15.2h16.6V32a1.8 1.8 0 0 1-1.8 1.8H13.6A1.8 1.8 0 0 1 11.8 32z" fill="#FAF8F3"/><path d="M11.8 15.2h5.6v18.6h-3.8A1.8 1.8 0 0 1 11.8 32z" fill="#fff" opacity=".8"/><rect x="18.4" y="4.4" width="3.2" height="2.8" rx=".9" fill="#171512"/><rect x="11.8" y="20.4" width="16.6" height="6.2" fill="#171512"/><rect x="14.2" y="22.2" width="9.6" height="1.6" rx=".8" fill="#FFC400"/><path d="M11.8 15.2h16.6V32a1.8 1.8 0 0 1-1.8 1.8H13.6A1.8 1.8 0 0 1 11.8 32z" fill="none" stroke="#D8D2C6" stroke-width=".9"/><path d="M11.8 15.2 20 6.6l8.4 8.6z" fill="none" stroke="#D8D2C6" stroke-width=".9"/></svg></span>
+          <span><span class="nm">Milk</span><span class="meta"><b class="own">Own label</b> &middot; 1.5 L</span></span>
+          <span class="tk"><span class="amt"><span class="cur-m">SAR</span><span class="maj">17</span></span>
+            <span class="strip"><span class="b">Per L</span><span class="u">SAR 11.33</span></span></span>
+        </span>
+        <span class="outcome">
+          <span></span>
+          <span class="oc">
+            <span class="oc1">Pay SAR 7 less</span>
+            <span class="oc2">Your cart becomes <b>SAR 97</b></span>
+          </span>
+          <span class="go">Continue</span>
+        </span>
+      </button>
+
+    </div>
+
+    <div class="foot">
+      <button class="keep" type="button">Keep current item</button>
+      <span class="fn">Nothing has changed yet.</span>
+    </div>
+  </div>
+
+  <span class="hi"></span>
+</div>
+</div>
           <div class="sbd-d"><span>Decision</span><p>Each option shows why it appears, how it differs from the current item, and the projected cart total.</p></div>
         </div>
         <div class="sbd-s">
-          <p class="sbd-n"><i>04</i>Review the trade-off</p>
-          <div class="ph" aria-hidden="true">
-            <div class="sb"><span class="sb-l"><time>9:41</time></span><span class="di"></span><span class="sb-r" style="color:var(--ios-label)"><svg viewBox="0 0 17 12" width="11" height="8" aria-hidden="true"><rect y="8" width="3" height="4" rx="1"/><rect x="4.7" y="5.6" width="3" height="6.4" rx="1"/><rect x="9.4" y="3" width="3" height="9" rx="1"/><rect x="14.1" width="3" height="12" rx="1"/></svg><svg viewBox="0 0 16 12" width="11" height="8" aria-hidden="true"><circle cx="8" cy="9.6" r="1.5"/><path d="M4.7 6.9a4.9 4.9 0 0 1 6.6 0" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><path d="M2.2 4.3a8.5 8.5 0 0 1 11.6 0" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg><svg viewBox="0 0 26 12" width="17" height="8" aria-hidden="true"><rect x=".6" y=".6" width="21.8" height="10.8" rx="3.4" fill="none" stroke="currentColor" stroke-width="1.1" opacity=".35"/><rect x="2.2" y="2.2" width="13.5" height="7.6" rx="2.1"/><path d="M24.1 4.3a2.1 2.1 0 0 1 0 3.4z" opacity=".35"/></svg></span></div><div class="ph-hh"><div class="ph-h"><span class="bk"><i></i>Milk</span><b>Review Change</b></div></div>
-            <div class="ph-b">
-              <div class="ios-g" style="margin-top:12px"><div class="ios-c pad"><span class="pi"><svg viewBox="0 0 40 40"><use href="#p-milk"/></svg></span><div class="tx"><div class="t1">Golden Dairy &middot; 2 L</div><div class="ios-u">SAR 14.00 / L</div><div class="t2">Replacing 1.5 L</div></div><span class="val b">SAR 28</span></div></div>
-              <p class="ios-h">The trade-off</p>
-              <div class="ios-g"><div class="ios-c"><div class="tx"><div class="t1">Why</div></div><span class="val"><span class="ios-tag tag-unit">Lower price per litre</span></span></div><div class="ios-c"><div class="tx"><div class="t1">Per litre</div></div><span class="val"><span class="ios-was">16.00</span> &rarr; <span class="ios-now">14.00</span></span></div><div class="ios-c"><div class="tx"><div class="t1">This order</div></div><span class="val b">Pay SAR 4 more</span></div><div class="ios-c"><div class="tx"><div class="t1">Updated total</div></div><span class="val b">SAR 108</span></div></div>
-              <p class="ios-f">Nothing has changed yet.</p>
-            </div>
-            <div class="ph-f">
-              <div class="ios-btn fill">Apply Change</div>
-              <div class="ios-btn plain">Cancel</div>
-            </div>
-          </div>
+          <p class="sbd-n"><i>04</i>Confirm change</p>
+          <div class="appui" id="sc-s4" inert aria-hidden="true">
+<div class="phone">
+  <div class="sb">
+    <span class="sb-t">9:41</span>
+    <span class="sb-di"></span>
+    <span class="sb-i">
+      <svg width="17.4" height="11" viewBox="0 0 17.4 11" aria-hidden="true"><rect x="0" y="7.4" width="3" height="3.6" rx="1"/><rect x="4.8" y="5.1" width="3" height="5.9" rx="1"/><rect x="9.6" y="2.6" width="3" height="8.4" rx="1"/><rect x="14.4" y="0" width="3" height="11" rx="1"/></svg>
+      <svg width="17" height="13" viewBox="0 0 17 13" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M3.13 6.23a7.6 7.6 0 0 1 10.74 0"/><path d="M5.67 8.77a4 4 0 0 1 5.66 0"/></g><circle cx="8.5" cy="11.1" r="1.5"/></svg>
+      <svg width="27.4" height="13" viewBox="0 0 27.4 13" aria-hidden="true"><rect x=".5" y=".5" width="24" height="12" rx="4.2" fill="none" stroke="currentColor" stroke-width="1" opacity=".36"/><path d="M26 4.6v3.8a2 2 0 0 0 0-3.8z" opacity=".4"/><rect x="2" y="2" width="21" height="9" rx="2.8"/></svg>
+    </span>
+  </div>
+
+  <div class="nav">
+    <button class="back" type="button"><svg viewBox="0 0 24 24"><path d="M15 5 8 12l7 7"/></svg>Milk</button>
+    <h1>Confirm change</h1>
+  </div>
+
+  <div class="body">
+    <div class="mid">
+    <div class="card">
+
+      <div class="now">
+        <span class="pack"><svg viewBox="0 0 40 40" aria-hidden="true"><ellipse cx="20" cy="34.5" rx="8.6" ry="1.4" fill="#111114" opacity=".13"/><path d="M11.8 15.2 20 6.6l8.4 8.6z" fill="#DCE7F2"/><path d="M11.8 15.2h16.6V32a1.8 1.8 0 0 1-1.8 1.8H13.6A1.8 1.8 0 0 1 11.8 32z" fill="#F2F7FC"/><path d="M11.8 15.2h5.6v18.6h-3.8A1.8 1.8 0 0 1 11.8 32z" fill="#fff" opacity=".8"/><rect x="18.4" y="4.4" width="3.2" height="2.8" rx=".9" fill="#2F6FB5"/><rect x="11.8" y="20.4" width="16.6" height="7.6" fill="#2F6FB5"/><rect x="14.2" y="22.3" width="9.6" height="1.8" rx=".9" fill="#F2F7FC"/><path d="M11.8 15.2h16.6V32a1.8 1.8 0 0 1-1.8 1.8H13.6A1.8 1.8 0 0 1 11.8 32z" fill="none" stroke="#BFCFDE" stroke-width=".9"/><path d="M11.8 15.2 20 6.6l8.4 8.6z" fill="none" stroke="#BFCFDE" stroke-width=".9"/></svg></span>
+        <span><span class="nk">In your cart</span>
+          <span class="nm">Golden Dairy</span><span class="meta"> &middot; 1.5 L</span></span>
+        <span class="tk"><span class="amt"><span class="cur-m">SAR</span><span class="maj">24</span></span>
+          <span class="strip"><span class="b">Per L</span><span class="u">SAR 16.00</span></span></span>
+      </div>
+
+      <div class="arrow"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14"/><path d="m6 13 6 6 6-6"/></svg></div>
+
+      <div class="to">
+        <span class="reason"><span class="chip c1">Lower price per litre</span></span>
+
+        <div class="prod">
+          <span class="pack"><svg viewBox="0 0 40 40" aria-hidden="true"><ellipse cx="20" cy="34.6" rx="9.4" ry="1.5" fill="#111114" opacity=".13"/><path d="M10.4 13.6 20 4.2l9.6 9.4z" fill="#DCE7F2"/><path d="M10.4 13.6h19.2v18.6a1.8 1.8 0 0 1-1.8 1.8H12.2a1.8 1.8 0 0 1-1.8-1.8z" fill="#F2F7FC"/><path d="M10.4 13.6h6v20.4h-4.2a1.8 1.8 0 0 1-1.8-1.8z" fill="#fff" opacity=".8"/><rect x="18.4" y="1.9" width="3.2" height="2.8" rx=".9" fill="#2F6FB5"/><rect x="10.4" y="19.4" width="19.2" height="8.4" fill="#2F6FB5"/><rect x="13" y="21.5" width="11" height="1.9" rx=".95" fill="#F2F7FC"/><path d="M10.4 13.6h19.2v18.6a1.8 1.8 0 0 1-1.8 1.8H12.2a1.8 1.8 0 0 1-1.8-1.8z" fill="none" stroke="#BFCFDE" stroke-width=".9"/><path d="M10.4 13.6 20 4.2l9.6 9.4z" fill="none" stroke="#BFCFDE" stroke-width=".9"/></svg></span>
+          <span><span class="nm">Golden Dairy</span><span class="meta">2 L</span></span>
+          <span class="tk"><span class="amt"><span class="cur-m">SAR</span><span class="maj">28</span></span>
+            <span class="strip"><span class="b">Per L</span><span class="u">SAR 14.00</span></span></span>
+        </div>
+
+        <div class="what">
+          <span class="w1">Per litre, down from <span class="was">SAR 16.00</span></span>
+          <span class="w1">Pay SAR 4 more</span>
+          <span class="w2">Your cart becomes <b>SAR 108</b></span>
+          <span class="yet">Nothing has changed yet.</span>
+        </div>
+      </div>
+
+    </div>
+    </div>
+
+    <div class="foot">
+      <button class="apply" type="button">Apply change</button>
+      <button class="cancel" type="button">Cancel</button>
+    </div>
+  </div>
+
+  <span class="hi"></span>
+</div>
+</div>
           <div class="sbd-d"><span>Decision</span><p>Before applying the change, the customer sees the full trade-off: lower price per litre, but SAR 4 more on this order.</p></div>
         </div>
       </div>
@@ -1695,16 +2633,108 @@ body[data-half="b"] .sbd-core{margin-top:0}
     <div class="sbd-row sbd-res">
       <div class="sbd-s">
           <p class="sbd-n"><i>05</i>Updated cart</p>
-          <div class="ph" aria-hidden="true">
-            <div class="sb"><span class="sb-l"><time>9:41</time></span><span class="di"></span><span class="sb-r" style="color:var(--ios-label)"><svg viewBox="0 0 17 12" width="11" height="8" aria-hidden="true"><rect y="8" width="3" height="4" rx="1"/><rect x="4.7" y="5.6" width="3" height="6.4" rx="1"/><rect x="9.4" y="3" width="3" height="9" rx="1"/><rect x="14.1" width="3" height="12" rx="1"/></svg><svg viewBox="0 0 16 12" width="11" height="8" aria-hidden="true"><circle cx="8" cy="9.6" r="1.5"/><path d="M4.7 6.9a4.9 4.9 0 0 1 6.6 0" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><path d="M2.2 4.3a8.5 8.5 0 0 1 11.6 0" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg><svg viewBox="0 0 26 12" width="17" height="8" aria-hidden="true"><rect x=".6" y=".6" width="21.8" height="10.8" rx="3.4" fill="none" stroke="currentColor" stroke-width="1.1" opacity=".35"/><rect x="2.2" y="2.2" width="13.5" height="7.6" rx="2.1"/><path d="M24.1 4.3a2.1 2.1 0 0 1 0 3.4z" opacity=".35"/></svg></span></div><div class="ph-hh"><div class="ph-h"></div><div class="ph-lt">Cart</div></div>
-            <div class="ph-b">
-              <div class="ios-g" style="margin-top:12px"><div class="ios-c pad is-chg"><span class="pi"><svg viewBox="0 0 40 40"><use href="#p-milk"/></svg></span><div class="tx"><div class="t1">Milk</div><div class="t2">Golden Dairy &middot; 2 L</div><div class="ios-u">SAR 14.00 / L</div></div><span class="rt"><span class="val b">SAR 28</span><span class="qty"><i>&minus;</i>1<i>+</i></span></span><span class="ios-chg"><span class="ios-chg-t"><span class="ios-chg-r">Lower price per litre</span><span class="ios-chg-w">was 1.5 L &middot; SAR 24</span></span><u>Undo</u></span></div><div class="ios-c pad"><span class="pi"><svg viewBox="0 0 40 40"><use href="#p-rice"/></svg></span><div class="tx"><div class="t1">Rice</div><div class="t2">Golden Field &middot; 2 kg</div></div><span class="rt"><span class="val b">SAR 19</span><span class="qty"><i>&minus;</i>1<i>+</i></span></span></div><div class="ios-c pad"><span class="pi"><svg viewBox="0 0 40 40"><use href="#p-soap"/></svg></span><div class="tx"><div class="t1">Dish soap</div><div class="t2">CleanPro &middot; 750 ml</div></div><span class="rt"><span class="val b">SAR 14</span><span class="qty"><i>&minus;</i>1<i>+</i></span></span></div><div class="ios-c pad"><span class="pi"><svg viewBox="0 0 40 40"><use href="#p-flake"/></svg></span><div class="tx"><div class="t1">Cornflakes</div><div class="t2">Morning Co &middot; 500 g</div></div><span class="rt"><span class="val b">SAR 18</span><span class="qty"><i>&minus;</i>1<i>+</i></span></span></div><div class="ios-c pad"><span class="pi is-more">+2</span><div class="tx"><div class="t1">2 more items</div><div class="t2">Pasta, olive oil</div></div><span class="val b">SAR 29</span></div></div>
-            </div>
-            <div class="ph-f">
-              <div class="ios-tot"><span>Total</span><b>SAR 108</b></div>
-              <div class="ios-btn is-ink">Checkout</div>
-            </div>
-          </div>
+          <div class="appui" id="sc-s5" inert aria-hidden="true">
+<div class="phone">
+  <div class="sb">
+    <span class="sb-t">9:41</span>
+    <span class="sb-di"></span>
+    <span class="sb-i">
+      <svg width="17.4" height="11" viewBox="0 0 17.4 11" aria-hidden="true"><rect x="0" y="7.4" width="3" height="3.6" rx="1"/><rect x="4.8" y="5.1" width="3" height="5.9" rx="1"/><rect x="9.6" y="2.6" width="3" height="8.4" rx="1"/><rect x="14.4" y="0" width="3" height="11" rx="1"/></svg>
+      <svg width="17" height="13" viewBox="0 0 17 13" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M3.13 6.23a7.6 7.6 0 0 1 10.74 0"/><path d="M5.67 8.77a4 4 0 0 1 5.66 0"/></g><circle cx="8.5" cy="11.1" r="1.5"/></svg>
+      <svg width="27.4" height="13" viewBox="0 0 27.4 13" aria-hidden="true"><rect x=".5" y=".5" width="24" height="12" rx="4.2" fill="none" stroke="currentColor" stroke-width="1" opacity=".36"/><path d="M26 4.6v3.8a2 2 0 0 0 0-3.8z" opacity=".4"/><rect x="2" y="2" width="21" height="9" rx="2.8"/></svg>
+    </span>
+  </div>
+
+  <div class="appbar"><h1>Cart</h1><span>6 items</span></div>
+
+  <div class="list">
+
+    <!-- the changed item. Pale field, no flash, and the note that records what
+         it replaced with the control that puts it back. -->
+    <article class="row is-chg">
+      <span class="pack"><svg viewBox="0 0 40 40" aria-hidden="true"><ellipse cx="20" cy="34.6" rx="9.4" ry="1.5" fill="#111114" opacity=".13"/><path d="M10.4 13.6 20 4.2l9.6 9.4z" fill="#DCE7F2"/><path d="M10.4 13.6h19.2v18.6a1.8 1.8 0 0 1-1.8 1.8H12.2a1.8 1.8 0 0 1-1.8-1.8z" fill="#F2F7FC"/><path d="M10.4 13.6h6v20.4h-4.2a1.8 1.8 0 0 1-1.8-1.8z" fill="#fff" opacity=".8"/><rect x="18.4" y="1.9" width="3.2" height="2.8" rx=".9" fill="#2F6FB5"/><rect x="10.4" y="19.4" width="19.2" height="8.4" fill="#2F6FB5"/><rect x="13" y="21.5" width="11" height="1.9" rx=".95" fill="#F2F7FC"/><path d="M10.4 13.6h19.2v18.6a1.8 1.8 0 0 1-1.8 1.8H12.2a1.8 1.8 0 0 1-1.8-1.8z" fill="none" stroke="#BFCFDE" stroke-width=".9"/><path d="M10.4 13.6 20 4.2l9.6 9.4z" fill="none" stroke="#BFCFDE" stroke-width=".9"/></svg></span>
+      <span><span class="nm">Milk</span><span class="meta">Golden Dairy · 2 L</span>
+        <span class="ctl"><span class="step"><i>−</i>1<i>+</i></span></span></span>
+      <span class="val"><span class="fslot"></span>
+        <span class="tk"><span class="amt"><span class="cur">SAR</span><span class="maj">28</span></span>
+          <span class="strip"><span class="b">Per L</span><span class="u">SAR 14.00</span></span></span></span>
+      <span class="chg"><span><b>Lower price per litre.</b> Was 1.5 L, SAR 24.</span>
+        <button class="undo" type="button">Undo</button></span>
+    </article>
+
+    <!-- two items still have options, so they still carry the flash -->
+    <article class="row">
+      <span class="pack"><svg viewBox="0 0 40 40" aria-hidden="true"><ellipse cx="20" cy="34.4" rx="8.2" ry="1.4" fill="#111114" opacity=".13"/><path d="M13.2 13.8c0-3 3-4.4 6.8-4.4s6.8 1.4 6.8 4.4v17.6a2 2 0 0 1-2 2H15.2a2 2 0 0 1-2-2z" fill="#D3AE77"/><path d="M13.2 13.8c0-2.4 1.9-3.8 4.4-4.2v23.8H15.2a2 2 0 0 1-2-2z" fill="#fff" opacity=".3"/><rect x="13.2" y="18.4" width="13.6" height="7.4" fill="#B38B52"/><rect x="15.6" y="20.2" width="8.4" height="1.8" rx=".9" fill="#F7EFE1"/><path d="M13.2 13.8c0-3 3-4.4 6.8-4.4s6.8 1.4 6.8 4.4v17.6a2 2 0 0 1-2 2H15.2a2 2 0 0 1-2-2z" fill="none" stroke="#A8813F" stroke-width=".9"/></svg></span>
+      <span><span class="nm">Rice</span><span class="meta">Golden Field · 2 kg</span>
+        <span class="ctl"><span class="step"><i>−</i>1<i>+</i></span></span></span>
+      <span class="val"><span class="fslot"><span class="flash">2 options</span></span>
+        <span class="tk"><span class="amt"><span class="cur">SAR</span><span class="maj">19</span></span>
+          <span class="strip"><span class="b">Per kg</span><span class="u">SAR 9.50</span></span></span></span>
+    </article>
+
+    <article class="row">
+      <span class="pack"><svg viewBox="0 0 40 40" aria-hidden="true"><ellipse cx="20" cy="34.4" rx="7.2" ry="1.3" fill="#111114" opacity=".13"/><rect x="18.5" y="5.2" width="3" height="4.6" rx="1" fill="#7C7C86"/><rect x="16.2" y="9.3" width="7.6" height="3.4" rx="1.2" fill="#5F5F6B"/><path d="M14.2 17c0-2.3 1.7-3.6 5.8-3.6s5.8 1.3 5.8 3.6v14.4a2 2 0 0 1-2 2h-7.6a2 2 0 0 1-2-2z" fill="#2F9469"/><path d="M14.2 17c0-1.9 1.2-3.1 3.6-3.5v19.9h-1.6a2 2 0 0 1-2-2z" fill="#fff" opacity=".28"/><rect x="16.4" y="20.3" width="7.2" height="8.4" rx="1.2" fill="#F3FAF6"/><rect x="17.7" y="22.3" width="4.6" height="1.5" rx=".75" fill="#2F9469"/><path d="M14.2 17c0-2.3 1.7-3.6 5.8-3.6s5.8 1.3 5.8 3.6v14.4a2 2 0 0 1-2 2h-7.6a2 2 0 0 1-2-2z" fill="none" stroke="#237552" stroke-width=".9"/></svg></span>
+      <span><span class="nm">Dish soap</span><span class="meta">CleanPro · 750 ml</span>
+        <span class="ctl"><span class="step"><i>−</i>1<i>+</i></span></span></span>
+      <span class="val"><span class="fslot"><span class="flash">1 option</span></span>
+        <span class="tk"><span class="amt"><span class="cur">SAR</span><span class="maj">14</span></span>
+          <span class="strip"><span class="b">Per L</span><span class="u">SAR 18.67</span></span></span></span>
+    </article>
+
+    <!-- items with no options: no flash, and the ticket is unchanged. Nothing
+         is added to fill the slot the flash leaves empty. -->
+    <article class="row">
+      <span class="pack"><svg viewBox="0 0 40 40" aria-hidden="true"><ellipse cx="20" cy="34.4" rx="8.4" ry="1.3" fill="#111114" opacity=".13"/><rect x="11.8" y="8.6" width="16.4" height="24.8" rx="1.7" fill="#E08A2C"/><path d="M13.4 8.6h4.4v24.8h-4.4z" fill="#fff" opacity=".22"/><rect x="14.2" y="11.4" width="11.6" height="9.8" rx="1.2" fill="#FBE3B8"/><circle cx="20" cy="16.3" r="3" fill="#C96C1C"/><circle cx="20" cy="16.3" r="1.35" fill="#F7C67E"/><rect x="14.2" y="23.6" width="11.6" height="2.4" rx="1.2" fill="#FBE3B8"/><rect x="11.8" y="8.6" width="16.4" height="24.8" rx="1.7" fill="none" stroke="#BE6E1C" stroke-width=".9"/></svg></span>
+      <span><span class="nm">Cornflakes</span><span class="meta">Morning Co · 500 g</span>
+        <span class="ctl"><span class="step"><i>−</i>1<i>+</i></span></span></span>
+      <span class="val"><span class="fslot"></span>
+        <span class="tk"><span class="amt"><span class="cur">SAR</span><span class="maj">18</span></span>
+          <span class="strip"><span class="b">Per kg</span><span class="u">SAR 36.00</span></span></span></span>
+    </article>
+
+    <article class="row">
+      <span class="pack"><svg viewBox="0 0 40 40" aria-hidden="true"><ellipse cx="20" cy="34.4" rx="7.4" ry="1.3" fill="#111114" opacity=".13"/><rect x="13.6" y="8.4" width="12.8" height="25" rx="1.7" fill="#E9C34D"/><path d="M15 8.4h3.6v25H15z" fill="#fff" opacity=".24"/><rect x="16" y="12.2" width="8" height="11.6" rx=".9" fill="#F8F0D2"/><g fill="#D8A93B"><rect x="16.9" y="13.1" width="1.3" height="9.8" rx=".65"/><rect x="19.05" y="13.1" width="1.3" height="9.8" rx=".65"/><rect x="21.2" y="13.1" width="1.3" height="9.8" rx=".65"/></g><rect x="13.6" y="8.4" width="12.8" height="25" rx="1.7" fill="none" stroke="#C9A335" stroke-width=".9"/></svg></span>
+      <span><span class="nm">Pasta</span><span class="meta">Napoli Co · 1 kg</span>
+        <span class="ctl"><span class="step"><i>−</i>1<i>+</i></span></span></span>
+      <span class="val"><span class="fslot"></span>
+        <span class="tk"><span class="amt"><span class="cur">SAR</span><span class="maj">11</span></span>
+          <span class="strip"><span class="b">Per kg</span><span class="u">SAR 11.00</span></span></span></span>
+    </article>
+
+    <article class="row">
+      <span class="pack"><svg viewBox="0 0 40 40" aria-hidden="true"><ellipse cx="20" cy="34.4" rx="6.4" ry="1.3" fill="#111114" opacity=".13"/><rect x="18.6" y="4.8" width="2.8" height="3.2" rx=".7" fill="#33481D"/><rect x="18.2" y="7.4" width="3.6" height="5.6" fill="#4A6B2A"/><path d="M15.2 18.2c0-2.4 3-3.2 3-5.2h3.6c0 2 3 2.8 3 5.2v13.2a2 2 0 0 1-2 2h-5.6a2 2 0 0 1-2-2z" fill="#4A6B2A"/><path d="M15.2 18.2c0-1.8 1.6-2.7 2.4-4.1v19.3h-.4a2 2 0 0 1-2-2z" fill="#fff" opacity=".24"/><rect x="15.8" y="21.3" width="8.4" height="6.8" rx=".8" fill="#E5CE7A"/><rect x="17.2" y="23.1" width="5.6" height="1.4" rx=".7" fill="#4A6B2A"/><path d="M15.2 18.2c0-2.4 3-3.2 3-5.2h3.6c0 2 3 2.8 3 5.2v13.2a2 2 0 0 1-2 2h-5.6a2 2 0 0 1-2-2z" fill="none" stroke="#38521F" stroke-width=".9"/></svg></span>
+      <span><span class="nm">Olive oil</span><span class="meta">Olea Verde · 500 ml</span>
+        <span class="ctl"><span class="step"><i>−</i>1<i>+</i></span></span></span>
+      <span class="val"><span class="fslot"></span>
+        <span class="tk"><span class="amt"><span class="cur">SAR</span><span class="maj">18</span></span>
+          <span class="strip"><span class="b">Per L</span><span class="u">SAR 36.00</span></span></span></span>
+    </article>
+
+  </div>
+
+  <div class="foot">
+    <button class="entry" type="button">
+      <span class="et"><span class="e1">Optimize basket</span>
+        <span class="e2">2 items have better-value options</span></span>
+      <span class="ec">›</span>
+    </button>
+    <div class="pay">
+      <span class="tot"><span class="tl">Total</span>
+        <span class="tk"><span class="amt"><span class="cur">SAR</span><span class="maj">108</span></span></span></span>
+      <button class="cta" type="button">Checkout</button>
+    </div>
+  </div>
+
+  <div class="tabs">
+    <span class="tab"><svg viewBox="0 0 24 24"><path d="M3 10.5 12 4l9 6.5V20a1 1 0 0 1-1 1h-4v-6H8v6H4a1 1 0 0 1-1-1z"/></svg>Home</span>
+    <span class="tab"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"/><path d="m16 16 4.5 4.5"/></svg>Search</span>
+    <span class="tab"><svg viewBox="0 0 24 24"><path d="M12.6 3.4H20v7.4a2 2 0 0 1-.6 1.4l-7 7a2 2 0 0 1-2.8 0l-4.8-4.8a2 2 0 0 1 0-2.8l7-7a2 2 0 0 1 1.4-.6z"/><circle cx="16.3" cy="7.7" r="1.2"/></svg>Offers</span>
+    <span class="tab on"><span class="tw"><svg viewBox="0 0 24 24"><path d="M4.5 7.5h15l-1.4 10.2a2 2 0 0 1-2 1.8H7.9a2 2 0 0 1-2-1.8z"/><path d="M8.8 7.5a3.2 3.2 0 0 1 6.4 0"/></svg><i class="tb">6</i></span>Cart</span>
+    <span class="tab"><svg viewBox="0 0 24 24"><circle cx="12" cy="8.6" r="3.6"/><path d="M5.5 20a6.5 6.5 0 0 1 13 0"/></svg>Account</span>
+  </div>
+  <span class="hi"></span>
+</div>
+</div>
           <div class="sbd-d"><span>Decision</span><p>The applied change stays visible on the item, with Undo in the same place. Checkout remains available.</p></div>
       </div>
     </div>
@@ -1765,7 +2795,7 @@ body[data-half="b"] .sbd-core{margin-top:0}
 <footer class="foot"><div class="wrap foot-in">
   <div><b>Islam Ashraf · Product Designer</b><br><span>Basket Optimizer · Grocery e-commerce concept · 2026</span></div>
   <div class="foot-l">
-    <a href="Smart-Basket-Interactive-Prototype.html" target="_blank" rel="noopener">Prototype ↗</a>
+    <a href="prototype.html" target="_blank" rel="noopener">Prototype ↗</a>
     <a href="mailto:islameliwa@gmail.com">Email</a>
     <a href="https://www.linkedin.com/in/islamashraf" target="_blank" rel="noopener">LinkedIn</a>
   </div>
