@@ -1,0 +1,463 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Basket Optimizer — Interactive Prototype — Islam Ashraf</title>
+<meta name="description" content="Interactive prototype for the Basket Optimizer: compare a cart item's options, preview the effect on the total, apply or skip, and undo. Every decision prints to a receipt that never reports a combined saving.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800;900&family=Inter:wght@400;500;600&family=Spline+Sans+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#FCFCFA; --paper-2:#F3F3EF; --paper-3:#E9E9E3;
+  --ink:#111114; --ink-2:#4E4E58; --ink-3:#6B6B75;
+  --line:#E2E2DB; --line-2:#C9C9C0;
+  --yellow:#FFD400; --yellow-2:#FFF4C4;
+  --save:#0E7A42; --save-2:#E4F1EA;
+  --unit:#4A38CE; --unit-2:#ECE9FB;
+  --own:#8A5A00; --own-2:#F6EEDC;
+  --f-h:"Archivo",system-ui,sans-serif;
+  --f-b:"Inter",system-ui,sans-serif;
+  --f-m:"Spline Sans Mono",ui-monospace,monospace;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--paper);color:var(--ink);font-family:var(--f-b);font-size:16px;line-height:1.5;
+  -webkit-font-smoothing:antialiased}
+/* every figure in this prototype is money; none of it should shift column */
+.num,.ph-p,.tp-v,.tp-tot b,.rw b{font-variant-numeric:tabular-nums}
+:focus-visible{outline:3px solid var(--unit);outline-offset:3px}
+
+.wrap{max-width:1140px;margin:0 auto;padding:2.2rem 1.4rem 4rem}
+.top{display:flex;flex-wrap:wrap;gap:.6rem 1.4rem;align-items:baseline;justify-content:space-between;
+  padding-bottom:1.1rem;border-bottom:2px solid var(--ink)}
+.top h1{margin:0;font-family:var(--f-h);font-size:clamp(1.35rem,2.6vw,1.85rem);font-weight:800;letter-spacing:-.03em}
+.top a{font-family:var(--f-h);font-size:.88rem;font-weight:700;color:var(--ink);text-decoration:none;
+  border-bottom:2px solid var(--yellow);padding-bottom:1px;white-space:nowrap}
+.top a:hover{border-bottom-color:var(--ink)}
+
+.lead{margin:1.4rem 0 0;display:grid;grid-template-columns:minmax(0,32rem) minmax(0,1fr);gap:1rem 2.6rem;align-items:start}
+.lead p{margin:0;color:var(--ink-2);font-size:.98rem}
+.lead b{color:var(--ink);font-weight:600}
+.steps{margin:0;padding:0;list-style:none;display:flex;flex-wrap:wrap;gap:.4rem}
+.steps li{padding:.3rem .55rem;border:1px solid var(--line-2);border-radius:4px;background:#fff;
+  font-family:var(--f-m);font-size:.74rem;color:var(--ink-2)}
+.steps li b{font-weight:600;color:var(--ink)}
+
+.lay{margin-top:2rem;display:grid;grid-template-columns:minmax(0,380px) minmax(0,1fr);gap:2.6rem;align-items:start}
+@media(max-width:880px){.lay,.lead{grid-template-columns:minmax(0,1fr)}}
+
+/* ---------- phone ---------- */
+.pf{border:1px solid var(--line-2);border-radius:20px;background:#fff;overflow:hidden;
+  box-shadow:0 20px 44px -26px rgba(17,17,20,.5)}
+.scr{position:relative;display:flex;flex-direction:column;min-height:640px}
+.hd{display:flex;align-items:center;gap:.55rem;padding:.9rem 1rem;border-bottom:1px solid var(--line);
+  background:var(--paper-2)}
+.hd .bk{border:0;background:none;padding:.15rem;font-size:1.05rem;line-height:1;color:var(--ink);cursor:pointer}
+.hd .ti{font-family:var(--f-h);font-size:1rem;font-weight:800;letter-spacing:-.02em}
+.hd .su{margin-left:auto;font-family:var(--f-m);font-size:.74rem;color:var(--ink-3)}
+.bd{flex:1;padding:.9rem 1rem;overflow-y:auto}
+.ft{padding:.9rem 1rem;border-top:1px solid var(--line);background:var(--paper-2)}
+
+/* a cart line, set like a receipt line: name, leader, price */
+.rw{display:flex;align-items:baseline;gap:.5rem;padding:.6rem 0;border-bottom:1px dotted var(--line-2)}
+.rw:last-of-type{border-bottom:0}
+.rw .nm{font-family:var(--f-h);font-size:.94rem;font-weight:700}
+.rw .ld{flex:1;border-bottom:1px dotted var(--line-2);transform:translateY(-.22em)}
+.rw b{font-family:var(--f-h);font-size:.94rem;font-weight:700;white-space:nowrap}
+.rw .sb{display:block;margin-top:.16rem;font-family:var(--f-m);font-size:.72rem;color:var(--ink-3)}
+.rw.mut .nm,.rw.mut b{color:var(--ink-3);font-weight:500}
+/* neutral ground: the reason label carries the colour, so the row must not
+   contradict it — a store-brand saving in a unit-value tint reads as a mistake */
+.rw.new{margin-inline:-1rem;padding-inline:1rem;background:var(--paper-2);
+  box-shadow:inset 3px 0 0 var(--ink)}
+.chg{display:block;margin-top:.2rem;font-family:var(--f-h);font-size:.76rem;font-weight:700}
+.undo{margin-top:.2rem;padding:0;border:0;background:none;font-family:var(--f-h);font-size:.76rem;
+  font-weight:700;color:var(--ink-2);text-decoration:underline;cursor:pointer;display:block}
+
+.tot{display:flex;align-items:baseline;gap:.5rem;padding-top:.7rem;margin-top:.2rem;border-top:2px solid var(--ink)}
+.tot span{font-family:var(--f-m);font-size:.74rem;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3)}
+.tot b{margin-left:auto;font-family:var(--f-h);font-size:1.5rem;font-weight:800;letter-spacing:-.03em}
+.note{margin:.6rem 0 0;font-family:var(--f-m);font-size:.73rem;line-height:1.45;color:var(--ink-3)}
+
+.btn{display:block;width:100%;margin-top:.5rem;padding:.72rem 1rem;border-radius:8px;border:1px solid var(--ink);
+  font-family:var(--f-h);font-size:.92rem;font-weight:700;cursor:pointer;background:#fff;color:var(--ink)}
+.btn.pri{background:var(--ink);color:#fff}
+.btn.gho{border-color:var(--line-2);color:var(--ink-2)}
+.btn.qui{border-color:transparent;background:none;color:var(--ink-2);text-decoration:underline}
+
+/* an item in the opportunities list */
+.opp{display:flex;gap:.6rem;align-items:center;width:100%;margin-bottom:.5rem;padding:.7rem .75rem;
+  border:1px solid var(--line);border-radius:9px;background:#fff;text-align:left;font:inherit;cursor:pointer}
+.opp:hover{border-color:var(--ink)}
+.opp.done{background:var(--paper-2)}
+.opp .m{flex:1;min-width:0}
+.opp .n{font-family:var(--f-h);font-size:.94rem;font-weight:700}
+.opp .q{margin-top:.16rem;font-family:var(--f-m);font-size:.72rem;color:var(--ink-3)}
+.opp .go{font-family:var(--f-h);font-size:.84rem;font-weight:700;color:var(--ink-2)}
+
+/* the current item, pinned above its alternatives */
+.cur{padding:.8rem;border:1px solid var(--line-2);border-radius:9px;background:var(--paper-2)}
+.k{font-family:var(--f-m);font-size:.7rem;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3)}
+.cur .n,.alt .n{margin-top:.3rem;font-family:var(--f-h);font-size:1rem;font-weight:700}
+.cur .u,.alt .u{margin-top:.14rem;font-family:var(--f-m);font-size:.74rem;color:var(--ink-3)}
+.cur .p,.alt .p{margin-top:.3rem;font-family:var(--f-h);font-size:1.15rem;font-weight:800;letter-spacing:-.02em}
+
+.alt{padding:.8rem;border:1px solid var(--line);border-radius:9px;margin-bottom:.55rem;background:#fff}
+.tag{display:inline-flex;padding:.2rem .45rem;border-radius:4px;font-family:var(--f-h);font-size:.72rem;font-weight:700}
+.tag.save{background:var(--save-2);color:var(--save)}
+.tag.unit{background:var(--unit-2);color:var(--unit)}
+.tag.own{background:var(--own-2);color:var(--own)}
+.why{margin-top:.35rem;font-size:.85rem;line-height:1.45;color:var(--ink-2)}
+/* the delta and the resulting total, always together, never merged */
+.d{margin-top:.45rem;font-family:var(--f-h);font-size:.85rem;font-weight:700}
+.d.less{color:var(--save)} .d.more{color:var(--ink)}
+.proj{margin-top:.2rem;font-family:var(--f-m);font-size:.75rem;color:var(--ink-2)}
+
+.cf{display:flex;gap:.8rem;padding:.6rem 0;border-bottom:1px dotted var(--line-2);font-size:.9rem}
+.cf .k{flex:none;width:88px;padding-top:.14rem}
+.cf .v{flex:1;color:var(--ink)}
+
+.toast{position:absolute;left:.9rem;right:.9rem;bottom:.9rem;display:flex;align-items:center;gap:.8rem;
+  padding:.7rem .85rem;border-radius:8px;background:var(--ink);color:#fff;font-size:.86rem;
+  opacity:0;transform:translateY(8px);transition:opacity .2s,transform .2s}
+.toast.on{opacity:1;transform:none}
+.toast b{margin-left:auto;font-family:var(--f-h);font-weight:700;text-decoration:underline;cursor:pointer}
+@media(prefers-reduced-motion:reduce){.toast{transition:none}}
+
+/* ---------- the decision record: a till roll that refuses to sum ---------- */
+.tape{position:sticky;top:1.4rem;background:#fff;border:1px solid var(--line-2);border-radius:0 0 4px 4px}
+/* one skeuomorphic cue, and only one: the perforated tear at the head */
+.tape::before{content:"";display:block;height:9px;
+  background:repeating-linear-gradient(90deg,var(--line-2) 0 5px,transparent 5px 10px);
+  border-bottom:1px solid var(--line)}
+.tape-in{padding:1.1rem 1.25rem 1.35rem}
+.tp-k{font-family:var(--f-m);font-size:.72rem;letter-spacing:.13em;text-transform:uppercase;color:var(--ink-3)}
+.tp-sub{margin:.35rem 0 0;font-family:var(--f-m);font-size:.72rem;line-height:1.5;color:var(--ink-3)}
+.tp-l{margin:1.1rem 0 0;padding:0;list-style:none;display:grid;gap:.75rem}
+.tp-i{display:grid;gap:.16rem}
+.tp-r{display:flex;align-items:baseline;gap:.5rem;font-family:var(--f-m);font-size:.82rem;color:var(--ink)}
+.tp-r .ld{flex:1;border-bottom:1px dotted var(--line-2);transform:translateY(-.22em)}
+.tp-v{font-weight:600;white-space:nowrap}
+.tp-v.less{color:var(--save)} .tp-v.more{color:var(--unit)}
+.tp-why{font-family:var(--f-m);font-size:.72rem;color:var(--ink-3)}
+.tp-tot{margin-top:1.1rem;padding-top:.8rem;border-top:2px solid var(--ink);
+  display:flex;align-items:baseline;gap:.5rem;font-family:var(--f-m);font-size:.74rem;
+  letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3)}
+.tp-tot b{margin-left:auto;font-family:var(--f-h);font-size:1.32rem;font-weight:800;
+  letter-spacing:-.03em;color:var(--ink);text-transform:none}
+.tp-by{margin:.5rem 0 0;font-family:var(--f-m);font-size:.75rem;line-height:1.5;color:var(--ink-2)}
+/* the line the receipt will not print */
+.tp-no{margin:.9rem 0 0;padding-top:.75rem;border-top:1px dashed var(--line-2);
+  font-family:var(--f-m);font-size:.73rem;line-height:1.55;color:var(--ink-3)}
+.tp-no b{color:var(--ink);font-weight:600}
+.reset{margin-top:1.1rem;padding:.5rem .9rem;border:1px solid var(--line-2);border-radius:6px;background:#fff;
+  font-family:var(--f-h);font-size:.84rem;font-weight:700;color:var(--ink);cursor:pointer}
+.reset:hover{border-color:var(--ink)}
+.sr{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);
+  white-space:nowrap;border:0}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <div class="top">
+    <h1>Basket Optimizer — interactive prototype</h1>
+    <a href="Smart-Basket-Case-Study-R13.html">← Back to the case study</a>
+  </div>
+
+  <div class="lead">
+    <p>A finished cart of six items at SAR 104. Three of them have options worth reviewing. Nothing changes until you apply it, and everything can be undone. <b>Try the milk first — one of its options costs more and is still the better buy.</b></p>
+    <ol class="steps">
+      <li><b>1</b> Optimize basket</li>
+      <li><b>2</b> Pick an item</li>
+      <li><b>3</b> Compare options</li>
+      <li><b>4</b> Apply, then undo</li>
+    </ol>
+  </div>
+
+  <div class="lay">
+    <div class="pf">
+      <div class="scr" id="scr"></div>
+      <p class="sr" role="status" aria-live="polite" id="live"></p>
+    </div>
+
+    <aside class="tape">
+      <div class="tape-in">
+        <p class="tp-k">Decision record</p>
+        <p class="tp-sub">Every change you apply prints one line, with the reason it was offered.</p>
+        <div id="roll"></div>
+        <button class="reset" type="button" id="reset">Reset prototype</button>
+      </div>
+    </aside>
+  </div>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  /* Unit prices are pre-computed rather than derived: normalising pack sizes
+     across brands is real catalogue work, named as a cost in the case study,
+     and not something a prototype should pretend to have solved.
+     The cart matches section 05 exactly — milk 3 options, rice 2, dish soap 1,
+     three more items with none, SAR 104 in total. */
+  var ITEMS = [
+    {id:"milk", name:"Milk", brand:"Golden Dairy", size:"1.5 L", price:24, unit:"SAR 16.00 / L",
+     alts:[
+       {brand:"Value Milk", size:"1.5 L", price:16, unit:"SAR 10.67 / L", reason:"save",
+        label:"Same size, lower price", why:"A different budget brand at the same 1.5 litre size."},
+       {brand:"Golden Dairy", size:"2 L", price:28, unit:"SAR 14.00 / L", reason:"unit",
+        label:"Best price per unit", why:"The brand already in the cart, in a larger bottle."},
+       {brand:"Basket Value", size:"1.5 L", price:17, unit:"SAR 11.33 / L", reason:"own",
+        label:"Store brand, lower price", why:"The shop's own label at the same size."}
+     ]},
+    {id:"rice", name:"Rice", brand:"Golden Field", size:"2 kg", price:19, unit:"SAR 9.50 / kg",
+     alts:[
+       {brand:"Value Rice", size:"2 kg", price:15, unit:"SAR 7.50 / kg", reason:"save",
+        label:"Same size, lower price", why:"A different budget brand at the same 2 kilo size."},
+       {brand:"Golden Field", size:"5 kg", price:39, unit:"SAR 7.80 / kg", reason:"unit",
+        label:"Best price per unit", why:"The brand already in the cart, in a larger sack."}
+     ]},
+    {id:"soap", name:"Dish soap", brand:"CleanPro", size:"750 ml", price:14, unit:"SAR 18.67 / L",
+     alts:[
+       {brand:"Basket Value", size:"750 ml", price:10, unit:"SAR 13.33 / L", reason:"own",
+        label:"Store brand, lower price", why:"The shop's own label at the same 750 millilitre size."}
+     ]}
+  ];
+  var OTHERS = [
+    {name:"Cornflakes", brand:"Morning Co", size:"500 g", price:18},
+    {name:"Pasta", brand:"Value Co", size:"1 kg", price:7},
+    {name:"Olive oil", brand:"Regional", size:"500 ml", price:22}
+  ];
+
+  var scr = document.getElementById("scr"),
+      roll = document.getElementById("roll"),
+      live = document.getElementById("live"),
+      st = {view:"cart", item:null, pick:0, applied:{}};
+
+  function find(id){ for (var i=0;i<ITEMS.length;i++) if (ITEMS[i].id===id) return ITEMS[i]; return null; }
+  function esc(s){ return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
+  function base(it){ return st.applied[it.id] || it; }
+
+  function originalTotal(){
+    var t=0,i;
+    for (i=0;i<ITEMS.length;i++) t+=ITEMS[i].price;
+    for (i=0;i<OTHERS.length;i++) t+=OTHERS[i].price;
+    return t;
+  }
+  /* current counts applied changes only — projections never touch it */
+  function currentTotal(){
+    var t=0,i;
+    for (i=0;i<ITEMS.length;i++) t += base(ITEMS[i]).price;
+    for (i=0;i<OTHERS.length;i++) t += OTHERS[i].price;
+    return t;
+  }
+  /* projected against the CURRENT total, so it stays right after earlier changes */
+  function projected(it, alt){ return currentTotal() - base(it).price + alt.price; }
+  function remaining(){
+    var n=0,i; for (i=0;i<ITEMS.length;i++) if (!st.applied[ITEMS[i].id]) n++; return n;
+  }
+  /* the saving rule lives here: only a fall in the total is ever called "less" */
+  function deltaLabel(d){
+    if (d === 0) return "No change to the total";
+    return d < 0 ? "Pay SAR " + Math.abs(d) + " less now" : "Pay SAR " + d + " more now";
+  }
+  function appliedList(){
+    var out=[],i,a;
+    for (i=0;i<ITEMS.length;i++){ a=st.applied[ITEMS[i].id]; if (a) out.push({item:ITEMS[i], alt:a}); }
+    return out;
+  }
+  function countByReason(){
+    var list=appliedList(), c={save:0,unit:0,own:0}, i;
+    for (i=0;i<list.length;i++) c[list[i].alt.reason]++;
+    var parts=[];
+    if (c.save) parts.push(c.save + (c.save===1?" lower price":" lower prices"));
+    if (c.own)  parts.push(c.own + (c.own===1?" store brand":" store brands"));
+    if (c.unit) parts.push(c.unit + (c.unit===1?" better unit value":" better unit values"));
+    return parts.join(" · ");
+  }
+
+  function head(title, back, sub){
+    return '<div class="hd">'
+      + (back ? '<button class="bk" type="button" data-go="'+back+'" aria-label="Back">&larr;</button>' : "")
+      + '<div class="ti" tabindex="-1">'+esc(title)+'</div>'
+      + (sub ? '<div class="su">'+esc(sub)+'</div>' : "") + '</div>';
+  }
+  function row(name, sub, price, extra){
+    return '<div class="rw'+(extra&&extra.cls?' '+extra.cls:'')+'"><div style="flex:1;min-width:0">'
+      + '<span class="nm">'+esc(name)+'</span>'
+      + (sub ? '<span class="sb">'+esc(sub)+'</span>' : "")
+      + (extra&&extra.after ? extra.after : "")
+      + '</div><b>SAR '+price+'</b></div>';
+  }
+
+  function cartHTML(){
+    var rows="", i, it, a, p;
+    for (i=0;i<ITEMS.length;i++){
+      it = ITEMS[i]; a = st.applied[it.id]; p = a || it;
+      rows += row(it.name + " · " + p.size, p.brand + " · " + p.unit, p.price, a ? {
+        cls:"new",
+        after:'<span class="chg" style="color:var(--'+(a.reason==="unit"?"unit":"save")+')">'+esc(a.label)+'</span>'
+             +'<button class="undo" type="button" data-undo="'+it.id+'">Undo this change</button>'
+      } : null);
+    }
+    for (i=0;i<OTHERS.length;i++) rows += row(OTHERS[i].name + " · " + OTHERS[i].size, OTHERS[i].brand, OTHERS[i].price, {cls:"mut"});
+
+    return head("Your cart", null, (ITEMS.length+OTHERS.length)+" items")
+      + '<div class="bd">'+rows
+      + '<div class="tot"><span>Total</span><b>SAR '+currentTotal()+'</b></div>'
+      + '<p class="note">Example scenario. Prices are illustrative.</p></div>'
+      + '<div class="ft">'
+      + (remaining() ? '<button class="btn gho" type="button" data-go="opps">Optimize basket</button>'
+                     : '<p class="note" style="margin:0 0 .2rem">Every option reviewed.</p>')
+      + '<button class="btn pri" type="button" data-checkout>Checkout</button></div>';
+  }
+
+  function oppsHTML(){
+    var rows="", i, it, a;
+    for (i=0;i<ITEMS.length;i++){
+      it = ITEMS[i]; a = st.applied[it.id];
+      rows += '<button class="opp'+(a?" done":"")+'" type="button" data-open="'+it.id+'">'
+        + '<div class="m"><div class="n">'+esc(it.name)+' · '+esc(it.size)+'</div>'
+        + '<div class="q">'+(a ? "Changed · "+esc(a.label)
+            : it.alts.length+" option"+(it.alts.length!==1?"s":""))+'</div></div>'
+        + '<div class="go">'+(a?"Review again":"Compare")+' &rarr;</div></button>';
+    }
+    return head("Optimize basket", "cart", remaining()+" left")
+      + '<div class="bd"><p class="note" style="margin:0 0 .8rem">Opening this changes nothing. Choose an item to review.</p>'
+      + rows + '</div>'
+      + '<div class="ft"><button class="btn gho" type="button" data-go="cart">Back to cart</button>'
+      + '<button class="btn qui" type="button" data-checkout>Checkout</button></div>';
+  }
+
+  function compareHTML(){
+    var it = find(st.item), b = base(it), cards="", i;
+    for (i=0;i<it.alts.length;i++){
+      var a = it.alts[i], pt = projected(it, a), d = pt - currentTotal();
+      cards += '<div class="alt">'
+        + '<span class="tag '+a.reason+'">'+esc(a.label)+'</span>'
+        + '<div class="n">'+esc(a.brand)+' · '+esc(a.size)+'</div>'
+        + '<div class="u">'+esc(a.unit)+'</div>'
+        + '<div class="p">SAR '+a.price+'</div>'
+        + '<p class="why">'+esc(a.why)+'</p>'
+        + '<p class="d '+(d<0?"less":"more")+'">'+esc(deltaLabel(d))+'</p>'
+        + '<p class="proj">New cart total: SAR '+pt+'</p>'
+        + '<button class="btn" type="button" data-pick="'+i+'">Review this option</button>'
+        + '</div>';
+    }
+    return head(it.name, "opps", it.alts.length+" options")
+      + '<div class="bd">'
+      + '<div class="cur"><div class="k">Current item</div><div class="n">'+esc(b.brand)+' · '+esc(b.size)+'</div>'
+      + '<div class="u">'+esc(b.unit)+'</div><div class="p">SAR '+b.price+'</div></div>'
+      + '<p class="k" style="margin:1.1rem 0 .5rem">Alternatives</p>' + cards + '</div>'
+      + '<div class="ft"><button class="btn gho" type="button" data-go="opps">Keep current item</button></div>';
+  }
+
+  function confirmHTML(){
+    var it = find(st.item), a = it.alts[st.pick], b = base(it),
+        cur = currentTotal(), pt = projected(it, a), d = pt - cur;
+    return head("Review this change", "compare", "")
+      + '<div class="bd">'
+      + '<div class="cf"><span class="k">Current</span><span class="v">'+esc(b.brand)+' · '+esc(b.size)+' · SAR '+b.price+'</span></div>'
+      + '<div class="cf"><span class="k">New</span><span class="v">'+esc(a.brand)+' · '+esc(a.size)+' · SAR '+a.price+'</span></div>'
+      + '<div class="cf"><span class="k">Per unit</span><span class="v">'+esc(b.unit)+' &rarr; '+esc(a.unit)+'</span></div>'
+      + '<div class="cf"><span class="k">Why</span><span class="v"><span class="tag '+a.reason+'">'+esc(a.label)+'</span></span></div>'
+      + '<div class="cf"><span class="k">This order</span><span class="v">'+esc(deltaLabel(d))+'</span></div>'
+      + '<div class="tot"><span>Updated total</span><b>SAR '+pt+'</b></div>'
+      + '<p class="note">Nothing has changed yet.</p></div>'
+      + '<div class="ft"><button class="btn pri" type="button" data-apply>Apply change</button>'
+      + '<button class="btn gho" type="button" data-go="compare">Cancel</button></div>';
+  }
+
+  /* The receipt prints one line per decision and stops there. It never adds a
+     price drop to a unit-value gain, because those are different things and the
+     sum would be a number the customer cannot act on. */
+  function renderTape(){
+    var list = appliedList(), lines = "", i;
+    if (!list.length){
+      roll.innerHTML = '<p class="tp-no">Nothing applied yet. The cart stands at '
+        + '<b>SAR '+originalTotal()+'</b>.</p>';
+      return;
+    }
+    for (i=0;i<list.length;i++){
+      var it = list[i].item, a = list[i].alt, d = a.price - it.price;
+      lines += '<li class="tp-i"><span class="tp-r">'+esc(it.name)+' · '+esc(a.size)
+        + '<span class="ld"></span>'
+        + '<span class="tp-v '+(d<0?"less":"more")+'">'+(d<0?"−":"+")+" SAR "+Math.abs(d)+'</span></span>'
+        + '<span class="tp-why">'+esc(a.label)+' · '+esc(a.brand)+'</span></li>';
+    }
+    roll.innerHTML = '<ul class="tp-l">'+lines+'</ul>'
+      + '<div class="tp-tot"><span>Cart total</span><b>SAR '+currentTotal()+'</b></div>'
+      + '<p class="tp-by">'+list.length+(list.length===1?" change":" changes")+' applied · '+esc(countByReason())+'</p>'
+      + (list.length>1
+          ? '<p class="tp-no">No combined figure is printed. One line fell and one rose, and <b>adding them would describe a cart nobody chose.</b></p>'
+          : '<p class="tp-no">Apply a second change of a different kind to see why the reasons are never added together.</p>');
+  }
+
+  function render(moveFocus, msg){
+    if (st.view === "cart") scr.innerHTML = cartHTML();
+    else if (st.view === "opps") scr.innerHTML = oppsHTML();
+    else if (st.view === "compare") scr.innerHTML = compareHTML();
+    else if (st.view === "confirm") scr.innerHTML = confirmHTML();
+    renderTape();
+    if (msg) live.textContent = msg;
+    if (moveFocus){
+      var h = scr.querySelector(".ti");
+      if (h){ try { h.focus({preventScroll:true}); } catch(e){ h.focus(); } }
+    }
+  }
+
+  function toast(msg, undoId){
+    var old = scr.querySelector(".toast");
+    if (old && old.parentNode) old.parentNode.removeChild(old);
+    var t = document.createElement("div");
+    t.className = "toast";
+    t.innerHTML = '<span>'+esc(msg)+'</span>' + (undoId ? '<b role="button" tabindex="0" data-undo="'+undoId+'">Undo</b>' : "");
+    scr.appendChild(t);
+    requestAnimationFrame(function(){ t.classList.add("on"); });
+    clearTimeout(window.__t);
+    window.__t = setTimeout(function(){
+      t.classList.remove("on");
+      setTimeout(function(){ if (t.parentNode) t.parentNode.removeChild(t); }, 250);
+    }, 4200);
+  }
+
+  function handle(target){
+    var t = target.closest("[data-go],[data-open],[data-pick],[data-apply],[data-undo],[data-checkout]");
+    if (!t) return;
+    if (t.hasAttribute("data-go")){ st.view = t.getAttribute("data-go"); render(true); }
+    else if (t.hasAttribute("data-open")){ st.item = t.getAttribute("data-open"); st.view = "compare"; render(true); }
+    else if (t.hasAttribute("data-pick")){ st.pick = parseInt(t.getAttribute("data-pick"),10)||0; st.view = "confirm"; render(true); }
+    else if (t.hasAttribute("data-apply")){
+      var it = find(st.item);
+      st.applied[it.id] = it.alts[st.pick];
+      st.view = "cart";
+      render(true, "Change applied. Cart total SAR " + currentTotal() + ". " + countByReason() + ".");
+      toast("Cart updated · total is now SAR " + currentTotal(), it.id);
+    }
+    else if (t.hasAttribute("data-undo")){
+      delete st.applied[t.getAttribute("data-undo")];
+      render(true, "Change undone. Cart total SAR " + currentTotal() + ".");
+      toast("Change undone · total is now SAR " + currentTotal(), null);
+    }
+    else if (t.hasAttribute("data-checkout")){ toast("Checkout stays available at every step. This is a demonstration.", null); }
+  }
+
+  scr.addEventListener("click", function(e){ handle(e.target); });
+  scr.addEventListener("keydown", function(e){
+    if ((e.key === "Enter" || e.key === " ") && e.target.hasAttribute && e.target.hasAttribute("data-undo")){
+      e.preventDefault(); handle(e.target);
+    }
+  });
+  document.getElementById("reset").addEventListener("click", function(){
+    st = {view:"cart", item:null, pick:0, applied:{}};
+    render(false, "Prototype reset. Cart total SAR " + currentTotal() + ".");
+  });
+
+  render(false);
+})();
+</script>
+</body>
+</html>
