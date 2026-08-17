@@ -20,14 +20,23 @@
 :focus-visible{outline:3px solid var(--ink);outline-offset:2px}
 html{-webkit-text-size-adjust:100%}
 body{margin:0;min-height:100vh;background:#EDE7DC;display:flex;flex-direction:column;
-  align-items:center;justify-content:center;gap:18px;padding:24px;
+  align-items:center;justify-content:flex-start;gap:18px;padding:24px;
   font:400 15px/1.4 "Almarai",system-ui,sans-serif;color:var(--ink);
   -webkit-font-smoothing:antialiased;font-variant-numeric:tabular-nums}
 :focus-visible{outline:3px solid var(--ink);outline-offset:2px}
 
-/* the stage holds all five screens; one is on at a time */
+/* The stage holds all five screens; one is on at a time.
+
+   The device is a fixed 393 x 852 and the window is not, so the stage is
+   scaled to whatever the window can show. zoom rather than transform, because
+   zoom changes the layout box — the page keeps centring the phone instead of
+   centring a 852px footprint with a shrunken phone drawn inside it.
+
+   Only the stage scales. The step counter and the buttons below are the
+   prototype's own furniture, not the product, so they stay at reading size. */
 .stage{position:relative;width:393px;height:852px;border-radius:44px;overflow:hidden;
-  box-shadow:0 30px 70px -30px rgba(30,24,10,.5);background:var(--paper);flex:none}
+  box-shadow:0 30px 70px -30px rgba(30,24,10,.5);background:var(--paper);flex:none;
+  zoom:var(--fit,1);margin-top:auto}
 .screen{position:absolute;inset:0;visibility:hidden;transform:translateX(100%)}
 .screen.on{visibility:visible;transform:none}
 .screen .phone{width:100%;height:100%;border-radius:0;box-shadow:none}
@@ -35,13 +44,21 @@ body{margin:0;min-height:100vh;background:#EDE7DC;display:flex;flex-direction:co
 .dim{filter:brightness(.94)}
 
 /* prototype chrome, deliberately outside the device */
-.bar{display:flex;align-items:center;gap:14px;font-size:12.5px;color:#6B6459}
+.bar{display:flex;align-items:center;gap:14px;font-size:12.5px;color:#6B6459;
+  margin-bottom:auto}
 .bar b{font-weight:800;color:var(--ink)}
 .bar button{padding:7px 14px;border:1px solid #CFC7B8;border-radius:999px;background:none;
   font:inherit;font-size:12px;font-weight:700;color:#4A4437;cursor:pointer}
 .bar button:hover{border-color:var(--ink);color:var(--ink)}
 .bar kbd{font:inherit;font-size:11px;padding:1px 5px;border:1px solid #CFC7B8;border-radius:4px}
 @media (prefers-reduced-motion:reduce){.moving{transition:none}}
+/* on a phone the gutters are the first thing worth giving back to the device */
+@media (max-width:520px){
+  body{padding:10px;gap:10px}
+  .bar{gap:9px;font-size:11.5px}
+  .bar button{padding:6px 11px}
+  .bar .hint{display:none}
+}
 
 /* ---------- _cart-v4.html ---------- */
 #s1 .phone{width:393px;height:852px;background:var(--white);border-radius:44px;overflow:hidden;
@@ -1001,7 +1018,7 @@ body{margin:0;min-height:100vh;background:#EDE7DC;display:flex;flex-direction:co
   <span>Step <b id="step">1 / 5</b> &nbsp;·&nbsp; <span id="stepname">Cart</span></span>
   <button id="back" type="button">Back</button>
   <button id="restart" type="button">Restart</button>
-  <span>press <kbd>esc</kbd> to go back</span>
+  <span class="hint">press <kbd>esc</kbd> to go back</span>
 </div>
 
 <script>
@@ -1258,6 +1275,32 @@ body{margin:0;min-height:100vh;background:#EDE7DC;display:flex;flex-direction:co
   addEventListener('keydown', function(e){
     if (e.key === 'Escape' || e.key === 'Backspace') { e.preventDefault(); pop(); }
   });
+
+  /* Fit the device to the window. The chrome below is measured rather than
+     assumed, because it wraps to two lines on a narrow screen and that height
+     is part of what the phone has to share. */
+  function fit(){
+    var cs = getComputedStyle(document.body), bar = document.querySelector('.bar');
+    var vv = window.visualViewport;
+    var vh = vv ? vv.height : innerHeight, vw = vv ? vv.width : innerWidth;
+    if (!vh || !vw) return;                     /* nothing measurable yet */
+    var availH = vh - parseFloat(cs.paddingTop) - parseFloat(cs.paddingBottom)
+               - (parseFloat(cs.rowGap) || 0) - bar.offsetHeight;
+    var availW = vw - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
+    if (availH <= 0 || availW <= 0) return;     /* keep the last good value */
+    /* Below half size the device stops being readable, so the page scrolls
+       instead. Fitting is worth doing until it costs more than it gives. */
+    var s = Math.max(.5, Math.min(1, availH / 852, availW / 393));
+    document.documentElement.style.setProperty('--fit', s.toFixed(4));
+  }
+  addEventListener('resize', fit);
+  addEventListener('orientationchange', fit);
+  if (window.visualViewport) visualViewport.addEventListener('resize', fit);
+  /* twice: the first pass can change whether a scrollbar exists, which changes
+     the width the second pass measures. Again once the face has loaded, since
+     the chrome below the device is set in it and its height is part of the sum. */
+  fit(); requestAnimationFrame(fit);
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(fit);
 
   snapshotS5();
   el('s1').classList.add('on');
