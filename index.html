@@ -1223,7 +1223,10 @@ p{margin:0}
   .f-cta{width:100%;justify-content:center}
   .f-act{align-items:stretch;width:100%}
 }
-body.capture .nav,body.capture .foot,body.capture .behance-float{display:none}
+/* Export chrome only. Typed to the page's own nav and footer: the phone frames
+   use .nav and .foot too, and an untyped rule hid every mockup's footer -- the
+   Optimize entry, the total and Checkout -- out of the Behance panels. */
+body.capture nav.nav,body.capture footer.foot,body.capture .behance-float{display:none}
 body.capture [data-ch]{display:none}
 body.capture [data-capture="on"]{display:block}
 /* 05 exports as two panels, and the break falls on the storyboard's own groups:
