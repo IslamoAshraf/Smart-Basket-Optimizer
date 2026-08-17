@@ -51,13 +51,21 @@ body{margin:0;min-height:100vh;background:#EDE7DC;display:flex;flex-direction:co
   font:inherit;font-size:12px;font-weight:700;color:#4A4437;cursor:pointer}
 .bar button:hover{border-color:var(--ink);color:var(--ink)}
 .bar kbd{font:inherit;font-size:11px;padding:1px 5px;border:1px solid #CFC7B8;border-radius:4px}
+/* Leaving is a different kind of action from moving through the flow, so it is
+   not a pill: the pills beside it are Back and Restart, and a third pill with
+   an arrow would read as a third step control. A text link and a rule keep the
+   two apart. */
+.bar .out{display:inline-flex;align-items:center;gap:5px;color:#4A4437;
+  font-weight:700;text-decoration:none;border-bottom:1px solid #CFC7B8;padding-bottom:1px}
+.bar .out:hover{color:var(--ink);border-bottom-color:var(--ink)}
+.bar .rule{width:1px;height:16px;background:#CFC7B8}
 @media (prefers-reduced-motion:reduce){.moving{transition:none}}
 /* on a phone the gutters are the first thing worth giving back to the device */
 @media (max-width:520px){
   body{padding:10px;gap:10px}
   .bar{gap:9px;font-size:11.5px}
   .bar button{padding:6px 11px}
-  .bar .hint{display:none}
+  .bar .hint,.bar .rule{display:none}
 }
 
 /* ---------- _cart-v4.html ---------- */
@@ -1015,6 +1023,8 @@ body{margin:0;min-height:100vh;background:#EDE7DC;display:flex;flex-direction:co
 </div>
 
 <div class="bar">
+  <a class="out" id="out" href="index.html">&lsaquo; Case study</a>
+  <span class="rule"></span>
   <span>Step <b id="step">1 / 5</b> &nbsp;·&nbsp; <span id="stepname">Cart</span></span>
   <button id="back" type="button">Back</button>
   <button id="restart" type="button">Restart</button>
@@ -1269,6 +1279,26 @@ body{margin:0;min-height:100vh;background:#EDE7DC;display:flex;flex-direction:co
   on(q('s4','.back'), pop);
   /* s5 */
   on(q('s5','.entry'), function(){ push('s2'); });
+
+  /* Going back to the case study, not forward to it. When the reader arrived
+     from the case study the browser has their scroll position in history, and
+     history.back() restores it — a fresh link to the same page would drop them
+     at the top, which is the whole thing this is meant to avoid.
+
+     The referrer also tells us which file to fall back to: the document is
+     Smart-Basket-Case-Study-R14.html in the working tree and index.html once
+     published, and this prototype is the same file in both places. */
+  (function(){
+    var out = el('out'), ref = document.referrer, same = false;
+    try {
+      var u = new URL(ref);
+      same = u.origin === location.origin && u.pathname !== location.pathname;
+    } catch (e) {}
+    if (same) {
+      out.href = ref;
+      out.addEventListener('click', function(e){ e.preventDefault(); history.back(); });
+    }
+  })();
 
   el('back').addEventListener('click', pop);
   el('restart').addEventListener('click', reset);
