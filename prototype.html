@@ -118,14 +118,17 @@ body{margin:0;min-height:100vh;background:#EDE7DC;display:flex;flex-direction:co
 #s1 .tk .strip .u{color:var(--ink-2)}
 #s1 .foot{flex:none;padding:10px 16px 12px;border-top:1px solid var(--rule);background:var(--white);
   box-shadow:0 -6px 18px -14px rgba(23,21,18,.55)}
-#s1 .entry{width:100%;display:flex;align-items:center;gap:10px;padding:9px 11px;border:0;
-  border-radius:4px;background:var(--shop-pale);text-align:left;font:inherit;color:inherit;
-  cursor:pointer}
-#s1 .entry .et{flex:1;min-width:0}
+#s1 .entry{width:100%;display:flex;padding:0;border:0;border-radius:0;background:none;
+  text-align:left;font:inherit;color:inherit;cursor:pointer}
+#s1 .entry .ticket{flex:1;min-width:0;display:flex;align-items:stretch;
+  background:var(--shop-pale);border:1.5px solid var(--shop-deep);border-radius:8px;
+  overflow:hidden}
+#s1 .entry .et{flex:1;min-width:0;padding:8px 11px}
 #s1 .entry .e1{display:block;font-size:13px;font-weight:800;letter-spacing:-.02em}
 #s1 .entry .e2{display:block;margin-top:1px;font-size:12.5px;font-weight:400;color:var(--ink-2)}
-#s1 .entry .ec{flex:none;font-size:16px;font-weight:800;color:var(--ink-2);line-height:1}
-#s1 .entry:hover{background:#FFEFC8}
+#s1 .entry .ec{flex:none;width:34px;display:inline-flex;align-items:center;justify-content:center;
+  background:var(--shop);color:var(--ink);border-left:1.5px solid var(--shop-deep);
+  font-size:17px;font-weight:800;line-height:1}
 #s1 .pay{display:flex;align-items:flex-end;gap:14px;margin-top:11px}
 #s1 .pay .tot{flex:1}
 #s1 .pay .tl{display:block;font-size:10px;font-weight:800;letter-spacing:.11em;
@@ -155,9 +158,12 @@ body{margin:0;min-height:100vh;background:#EDE7DC;display:flex;flex-direction:co
 #s1 .item:hover,#s1 .opt:hover{background:#FCFAF4}
 #s1 .item:active,#s1 .opt:active{background:#F3EFE4}
 #s1 .opt:hover .go{background:var(--ink);color:var(--white)}
-#s1 .entry{transition:background-color .13s ease,transform .07s ease}
-#s1 .entry:hover{background:#FFEFC8}
-#s1 .entry:active{background:#FAE3AC;transform:scale(.995)}
+#s1 .entry{transition:transform .07s ease}
+#s1 .entry .ticket,#s1 .entry .ec{transition:background-color .13s ease}
+#s1 .entry:hover .ticket{background:#FFE9B4}
+#s1 .entry:hover .ec{background:var(--shop-deep)}
+#s1 .entry:active{transform:scale(.995)}
+#s1 .entry:active .ticket{background:#FAE3AC}
 #s1 .cta,#s1 .apply,#s1 .go,#s1 .keep,#s1 .exit,#s1 .cancel,#s1 .undo{transition:background-color .13s ease,color .13s ease,border-color .13s ease,transform .07s ease}
 #s1 .cta:active,#s1 .apply:active{background:#000;transform:scale(.97)}
 #s1 .go:active,#s1 .keep:active,#s1 .exit:active,#s1 .undo:active{background:var(--ink);border-color:var(--ink);color:var(--white);transform:scale(.97)}
@@ -521,14 +527,17 @@ body{margin:0;min-height:100vh;background:#EDE7DC;display:flex;flex-direction:co
 #s5 .tk .strip .u{color:var(--ink-2)}
 #s5 .foot{flex:none;padding:7px 16px 9px;border-top:1px solid var(--rule);background:var(--white);
   box-shadow:0 -6px 18px -14px rgba(23,21,18,.55)}
-#s5 .entry{width:100%;display:flex;align-items:center;gap:10px;padding:9px 11px;border:0;
-  border-radius:4px;background:var(--shop-pale);text-align:left;font:inherit;color:inherit;
-  cursor:pointer}
-#s5 .entry .et{flex:1;min-width:0}
+#s5 .entry{width:100%;display:flex;padding:0;border:0;border-radius:0;background:none;
+  text-align:left;font:inherit;color:inherit;cursor:pointer}
+#s5 .entry .ticket{flex:1;min-width:0;display:flex;align-items:stretch;
+  background:var(--shop-pale);border:1.5px solid var(--shop-deep);border-radius:8px;
+  overflow:hidden}
+#s5 .entry .et{flex:1;min-width:0;padding:8px 11px}
 #s5 .entry .e1{display:block;font-size:13px;font-weight:800;letter-spacing:-.02em}
 #s5 .entry .e2{display:block;margin-top:1px;font-size:12.5px;font-weight:400;color:var(--ink-2)}
-#s5 .entry .ec{flex:none;font-size:16px;font-weight:800;color:var(--ink-2);line-height:1}
-#s5 .entry:hover{background:#FFEFC8}
+#s5 .entry .ec{flex:none;width:34px;display:inline-flex;align-items:center;justify-content:center;
+  background:var(--shop);color:var(--ink);border-left:1.5px solid var(--shop-deep);
+  font-size:17px;font-weight:800;line-height:1}
 #s5 .pay{display:flex;align-items:flex-end;gap:14px;margin-top:9px}
 #s5 .pay .tot{flex:1}
 #s5 .pay .tl{display:block;font-size:10px;font-weight:800;letter-spacing:.11em;
@@ -558,9 +567,12 @@ body{margin:0;min-height:100vh;background:#EDE7DC;display:flex;flex-direction:co
 #s5 .item:hover,#s5 .opt:hover{background:#FCFAF4}
 #s5 .item:active,#s5 .opt:active{background:#F3EFE4}
 #s5 .opt:hover .go{background:var(--ink);color:var(--white)}
-#s5 .entry{transition:background-color .13s ease,transform .07s ease}
-#s5 .entry:hover{background:#FFEFC8}
-#s5 .entry:active{background:#FAE3AC;transform:scale(.995)}
+#s5 .entry{transition:transform .07s ease}
+#s5 .entry .ticket,#s5 .entry .ec{transition:background-color .13s ease}
+#s5 .entry:hover .ticket{background:#FFE9B4}
+#s5 .entry:hover .ec{background:var(--shop-deep)}
+#s5 .entry:active{transform:scale(.995)}
+#s5 .entry:active .ticket{background:#FAE3AC}
 #s5 .cta,#s5 .apply,#s5 .go,#s5 .keep,#s5 .exit,#s5 .cancel,#s5 .undo{transition:background-color .13s ease,color .13s ease,border-color .13s ease,transform .07s ease}
 #s5 .cta:active,#s5 .apply:active{background:#000;transform:scale(.97)}
 #s5 .go:active,#s5 .keep:active,#s5 .exit:active,#s5 .undo:active{background:var(--ink);border-color:var(--ink);color:var(--white);transform:scale(.97)}
@@ -656,9 +668,11 @@ body{margin:0;min-height:100vh;background:#EDE7DC;display:flex;flex-direction:co
 
   <div class="foot">
     <button class="entry" type="button">
-      <span class="et"><span class="e1">Optimize basket</span>
-        <span class="e2">3 items have better-value options</span></span>
-      <span class="ec">›</span>
+      <span class="ticket">
+        <span class="et"><span class="e1">Optimize basket</span>
+          <span class="e2">3 items have better-value options</span></span>
+        <span class="ec" aria-hidden="true">›</span>
+      </span>
     </button>
     <div class="pay">
       <span class="tot"><span class="tl">Total</span>
@@ -999,9 +1013,11 @@ body{margin:0;min-height:100vh;background:#EDE7DC;display:flex;flex-direction:co
 
   <div class="foot">
     <button class="entry" type="button">
-      <span class="et"><span class="e1">Optimize basket</span>
-        <span class="e2">2 items have better-value options</span></span>
-      <span class="ec">›</span>
+      <span class="ticket">
+        <span class="et"><span class="e1">Optimize basket</span>
+          <span class="e2">2 items have better-value options</span></span>
+        <span class="ec" aria-hidden="true">›</span>
+      </span>
     </button>
     <div class="pay">
       <span class="tot"><span class="tl">Total</span>
