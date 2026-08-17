@@ -1171,20 +1171,46 @@ p{margin:0}
   .gate-out{padding:1.6rem 1.5rem 1.8rem}
 }
 /* ============ FOOTER ============ */
-.foot{background:var(--ink);color:#9A9AA3;padding-block:3rem;font-size:.95rem}
-.foot-in{display:flex;flex-wrap:wrap;gap:1.5rem;justify-content:space-between;align-items:center}
-.foot b{color:#fff;font-family:var(--f-h);font-weight:700;font-size:1.1rem}
-.foot-l{display:flex;gap:1.5rem;flex-wrap:wrap}
-/* The underline is drawn by text-decoration, not a border, so the box can
-   grow to a 44px target without the rule detaching from the words and
-   floating at the bottom of the padding. */
-.foot-l a{display:inline-flex;align-items:center;min-height:44px;
-  font-family:var(--f-h);font-weight:600;font-size:.92rem;color:#B4B4BE;
-  text-decoration:underline;text-decoration-color:#3A3A42;
-  text-decoration-thickness:1px;text-underline-offset:4px}
+/* ---------- footer ----------
+   It was four identical underlined links with contact third in the row, so
+   the one thing a reader might actually want to do was the hardest to find.
+   It now reads as an invitation: a line that asks, one filled action, and the
+   rest kept secondary. The yellow is the document's own pivot colour, used
+   here for the same reason it is used everywhere else — this is the turn. */
+.foot{background:var(--ink);color:#9A9AA3;padding-block:4.5rem 2.6rem;font-size:.95rem}
+.foot-top{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:2.6rem 4rem;
+  align-items:end;padding-bottom:2.6rem;border-bottom:1px solid #2B2B33}
+.f-k{display:flex;align-items:center;gap:.85rem;font-family:var(--f-m);font-size:.76rem;
+  font-weight:600;letter-spacing:.16em;text-transform:uppercase;color:#7C7C87}
+.f-k::before{content:"";width:26px;height:3px;background:var(--yellow);flex:none}
+.f-h{margin-top:1.15rem;font-family:var(--f-h);font-size:clamp(1.55rem,2.9vw,2.25rem);
+  font-weight:800;letter-spacing:-.035em;line-height:1.08;color:#fff}
+.f-p{margin-top:.85rem;max-width:46ch;font-size:1rem;line-height:1.6;color:#B4B4BE}
+.f-act{display:flex;flex-direction:column;align-items:flex-start;gap:1.15rem}
+/* the one filled thing on the page's last screenful */
+.f-cta{display:inline-flex;align-items:center;gap:.65rem;min-height:56px;padding:0 1.7rem;
+  border-radius:999px;background:var(--yellow);color:var(--yellow-ink);
+  font-family:var(--f-h);font-weight:800;font-size:1.05rem;letter-spacing:-.02em;
+  text-decoration:none;white-space:nowrap;
+  transition:transform .18s ease,box-shadow .18s ease,background .18s ease}
+.f-cta:hover{transform:translateY(-2px);background:#FFDE3D;
+  box-shadow:0 16px 34px -16px rgba(255,212,0,.65)}
+.f-cta:focus-visible{outline:3px solid #fff;outline-offset:3px}
+.f-mail{font-family:var(--f-m);font-size:.84rem;letter-spacing:-.01em;color:#8B8B96}
+/* everything else stays a quiet row of links */
+.foot-l{display:flex;flex-wrap:wrap;gap:.4rem 1.6rem}
+.foot-l a{display:inline-flex;align-items:center;min-height:44px;font-family:var(--f-h);
+  font-weight:600;font-size:.92rem;color:#B4B4BE;text-decoration:underline;
+  text-decoration-color:#3A3A42;text-decoration-thickness:1px;text-underline-offset:4px}
 .foot-l a:hover{color:var(--yellow);text-decoration-color:var(--yellow)}
-
-/* capture mode for 1400px Behance panels */
+.foot-btm{margin-top:2.2rem;display:flex;flex-wrap:wrap;gap:.5rem 1.5rem;
+  justify-content:space-between;align-items:baseline;font-size:.88rem;color:#7C7C87}
+.foot-btm b{color:#D6D6DE;font-family:var(--f-h);font-weight:700;font-size:.95rem}
+@media(max-width:760px){
+  .foot-top{grid-template-columns:1fr;align-items:start;gap:2rem}
+  .f-cta{width:100%;justify-content:center}
+  .f-act{align-items:stretch;width:100%}
+}
 body.capture .nav,body.capture .foot,body.capture .behance-float{display:none}
 body.capture [data-ch]{display:none}
 body.capture [data-capture="on"]{display:block}
@@ -1246,7 +1272,9 @@ body[data-half="b"] .sbd-core{margin-top:0}
 /* the footer link takes the baton quietly — it is a text link in a row of
    text links, not a button, so it brightens rather than becoming a pill */
 .foot-l a.behance-footer{transition:color .18s ease,text-decoration-color .18s ease}
-.foot-l a.behance-footer.is-active{color:#fff;text-decoration-color:#1769ff}
+/* the baton is passed in the document's own accent: Behance blue belongs to
+   the floating button, and inside a yellow-and-ink footer it reads as a stray */
+.foot-l a.behance-footer.is-active{color:#fff;text-decoration-color:var(--yellow)}
 @media(max-width:1180px){.behance-float{right:1.25rem}}
 @media(max-width:760px){
   .behance-float{right:1rem;bottom:calc(1rem + env(safe-area-inset-bottom));
@@ -2828,13 +2856,27 @@ body[data-half="b"] .sbd-core{margin-top:0}
 
 </main>
 
-<footer class="foot"><div class="wrap foot-in">
-  <div><b>Islam Ashraf · Product Designer</b><br><span>Basket Optimizer · Grocery e-commerce concept · 2026</span></div>
-  <div class="foot-l">
-    <a href="prototype.html">Prototype</a>
-    <a class="behance-footer" href="https://www.behance.net/gallery/251982435/From-Product-Level-Choices-to-Cart-Decisions" target="_blank" rel="noopener">Behance ↗</a>
-    <a href="mailto:islameliwa@gmail.com">Email</a>
-    <a href="https://www.linkedin.com/in/islamashraf" target="_blank" rel="noopener">LinkedIn</a>
+<footer class="foot"><div class="wrap">
+  <div class="foot-top">
+    <div>
+      <p class="f-k">Get in touch</p>
+      <p class="f-h">Thanks for reading.</p>
+      <p class="f-p">If you have questions about any of the decisions here, or you want to talk
+        something through, I would like to hear from you.</p>
+    </div>
+    <div class="f-act">
+      <a class="f-cta" href="mailto:islameliwa@gmail.com">Email me <span aria-hidden="true">&rarr;</span></a>
+      <p class="f-mail">islameliwa@gmail.com</p>
+      <div class="foot-l">
+        <a href="https://www.linkedin.com/in/islamashraf" target="_blank" rel="noopener">LinkedIn</a>
+        <a class="behance-footer" href="https://www.behance.net/gallery/251982435/From-Product-Level-Choices-to-Cart-Decisions" target="_blank" rel="noopener">Behance &#8599;</a>
+        <a href="prototype.html">Prototype</a>
+      </div>
+    </div>
+  </div>
+  <div class="foot-btm">
+    <b>Islam Ashraf &middot; Product Designer</b>
+    <span>Basket Optimizer &middot; Grocery e-commerce concept &middot; 2026</span>
   </div>
 </div></footer>
 
