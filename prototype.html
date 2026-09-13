@@ -2,8 +2,10 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Basket Optimizer — prototype</title>
+<!-- the case study's own favicon, so a reader with both tabs open sees one product -->
+<link rel="icon" type="image/svg+xml" sizes="any" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2064%2064%22%3E%0A%3Crect%20x%3D%221.5%22%20y%3D%221.5%22%20width%3D%2261%22%20height%3D%2261%22%20rx%3D%2214%22%20fill%3D%22%23FFD400%22%20stroke%3D%22%2317171B%22%20stroke-width%3D%223%22%2F%3E%0A%3Cpath%20d%3D%22M20%2027c1-10%206-15%2012-15s11%205%2012%2015%22%20fill%3D%22none%22%20stroke%3D%22%2317171B%22%20stroke-width%3D%225%22%20stroke-linecap%3D%22round%22%2F%3E%0A%3Cpath%20d%3D%22M13%2027h38l-5%2024a6%206%200%200%201-6%205H24a6%206%200%200%201-6-5z%22%20fill%3D%22%23B86A2E%22%20stroke%3D%22%2317171B%22%20stroke-width%3D%224%22%20stroke-linejoin%3D%22round%22%2F%3E%0A%3Cpath%20d%3D%22M24%2033l2%2016M32%2033v16M40%2033l-2%2016%22%20stroke%3D%22%23FFE7A3%22%20stroke-width%3D%223%22%20stroke-linecap%3D%22round%22%2F%3E%0A%3C%2Fsvg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Almarai:wght@300;400;700;800&display=swap" rel="stylesheet">
@@ -20,7 +22,9 @@
 :focus-visible{outline:3px solid var(--ink);outline-offset:2px}
 html{-webkit-text-size-adjust:100%}
 body{margin:0;min-height:100vh;background:#EDE7DC;display:flex;flex-direction:column;
-  align-items:center;justify-content:flex-start;gap:18px;padding:24px;
+  align-items:center;justify-content:flex-start;gap:18px;
+  padding:max(24px,env(safe-area-inset-top)) max(24px,env(safe-area-inset-right))
+          max(24px,env(safe-area-inset-bottom)) max(24px,env(safe-area-inset-left));
   font:400 15px/1.4 "Almarai",system-ui,sans-serif;color:var(--ink);
   -webkit-font-smoothing:antialiased;font-variant-numeric:tabular-nums}
 :focus-visible{outline:3px solid var(--ink);outline-offset:2px}
@@ -44,13 +48,45 @@ body{margin:0;min-height:100vh;background:#EDE7DC;display:flex;flex-direction:co
 .dim{filter:brightness(.94)}
 
 /* prototype chrome, deliberately outside the device */
-.bar{display:flex;align-items:center;gap:14px;font-size:12.5px;color:#6B6459;
-  margin-bottom:auto}
+/* direction:ltr is the whole point — the zones hold their physical position in
+   both languages, so the toggle never moves. Each item re-establishes its own
+   text direction with dir="auto". */
+.bar{direction:ltr;display:grid;grid-template-columns:1fr auto 1fr;align-items:center;
+  gap:16px;width:100%;max-width:940px;font-size:12.5px;color:#6B6459;margin-bottom:auto}
+.zone{display:flex;align-items:center;gap:8px;min-width:0}
+.zl{justify-self:start} .zc{justify-self:center;white-space:nowrap} .zr{justify-self:end}
+.bar .step{display:inline-flex;align-items:center;gap:6px}
+.bar .dot{color:#A9A296}
+/* the LinkedIn mark: an SVG, never an emoji, with a text label beside it so it
+   is not an unlabelled icon. Both carry the same accessible name. */
+.bar .li{display:inline-flex;align-items:center;gap:6px;height:30px;padding:0 10px;
+  border-radius:999px;color:#4A4437;text-decoration:none;font-weight:700}
+.bar .li svg{width:15px;height:15px;fill:currentColor;display:block}
+.bar .li:hover{background:rgba(23,21,18,.06);color:var(--ink)}
 .bar b{font-weight:800;color:var(--ink)}
-.bar button{padding:7px 14px;border:1px solid #CFC7B8;border-radius:999px;background:none;
-  font:inherit;font-size:12px;font-weight:700;color:#4A4437;cursor:pointer}
+/* the step fraction is a number pair; isolate it so RTL cannot flip 1 / 5 */
+.bar #step{unicode-bidi:isolate}
+.bar button{height:30px;padding:0 14px;border:1px solid #CFC7B8;border-radius:999px;
+  background:none;font:inherit;font-size:12px;font-weight:700;color:#4A4437;cursor:pointer}
+.bar button:focus-visible,.bar a:focus-visible{outline:3px solid var(--ink);outline-offset:2px}
+/* Each control is reserved the width of its WIDEST label across both languages,
+   so swapping "Restart" for "إعادة" cannot shuffle its neighbours. Without this
+   the zones stay put but the buttons inside them slide — measured 9px on the
+   toggle, 28px on Back — and a control that moves when you change language is
+   still a control you have to re-find. */
+#back{min-width:76px}
+#restart{min-width:84px}
+#lang{min-width:68px}
+/* the leave-link's label changes width too, which nudged LinkedIn beside it */
+.bar .out{min-width:104px}
 .bar button:hover{border-color:var(--ink);color:var(--ink)}
 .bar kbd{font:inherit;font-size:11px;padding:1px 5px;border:1px solid #CFC7B8;border-radius:4px}
+/* Back and Restart move you through the flow; the language toggle changes what
+   the flow is written in. Same pill geometry so it belongs to the furniture,
+   ink border so it is not mistaken for a third step control. */
+.bar .lang{border-color:var(--ink);color:var(--ink);font-weight:800;
+  font-family:"Almarai",system-ui,sans-serif}
+.bar .lang:hover{background:var(--ink);color:#fff;border-color:var(--ink)}
 /* Leaving is a different kind of action from moving through the flow, so it is
    not a pill: the pills beside it are Back and Restart, and a third pill with
    an arrow would read as a third step control. A text link and a rule keep the
@@ -61,12 +97,36 @@ body{margin:0;min-height:100vh;background:#EDE7DC;display:flex;flex-direction:co
 .bar .rule{width:1px;height:16px;background:#CFC7B8}
 @media (prefers-reduced-motion:reduce){.moving{transition:none}}
 /* on a phone the gutters are the first thing worth giving back to the device */
+@media (max-width:760px){ .bar .hint{display:none} }
+@media (max-width:560px){ .bar .lil{display:none} .bar .li{padding:0 8px} }
+/* Mobile. Stacking the three zones cost 112px — 19% of an iPhone SE screen —
+   and every pixel the chrome takes is a pixel the DEVICE loses, because the
+   stage is scaled to whatever height is left over. One compact row instead:
+   the leave-link becomes its chevron, LinkedIn goes icon-only, the step
+   counter drops its word, and the controls keep reserved widths so the toggle
+   still holds position. */
 @media (max-width:520px){
-  body{padding:10px;gap:10px}
-  .bar{gap:9px;font-size:11.5px}
-  .bar button{padding:6px 11px}
-  .bar .hint,.bar .rule{display:none}
+  /* every px of gutter is a px the device cannot use, and the device is the
+     whole point — so on phones the page gives back almost all of it */
+  body{padding:4px max(4px,env(safe-area-inset-right))
+        max(4px,env(safe-area-inset-bottom)) max(4px,env(safe-area-inset-left));gap:6px}
+  .bar{grid-template-columns:auto 1fr auto;gap:8px;font-size:11.5px}
+  .zone{gap:6px}
+  .bar button{height:40px;padding:0 10px;font-size:12.5px}
+  .bar .li{height:40px;padding:0 8px}
+  .bar .out{display:none}
+  #stepword,.bar .dot,#stepname{display:none}
+  #back{min-width:62px} #restart{min-width:68px} #lang{min-width:56px}
+  .bar .rule{display:none}
 }
+/* Landscape phones have height to spare nowhere and width to spare everywhere,
+   so the gutters shrink to nothing and the bar keeps its single row. */
+@media (max-height:460px) and (orientation:landscape){
+  body{padding:2px 8px max(2px,env(safe-area-inset-bottom));gap:4px}
+  .bar{font-size:11px} .bar button{height:32px} .bar .li{height:32px}
+}
+/* narrower than this, one row cannot hold all three groups */
+@media (max-width:340px){ .bar{grid-template-columns:1fr;justify-items:center} }
 
 /* ---------- _cart-v4.html ---------- */
 #s1 .phone{width:393px;height:852px;background:var(--white);border-radius:44px;overflow:hidden;
@@ -108,8 +168,8 @@ body{margin:0;min-height:100vh;background:#EDE7DC;display:flex;flex-direction:co
 #s1 .flash{display:inline-block;padding:2.5px 5px;border-radius:3px;background:var(--shop);
   color:var(--ink);font-size:10px;font-weight:800;letter-spacing:.07em;text-transform:uppercase}
 #s1 .tk{display:inline-flex;flex-direction:column;align-items:flex-end}
-#s1 .tk .amt{display:flex;align-items:flex-start;gap:.16em;line-height:.92}
-#s1 .tk .cur{font-size:10px;font-weight:800;letter-spacing:.07em;color:var(--ink-2);align-self:flex-start}
+#s1 .tk .amt{display:flex;align-items:baseline;gap:0;line-height:.92}
+#s1 .tk .cur{font-size:19px;font-weight:800;color:var(--ink-2);margin-right:.26em}
 #s1 .tk .maj{font-size:19px;font-weight:800;letter-spacing:-.045em}
 #s1 .tk .strip{margin-top:4px;padding-top:3px;border-top:1px solid var(--rule);align-self:stretch;
   display:flex;justify-content:flex-end;gap:.6em;white-space:nowrap;
@@ -133,7 +193,7 @@ body{margin:0;min-height:100vh;background:#EDE7DC;display:flex;flex-direction:co
 #s1 .pay .tot{flex:1}
 #s1 .pay .tl{display:block;font-size:10px;font-weight:800;letter-spacing:.11em;
   text-transform:uppercase;color:var(--ink-3);margin-bottom:3px}
-#s1 .pay .tk .cur{font-size:11px}
+#s1 .pay .tk .cur{font-size:26px;margin-right:.26em}
 #s1 .pay .tk .maj{font-size:26px}
 #s1 .cta{flex:none;padding:12px 26px;border:0;border-radius:999px;background:var(--ink);
   color:var(--white);font:inherit;font-size:14px;font-weight:800;letter-spacing:-.02em;
@@ -219,8 +279,8 @@ body{margin:0;min-height:100vh;background:#EDE7DC;display:flex;flex-direction:co
 #s2 .flash{display:inline-block;padding:2.5px 5px;border-radius:3px;background:var(--shop);
   color:var(--ink);font-size:10px;font-weight:800;letter-spacing:.07em;text-transform:uppercase}
 #s2 .tk{display:inline-flex;flex-direction:column;align-items:flex-end}
-#s2 .tk .amt{display:flex;align-items:flex-start;gap:.16em;line-height:.92}
-#s2 .tk .cur-m{font-size:10px;font-weight:800;letter-spacing:.07em;color:var(--ink-2);align-self:flex-start}
+#s2 .tk .amt{display:flex;align-items:baseline;gap:0;line-height:.92}
+#s2 .tk .cur-m{font-size:19px;font-weight:800;color:var(--ink-2);margin-right:.26em}
 #s2 .tk .maj{font-size:19px;font-weight:800;letter-spacing:-.045em}
 #s2 .tk .strip{margin-top:4px;padding-top:3px;border-top:1px solid var(--rule);align-self:stretch;
   display:flex;justify-content:flex-end;gap:.6em;white-space:nowrap;
@@ -235,7 +295,7 @@ body{margin:0;min-height:100vh;background:#EDE7DC;display:flex;flex-direction:co
 #s2 .nrow .pack svg{width:38px;height:38px}
 #s2 .nrow .nm{font-size:13.5px;display:inline}
 #s2 .nrow .meta{display:inline;margin:0}
-#s2 .foot{flex:none;padding:14px 16px 0;background:var(--paper)}
+#s2 .foot{flex:none;margin-top:auto;padding:16px 16px 30px;background:var(--paper)}
 #s2 .exit{width:100%;padding:12px;border:1px solid var(--ink);border-radius:999px;background:none;
   font:inherit;font-size:13.5px;font-weight:800;letter-spacing:-.015em;color:var(--ink);cursor:pointer}
 #s2 .exit:hover{background:var(--ink);color:var(--white)}
@@ -311,8 +371,8 @@ body{margin:0;min-height:100vh;background:#EDE7DC;display:flex;flex-direction:co
   align-items:center;margin-top:12px}
 #s3 .oc{min-width:0}
 #s3 .oc1{display:block;font-size:14px;font-weight:800;letter-spacing:-.025em;color:var(--ink)}
-#s3 .oc2{display:block;margin-top:2px;font-size:12.5px;line-height:1.3;color:var(--ink-3)}
-#s3 .oc2 b{font-weight:700;color:var(--ink-2)}
+#s3 .ocs{color:var(--ink-3);margin:0 .5em}
+#s3 .ocd{font-weight:700;color:var(--ink-2)}
 #s3 .go{flex:none;display:inline-flex;align-items:center;height:27px;padding:0 14px;border-radius:999px;
   border:1px solid var(--ink);background:var(--white);
   font-size:12px;font-weight:800;letter-spacing:-.01em;color:var(--ink)}
@@ -328,10 +388,10 @@ body{margin:0;min-height:100vh;background:#EDE7DC;display:flex;flex-direction:co
 #s3 .c3{box-shadow:inset 0 0 0 1px var(--rule);background:var(--paper);color:var(--ink-2)}
 #s3 .val{display:flex;flex-direction:column;align-items:flex-end}
 #s3 .tk{display:inline-flex;flex-direction:column;align-items:flex-end}
-#s3 .tk .amt{display:flex;align-items:flex-start;gap:.16em;line-height:.92}
-#s3 .tk .cur-m{font-size:10px;font-weight:800;letter-spacing:.07em;color:var(--ink-2);align-self:flex-start}
+#s3 .tk .amt{display:flex;align-items:baseline;gap:0;line-height:.92}
+#s3 .tk .cur-m{font-size:23px;font-weight:800;color:var(--ink-2);margin-right:.26em}
 #s3 .tk .maj{font-size:23px;font-weight:800;letter-spacing:-.045em}
-#s3 .cur .tk .cur-m{font-size:9.5px}
+#s3 .cur .tk .cur-m{font-size:17px;margin-right:.26em}
 #s3 .tk .strip{margin-top:4px;padding-top:3px;border-top:1px solid var(--rule);align-self:stretch;
   display:flex;justify-content:flex-end;gap:.6em;white-space:nowrap;
   font-size:11.5px;font-weight:800;letter-spacing:.07em;text-transform:uppercase}
@@ -403,7 +463,7 @@ body{margin:0;min-height:100vh;background:#EDE7DC;display:flex;flex-direction:co
 #s4 .now .nm{display:inline;font-size:13.5px;color:var(--ink-2)}
 #s4 .now .meta{display:inline;margin:0}
 #s4 .now .tk .maj{font-size:17px;color:var(--ink-2)}
-#s4 .now .tk .cur-m{font-size:9.5px}
+#s4 .now .tk .cur-m{font-size:17px;margin-right:.26em}
 #s4 .now .tk .strip{margin-top:3px;padding-top:2px;font-size:10.5px}
 #s4 .arrow{padding:7px 16px 0;width:96px;display:flex;justify-content:center}
 #s4 .arrow svg{width:15px;height:15px;fill:none;stroke:var(--ink-3);stroke-width:2.2;
@@ -422,8 +482,8 @@ body{margin:0;min-height:100vh;background:#EDE7DC;display:flex;flex-direction:co
 #s4 .meta{display:block;margin-top:1px;font-size:12.5px;font-weight:400;color:var(--ink-2)}
 #s4 .own{font-weight:800;font-size:10.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--ink)}
 #s4 .tk{display:inline-flex;flex-direction:column;align-items:flex-end}
-#s4 .tk .amt{display:flex;align-items:flex-start;gap:.16em;line-height:.92}
-#s4 .tk .cur-m{font-size:10px;font-weight:800;letter-spacing:.07em;color:var(--ink-2);align-self:flex-start}
+#s4 .tk .amt{display:flex;align-items:baseline;gap:0;line-height:.92}
+#s4 .tk .cur-m{font-size:28px;font-weight:800;color:var(--ink-2);margin-right:.26em}
 #s4 .tk .maj{font-size:28px;font-weight:800;letter-spacing:-.045em}
 #s4 .tk .strip{margin-top:4px;padding-top:3px;border-top:1px solid var(--rule);align-self:stretch;
   display:flex;justify-content:flex-end;gap:.6em;white-space:nowrap;
@@ -431,17 +491,19 @@ body{margin:0;min-height:100vh;background:#EDE7DC;display:flex;flex-direction:co
 #s4 .tk .strip .b{color:var(--ink-3)}
 #s4 .tk .strip .u{color:var(--ink-2)}
 #s4 .what{margin-top:16px;padding-top:14px;border-top:1px solid var(--rule)}
-#s4 .w1{display:block;font-size:15px;font-weight:800;letter-spacing:-.025em;color:var(--ink)}
-#s4 .w1 + .w1{margin-top:4px}
-#s4 .w2{display:block;margin-top:8px;font-size:12.5px;line-height:1.35;color:var(--ink-3)}
-#s4 .w2 b{font-weight:700;color:var(--ink-2)}
-#s4 .was{font-weight:700;color:var(--ink-3);text-decoration:line-through;text-decoration-thickness:1px}
-#s4 .yet{display:block;margin-top:10px;font-size:11.5px;color:var(--ink-3)}
-#s4 .foot{flex:none;padding:16px 16px 30px;background:var(--paper);text-align:center}
+#s4 .btot{display:flex;align-items:baseline;gap:0;line-height:.92;margin-top:3px}
+#s4 .btot .cur-m{font-size:34px;font-weight:800;color:var(--ink-2);margin-right:.26em}
+#s4 .btot .maj{font-size:34px;font-weight:800;letter-spacing:-.045em}
+#s4 .wsub{display:block;margin-top:7px;font-size:14px;font-weight:700;
+  letter-spacing:-.02em;color:var(--ink-2)}
+#s4 .wsep{color:var(--ink-3);margin:0 .5em}
+#s4 .yet{display:block;margin:0 0 11px;font-size:11.5px;color:var(--ink-3)}
+#s4 .foot{flex:none;padding:16px 16px 30px;background:var(--paper);
+  border-top:1px solid var(--rule);text-align:center}
 #s4 .apply{width:100%;padding:13px;border:0;border-radius:999px;background:var(--ink);
   color:var(--white);font:inherit;font-size:14px;font-weight:800;letter-spacing:-.02em;cursor:pointer}
 #s4 .apply:hover{background:#000}
-#s4 .cancel{margin-top:10px;padding:9px 22px;border:1px solid var(--rule);border-radius:999px;
+#s4 .cancel{width:100%;margin-top:9px;padding:12px;border:1px solid var(--rule);border-radius:999px;
   background:none;font:inherit;font-size:12.5px;font-weight:700;letter-spacing:-.01em;
   color:var(--ink-2);cursor:pointer}
 #s4 .cancel:hover{border-color:var(--ink-2);color:var(--ink)}
@@ -517,8 +579,8 @@ body{margin:0;min-height:100vh;background:#EDE7DC;display:flex;flex-direction:co
 #s5 .flash{display:inline-block;padding:2.5px 5px;border-radius:3px;background:var(--shop);
   color:var(--ink);font-size:10px;font-weight:800;letter-spacing:.07em;text-transform:uppercase}
 #s5 .tk{display:inline-flex;flex-direction:column;align-items:flex-end}
-#s5 .tk .amt{display:flex;align-items:flex-start;gap:.16em;line-height:.92}
-#s5 .tk .cur{font-size:10px;font-weight:800;letter-spacing:.07em;color:var(--ink-2);align-self:flex-start}
+#s5 .tk .amt{display:flex;align-items:baseline;gap:0;line-height:.92}
+#s5 .tk .cur{font-size:19px;font-weight:800;color:var(--ink-2);margin-right:.26em}
 #s5 .tk .maj{font-size:19px;font-weight:800;letter-spacing:-.045em}
 #s5 .tk .strip{margin-top:4px;padding-top:3px;border-top:1px solid var(--rule);align-self:stretch;
   display:flex;justify-content:flex-end;gap:.6em;white-space:nowrap;
@@ -542,7 +604,7 @@ body{margin:0;min-height:100vh;background:#EDE7DC;display:flex;flex-direction:co
 #s5 .pay .tot{flex:1}
 #s5 .pay .tl{display:block;font-size:10px;font-weight:800;letter-spacing:.11em;
   text-transform:uppercase;color:var(--ink-3);margin-bottom:3px}
-#s5 .pay .tk .cur{font-size:11px}
+#s5 .pay .tk .cur{font-size:26px;margin-right:.26em}
 #s5 .pay .tk .maj{font-size:26px}
 #s5 .cta{flex:none;padding:12px 26px;border:0;border-radius:999px;background:var(--ink);
   color:var(--white);font:inherit;font-size:14px;font-weight:800;letter-spacing:-.02em;
@@ -584,6 +646,563 @@ body{margin:0;min-height:100vh;background:#EDE7DC;display:flex;flex-direction:co
 #s5 .tab:not(.on):hover{color:var(--ink-2)}
 #s5 .tab:active{color:var(--ink)}
 #s5 .step{cursor:default}
+/* ---------- _cart-v4-ar.html ---------- */
+#a1 .phone{width:393px;height:852px;background:var(--white);border-radius:44px;overflow:hidden;
+  display:flex;flex-direction:column;position:relative;
+  box-shadow:0 30px 70px -30px rgba(30,24,10,.5)}
+#a1 .sb{flex:none;height:54px;position:relative;z-index:3;background:var(--shop);
+  color:var(--ink);
+  font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Helvetica Neue",Helvetica,sans-serif}
+#a1 .sb-di{position:absolute;top:11px;left:50%;transform:translateX(-50%);
+  width:126px;height:37.33px;border-radius:18.66px;background:#000}
+#a1 .sb-t{position:absolute;top:11px;left:0;width:133.5px;height:37.33px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:17px;font-weight:600;letter-spacing:-.2px;line-height:1;
+  font-variant-numeric:proportional-nums}
+#a1 .sb-i{position:absolute;top:11px;right:20px;height:37.33px;
+  display:flex;align-items:center;gap:6.5px}
+#a1 .sb-i svg{display:block;fill:currentColor}
+#a1 .appbar{flex:none;background:var(--shop);padding:0 16px 12px;
+  display:flex;align-items:baseline;gap:9px}
+#a1 .appbar h1{margin:0;font-size:24px;font-weight:800;letter-spacing:-.035em}
+#a1 .appbar span{font-size:12.5px;font-weight:700;color:#5A4600}
+#a1 .list{flex:1;min-height:0;overflow:hidden;background:var(--white)}
+#a1 .row{display:grid;grid-template-columns:52px 1fr auto;gap:11px;
+  align-items:start;padding:10px 16px}
+#a1 .row + .row{border-top:1px solid var(--rule)}
+#a1 .pack{width:52px;height:52px;display:grid;place-items:center}
+#a1 .pack svg{width:50px;height:50px;display:block}
+#a1 .nm{display:block;font-size:14.5px;font-weight:800;letter-spacing:-.022em;line-height:1.18}
+#a1 .meta{display:block;margin-top:1px;font-size:12.5px;font-weight:400;line-height:1.3;color:var(--ink-2)}
+#a1 .own{font-weight:800;font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;
+  color:var(--ink);box-shadow:inset 0 -1px 0 var(--ink)}
+#a1 .ctl{margin-top:7px;display:flex;align-items:center}
+#a1 .step{display:inline-flex;align-items:center;gap:13px;height:27px;padding:0 10px;
+  border-radius:999px;border:1px solid var(--rule);background:var(--white);
+  font-size:12px;font-weight:800;color:var(--ink)}
+#a1 .step i{font-style:normal;font-size:14px;font-weight:700;color:var(--ink-2);line-height:1}
+#a1 .val{display:flex;flex-direction:column;align-items:flex-end;padding-top:1px}
+#a1 .fslot{height:15px;margin-bottom:4px;display:flex;align-items:center}
+#a1 .flash{display:inline-block;padding:2.5px 5px;border-radius:3px;background:var(--shop);
+  color:var(--ink);font-size:10px;font-weight:800;letter-spacing:.07em;text-transform:uppercase}
+#a1 .tk{display:inline-flex;flex-direction:column;align-items:flex-end}
+#a1 .tk .amt{display:flex;align-items:baseline;gap:0;line-height:.92}
+#a1 .tk .cur{font-size:19px;font-weight:800;color:var(--ink-2);margin-right:.26em}
+#a1 .tk .maj{font-size:19px;font-weight:800;letter-spacing:-.045em}
+#a1 .tk .strip{margin-top:4px;padding-top:3px;border-top:1px solid var(--rule);align-self:stretch;
+  display:flex;justify-content:flex-end;gap:.6em;white-space:nowrap;
+  font-size:11.5px;font-weight:800;letter-spacing:.07em;text-transform:uppercase}
+#a1 .tk .strip .b{color:var(--ink-3)}
+#a1 .tk .strip .u{color:var(--ink-2)}
+#a1 .foot{flex:none;padding:10px 16px 12px;border-top:1px solid var(--rule);background:var(--white);
+  box-shadow:0 -6px 18px -14px rgba(23,21,18,.55)}
+#a1 .entry{width:100%;display:flex;padding:0;border:0;border-radius:0;background:none;
+  text-align:left;font:inherit;color:inherit;cursor:pointer}
+#a1 .entry .ticket{flex:1;min-width:0;display:flex;align-items:stretch;
+  background:var(--shop-pale);border:1.5px solid var(--shop-deep);border-radius:8px;
+  overflow:hidden}
+#a1 .entry .et{flex:1;min-width:0;padding:8px 11px}
+#a1 .entry .e1{display:block;font-size:13px;font-weight:800;letter-spacing:-.02em}
+#a1 .entry .e2{display:block;margin-top:1px;font-size:12.5px;font-weight:400;color:var(--ink-2)}
+#a1 .entry .ec{flex:none;width:34px;display:inline-flex;align-items:center;justify-content:center;
+  background:var(--shop);color:var(--ink);border-left:1.5px solid var(--shop-deep);
+  font-size:17px;font-weight:800;line-height:1}
+#a1 .pay{display:flex;align-items:flex-end;gap:14px;margin-top:11px}
+#a1 .pay .tot{flex:1}
+#a1 .pay .tl{display:block;font-size:10px;font-weight:800;letter-spacing:.11em;
+  text-transform:uppercase;color:var(--ink-3);margin-bottom:3px}
+#a1 .pay .tk .cur{font-size:26px;margin-right:.26em}
+#a1 .pay .tk .maj{font-size:26px}
+#a1 .cta{flex:none;padding:12px 26px;border:0;border-radius:999px;background:var(--ink);
+  color:var(--white);font:inherit;font-size:14px;font-weight:800;letter-spacing:-.02em;
+  cursor:pointer}
+#a1 .cta:hover{background:#000}
+#a1 .tabs{flex:none;display:flex;padding:6px 4px 16px;border-top:1px solid var(--rule);
+  background:var(--white)}
+#a1 .tab{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;
+  font-size:10.5px;font-weight:700;color:var(--ink-3)}
+#a1 .tab svg{width:21px;height:21px;fill:none;stroke:currentColor;stroke-width:1.7;
+  stroke-linecap:round;stroke-linejoin:round}
+#a1 .tab.on{color:var(--ink);font-weight:800}
+#a1 .tw{position:relative}
+#a1 .tb{position:absolute;top:-4px;left:11px;min-width:15px;height:15px;padding:0 4px;
+  border-radius:999px;background:var(--shop);color:var(--ink);font-size:10px;font-weight:800;
+  line-height:15px;text-align:center;font-style:normal}
+#a1 .hi{position:absolute;bottom:8px;left:50%;transform:translateX(-50%);
+  width:140px;height:5px;border-radius:3px;background:rgba(23,21,18,.26)}
+#a1 button,#a1 .item,#a1 .opt{cursor:pointer;-webkit-tap-highlight-color:transparent;
+  touch-action:manipulation}
+#a1 .item,#a1 .opt{transition:background-color .13s ease}
+#a1 .item:hover,#a1 .opt:hover{background:#FCFAF4}
+#a1 .item:active,#a1 .opt:active{background:#F3EFE4}
+#a1 .opt:hover .go{background:var(--ink);color:var(--white)}
+#a1 .entry{transition:transform .07s ease}
+#a1 .entry .ticket,#a1 .entry .ec{transition:background-color .13s ease}
+#a1 .entry:hover .ticket{background:#FFE9B4}
+#a1 .entry:hover .ec{background:var(--shop-deep)}
+#a1 .entry:active{transform:scale(.995)}
+#a1 .entry:active .ticket{background:#FAE3AC}
+#a1 .cta,#a1 .apply,#a1 .go,#a1 .keep,#a1 .exit,#a1 .cancel,#a1 .undo{transition:background-color .13s ease,color .13s ease,border-color .13s ease,transform .07s ease}
+#a1 .cta:active,#a1 .apply:active{background:#000;transform:scale(.97)}
+#a1 .go:active,#a1 .keep:active,#a1 .exit:active,#a1 .undo:active{background:var(--ink);border-color:var(--ink);color:var(--white);transform:scale(.97)}
+#a1 .cancel:active{border-color:var(--ink-2);color:var(--ink);transform:scale(.97)}
+#a1 .back{border-radius:999px;transition:background-color .13s ease}
+#a1 .back:hover{background:rgba(23,21,18,.07)}
+#a1 .back:active{background:rgba(23,21,18,.14)}
+#a1 .tab{cursor:pointer;-webkit-tap-highlight-color:transparent;transition:color .13s ease}
+#a1 .tab:not(.on):hover{color:var(--ink-2)}
+#a1 .tab:active{color:var(--ink)}
+#a1 .step{cursor:default}
+#a1[dir="rtl"] .appbar h1,#a1[dir="rtl"] .nav h1,#a1[dir="rtl"] .back,#a1[dir="rtl"] .nm,#a1[dir="rtl"] .meta,#a1[dir="rtl"] .flash,#a1[dir="rtl"] .tk .strip,#a1[dir="rtl"] .tk .strip .u,#a1[dir="rtl"] .tk .strip .b,#a1[dir="rtl"] .entry .e1,#a1[dir="rtl"] .entry .e2,#a1[dir="rtl"] .pay .tl,#a1[dir="rtl"] .cta,#a1[dir="rtl"] .tab,#a1[dir="rtl"] .chip,#a1[dir="rtl"] .sl,#a1[dir="rtl"] .nk,#a1[dir="rtl"] .go,#a1[dir="rtl"] .keep,#a1[dir="rtl"] .fn,#a1[dir="rtl"] .oc1,#a1[dir="rtl"] .ocd,#a1[dir="rtl"] .wsub,#a1[dir="rtl"] .yet,#a1[dir="rtl"] .apply,#a1[dir="rtl"] .cancel,#a1[dir="rtl"] .own{letter-spacing:normal;text-transform:none}
+#a1[dir="rtl"] .sb-t{left:auto;right:0}
+#a1[dir="rtl"] .sb-i{right:auto;left:20px}
+#a1[dir="rtl"] .tb{left:auto;right:11px}
+#a1[dir="rtl"] .entry,#a1[dir="rtl"] .item,#a1[dir="rtl"] .opt{text-align:start}
+#a1[dir="rtl"] .meta .sep{margin:0 .34em}
+#a1[dir="rtl"] .back svg{display:inline-block;transform:scaleX(-1)}
+#a1[dir="rtl"] .entry .ec{border-left:0;border-right:1.5px solid var(--shop-deep);direction:ltr}
+/* ---------- _optimize-v4-ar.html ---------- */
+#a2 .phone{width:393px;height:852px;background:var(--paper);border-radius:44px;overflow:hidden;
+  display:flex;flex-direction:column;position:relative;
+  box-shadow:0 30px 70px -30px rgba(30,24,10,.5)}
+#a2 .sb{flex:none;height:54px;position:relative;z-index:3;background:var(--shop);
+  color:var(--ink);
+  font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Helvetica Neue",Helvetica,sans-serif}
+#a2 .sb-di{position:absolute;top:11px;left:50%;transform:translateX(-50%);
+  width:126px;height:37.33px;border-radius:18.66px;background:#000}
+#a2 .sb-t{position:absolute;top:11px;left:0;width:133.5px;height:37.33px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:17px;font-weight:600;letter-spacing:-.2px;line-height:1;
+  font-variant-numeric:proportional-nums}
+#a2 .sb-i{position:absolute;top:11px;right:20px;height:37.33px;
+  display:flex;align-items:center;gap:6.5px}
+#a2 .sb-i svg{display:block;fill:currentColor}
+#a2 .nav{flex:none;height:44px;position:relative;background:var(--shop);
+  display:flex;align-items:center;padding:0 8px}
+#a2 .nav h1{position:absolute;left:64px;right:64px;margin:0;text-align:center;
+  font-size:17px;font-weight:800;letter-spacing:-.022em;line-height:1.1;
+  pointer-events:none}
+#a2 .back{position:relative;z-index:1;display:inline-flex;align-items:center;gap:2px;
+  padding:4px 6px 4px 2px;border:0;background:none;font:inherit;font-size:14px;
+  font-weight:700;letter-spacing:-.01em;color:var(--ink);cursor:pointer}
+#a2 .back svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2.6;
+  stroke-linecap:round;stroke-linejoin:round}
+#a2 .body{flex:1;min-height:0;overflow:hidden;display:flex;flex-direction:column}
+#a2 .sl{flex:none;padding:12px 16px 5px;font-size:10px;font-weight:800;letter-spacing:.12em;
+  text-transform:uppercase;color:var(--ink-3)}
+#a2 .list{flex:none;background:var(--white);border-block:1px solid var(--rule)}
+#a2 .item{display:grid;grid-template-columns:56px 1fr auto 14px;column-gap:12px;align-items:center;
+  padding:13px 16px;width:100%;text-align:left;background:none;border:0;font:inherit;color:inherit}
+#a2 .item + .item{border-top:1px solid var(--rule)}
+#a2 .item:hover{background:#FDFCF9}
+#a2 .pack{display:grid;place-items:center;width:56px;height:56px}
+#a2 .pack svg{width:56px;height:56px;display:block}
+#a2 .nm{display:block;font-size:14.5px;font-weight:800;letter-spacing:-.022em;line-height:1.2}
+#a2 .meta{display:block;margin-top:1px;font-size:12.5px;font-weight:400;color:var(--ink-2)}
+#a2 .offer{grid-column:2 / -1;margin-top:6px;font-size:12.5px;line-height:1.3;color:var(--ink-3)}
+#a2 .val{display:flex;flex-direction:column;align-items:flex-end}
+#a2 .fslot{height:15px;margin-bottom:4px;display:flex;align-items:center}
+#a2 .flash{display:inline-block;padding:2.5px 5px;border-radius:3px;background:var(--shop);
+  color:var(--ink);font-size:10px;font-weight:800;letter-spacing:.07em;text-transform:uppercase}
+#a2 .tk{display:inline-flex;flex-direction:column;align-items:flex-end}
+#a2 .tk .amt{display:flex;align-items:baseline;gap:0;line-height:.92}
+#a2 .tk .cur-m{font-size:19px;font-weight:800;color:var(--ink-2);margin-right:.26em}
+#a2 .tk .maj{font-size:19px;font-weight:800;letter-spacing:-.045em}
+#a2 .tk .strip{margin-top:4px;padding-top:3px;border-top:1px solid var(--rule);align-self:stretch;
+  display:flex;justify-content:flex-end;gap:.6em;white-space:nowrap;
+  font-size:11.5px;font-weight:800;letter-spacing:.07em;text-transform:uppercase}
+#a2 .tk .strip .b{color:var(--ink-3)}
+#a2 .tk .strip .u{color:var(--ink-2)}
+#a2 .chev{width:8px;height:8px;border-right:2px solid var(--ink-3);border-bottom:2px solid var(--ink-3);
+  transform:rotate(-45deg);justify-self:end}
+#a2 .none{flex:none;background:var(--paper)}
+#a2 .nrow{display:grid;grid-template-columns:56px 1fr;gap:12px;align-items:center;padding:7px 16px}
+#a2 .nrow .pack{width:56px;height:38px}
+#a2 .nrow .pack svg{width:38px;height:38px}
+#a2 .nrow .nm{font-size:13.5px;display:inline}
+#a2 .nrow .meta{display:inline;margin:0}
+#a2 .foot{flex:none;margin-top:auto;padding:16px 16px 30px;background:var(--paper)}
+#a2 .exit{width:100%;padding:12px;border:1px solid var(--ink);border-radius:999px;background:none;
+  font:inherit;font-size:13.5px;font-weight:800;letter-spacing:-.015em;color:var(--ink);cursor:pointer}
+#a2 .exit:hover{background:var(--ink);color:var(--white)}
+#a2 .hi{position:absolute;bottom:8px;left:50%;transform:translateX(-50%);
+  width:140px;height:5px;border-radius:3px;background:rgba(23,21,18,.26)}
+#a2 button,#a2 .item,#a2 .opt{cursor:pointer;-webkit-tap-highlight-color:transparent;
+  touch-action:manipulation}
+#a2 .item,#a2 .opt{transition:background-color .13s ease}
+#a2 .item:hover,#a2 .opt:hover{background:#FCFAF4}
+#a2 .item:active,#a2 .opt:active{background:#F3EFE4}
+#a2 .opt:hover .go{background:var(--ink);color:var(--white)}
+#a2 .entry{transition:background-color .13s ease,transform .07s ease}
+#a2 .entry:hover{background:#FFEFC8}
+#a2 .entry:active{background:#FAE3AC;transform:scale(.995)}
+#a2 .cta,#a2 .apply,#a2 .go,#a2 .keep,#a2 .exit,#a2 .cancel,#a2 .undo{transition:background-color .13s ease,color .13s ease,border-color .13s ease,transform .07s ease}
+#a2 .cta:active,#a2 .apply:active{background:#000;transform:scale(.97)}
+#a2 .go:active,#a2 .keep:active,#a2 .exit:active,#a2 .undo:active{background:var(--ink);border-color:var(--ink);color:var(--white);transform:scale(.97)}
+#a2 .cancel:active{border-color:var(--ink-2);color:var(--ink);transform:scale(.97)}
+#a2 .back{border-radius:999px;transition:background-color .13s ease}
+#a2 .back:hover{background:rgba(23,21,18,.07)}
+#a2 .back:active{background:rgba(23,21,18,.14)}
+#a2 .tab{cursor:pointer;-webkit-tap-highlight-color:transparent;transition:color .13s ease}
+#a2 .tab:not(.on):hover{color:var(--ink-2)}
+#a2 .tab:active{color:var(--ink)}
+#a2 .step{cursor:default}
+#a2[dir="rtl"] .appbar h1,#a2[dir="rtl"] .nav h1,#a2[dir="rtl"] .back,#a2[dir="rtl"] .nm,#a2[dir="rtl"] .meta,#a2[dir="rtl"] .flash,#a2[dir="rtl"] .tk .strip,#a2[dir="rtl"] .tk .strip .u,#a2[dir="rtl"] .tk .strip .b,#a2[dir="rtl"] .entry .e1,#a2[dir="rtl"] .entry .e2,#a2[dir="rtl"] .pay .tl,#a2[dir="rtl"] .cta,#a2[dir="rtl"] .tab,#a2[dir="rtl"] .chip,#a2[dir="rtl"] .sl,#a2[dir="rtl"] .nk,#a2[dir="rtl"] .go,#a2[dir="rtl"] .keep,#a2[dir="rtl"] .fn,#a2[dir="rtl"] .oc1,#a2[dir="rtl"] .ocd,#a2[dir="rtl"] .wsub,#a2[dir="rtl"] .yet,#a2[dir="rtl"] .apply,#a2[dir="rtl"] .cancel,#a2[dir="rtl"] .own{letter-spacing:normal;text-transform:none}
+#a2[dir="rtl"] .sb-t{left:auto;right:0}
+#a2[dir="rtl"] .sb-i{right:auto;left:20px}
+#a2[dir="rtl"] .entry,#a2[dir="rtl"] .item,#a2[dir="rtl"] .opt{text-align:start}
+#a2[dir="rtl"] .meta .sep{margin:0 .34em}
+#a2[dir="rtl"] .back svg{display:inline-block;transform:scaleX(-1)}
+#a2[dir="rtl"] .offer,#a2[dir="rtl"] .exit,#a2[dir="rtl"] .sl{letter-spacing:normal;text-transform:none}
+#a2[dir="rtl"] .chev{transform:rotate(135deg)}
+/* ---------- _options-v4-ar.html ---------- */
+#a3 .phone{width:393px;height:852px;background:var(--paper);border-radius:44px;overflow:hidden;
+  display:flex;flex-direction:column;position:relative;
+  box-shadow:0 30px 70px -30px rgba(30,24,10,.5)}
+#a3 .sb{flex:none;height:54px;position:relative;z-index:3;background:var(--shop);
+  color:var(--ink);
+  font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Helvetica Neue",Helvetica,sans-serif}
+#a3 .sb-di{position:absolute;top:11px;left:50%;transform:translateX(-50%);
+  width:126px;height:37.33px;border-radius:18.66px;background:#000}
+#a3 .sb-t{position:absolute;top:11px;left:0;width:133.5px;height:37.33px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:17px;font-weight:600;letter-spacing:-.2px;line-height:1;
+  font-variant-numeric:proportional-nums}
+#a3 .sb-i{position:absolute;top:11px;right:20px;height:37.33px;
+  display:flex;align-items:center;gap:6.5px}
+#a3 .sb-i svg{display:block;fill:currentColor}
+#a3 .nav{flex:none;height:44px;position:relative;background:var(--shop);
+  display:flex;align-items:center;padding:0 8px}
+#a3 .nav h1{position:absolute;left:64px;right:64px;margin:0;text-align:center;
+  font-size:17px;font-weight:800;letter-spacing:-.022em;line-height:1.1;
+  pointer-events:none}
+#a3 .back{position:relative;z-index:1;display:inline-flex;align-items:center;gap:2px;
+  padding:4px 6px 4px 2px;border:0;background:none;font:inherit;font-size:14px;
+  font-weight:700;letter-spacing:-.01em;color:var(--ink);cursor:pointer}
+#a3 .back svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2.6;
+  stroke-linecap:round;stroke-linejoin:round}
+#a3 .body{flex:1;min-height:0;overflow:hidden;display:flex;flex-direction:column}
+#a3 .sl{flex:none;padding:9px 16px 4px;font-size:10px;font-weight:800;letter-spacing:.12em;
+  text-transform:uppercase;color:var(--ink-3)}
+#a3 .cur{flex:none;display:grid;grid-template-columns:56px 1fr auto;gap:12px;align-items:center;
+  padding:5px 16px 8px;background:var(--paper)}
+#a3 .cur .pack{width:56px;height:40px}
+#a3 .cur .pack svg{width:40px;height:40px}
+#a3 .cur .nm{display:inline;font-size:13.5px}
+#a3 .cur .meta{display:inline;margin:0}
+#a3 .cur .tk .maj{font-size:17px}
+#a3 .cur .tk .strip{margin-top:3px;padding-top:2px;font-size:10.5px}
+#a3 .opts{flex:none;background:var(--white);border-block:1px solid var(--rule)}
+#a3 .opt{display:flex;flex-direction:column;padding:14px 16px;width:100%;text-align:left;
+  background:none;border:0;font:inherit;color:inherit}
+#a3 .opt + .opt{border-top:1px solid var(--rule)}
+#a3 .reason{display:block;margin-bottom:8px}
+#a3 .prod{display:grid;grid-template-columns:56px 1fr auto;gap:12px;align-items:center}
+#a3 .pack{display:grid;place-items:center}
+#a3 .opt .pack{width:56px;height:56px}
+#a3 .opt .pack svg{width:56px;height:56px;display:block}
+#a3 .outcome{display:grid;grid-template-columns:56px 1fr auto;column-gap:12px;
+  align-items:center;margin-top:12px}
+#a3 .oc{min-width:0}
+#a3 .oc1{display:block;font-size:14px;font-weight:800;letter-spacing:-.025em;color:var(--ink)}
+#a3 .ocs{color:var(--ink-3);margin:0 .5em}
+#a3 .ocd{font-weight:700;color:var(--ink-2)}
+#a3 .go{flex:none;display:inline-flex;align-items:center;height:27px;padding:0 14px;border-radius:999px;
+  border:1px solid var(--ink);background:var(--white);
+  font-size:12px;font-weight:800;letter-spacing:-.01em;color:var(--ink)}
+#a3 .opt:hover .go{background:var(--ink);color:var(--white)}
+#a3 .opt:hover{background:#FDFCF9}
+#a3 .nm{display:block;font-size:14.5px;font-weight:800;letter-spacing:-.022em;line-height:1.2}
+#a3 .meta{display:block;margin-top:1px;font-size:12.5px;font-weight:400;color:var(--ink-2)}
+#a3 .own{font-weight:800;font-size:10.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--ink)}
+#a3 .chip{display:inline-block;padding:3px 5.5px;border-radius:3px;
+  font-size:9.5px;font-weight:800;letter-spacing:.07em;text-transform:uppercase;line-height:1.3}
+#a3 .c1{background:var(--shop);color:var(--ink)}
+#a3 .c2{box-shadow:inset 0 0 0 1px var(--ink);color:var(--ink)}
+#a3 .c3{box-shadow:inset 0 0 0 1px var(--rule);background:var(--paper);color:var(--ink-2)}
+#a3 .val{display:flex;flex-direction:column;align-items:flex-end}
+#a3 .tk{display:inline-flex;flex-direction:column;align-items:flex-end}
+#a3 .tk .amt{display:flex;align-items:baseline;gap:0;line-height:.92}
+#a3 .tk .cur-m{font-size:23px;font-weight:800;color:var(--ink-2);margin-right:.26em}
+#a3 .tk .maj{font-size:23px;font-weight:800;letter-spacing:-.045em}
+#a3 .cur .tk .cur-m{font-size:17px;margin-right:.26em}
+#a3 .tk .strip{margin-top:4px;padding-top:3px;border-top:1px solid var(--rule);align-self:stretch;
+  display:flex;justify-content:flex-end;gap:.6em;white-space:nowrap;
+  font-size:11.5px;font-weight:800;letter-spacing:.07em;text-transform:uppercase}
+#a3 .tk .strip .b{color:var(--ink-3)}
+#a3 .tk .strip .u{color:var(--ink-2)}
+#a3 .foot{flex:none;padding:12px 16px 0;background:var(--paper)}
+#a3 .keep{width:100%;padding:12px;border:1px solid var(--ink);border-radius:999px;background:none;
+  font:inherit;font-size:13.5px;font-weight:800;letter-spacing:-.015em;color:var(--ink);cursor:pointer}
+#a3 .keep:hover{background:var(--ink);color:var(--white)}
+#a3 .fn{display:block;margin-top:8px;text-align:center;font-size:10.5px;color:var(--ink-3)}
+#a3 .hi{position:absolute;bottom:8px;left:50%;transform:translateX(-50%);
+  width:140px;height:5px;border-radius:3px;background:rgba(23,21,18,.26)}
+#a3 button,#a3 .item,#a3 .opt{cursor:pointer;-webkit-tap-highlight-color:transparent;
+  touch-action:manipulation}
+#a3 .item,#a3 .opt{transition:background-color .13s ease}
+#a3 .item:hover,#a3 .opt:hover{background:#FCFAF4}
+#a3 .item:active,#a3 .opt:active{background:#F3EFE4}
+#a3 .opt:hover .go{background:var(--ink);color:var(--white)}
+#a3 .entry{transition:background-color .13s ease,transform .07s ease}
+#a3 .entry:hover{background:#FFEFC8}
+#a3 .entry:active{background:#FAE3AC;transform:scale(.995)}
+#a3 .cta,#a3 .apply,#a3 .go,#a3 .keep,#a3 .exit,#a3 .cancel,#a3 .undo{transition:background-color .13s ease,color .13s ease,border-color .13s ease,transform .07s ease}
+#a3 .cta:active,#a3 .apply:active{background:#000;transform:scale(.97)}
+#a3 .go:active,#a3 .keep:active,#a3 .exit:active,#a3 .undo:active{background:var(--ink);border-color:var(--ink);color:var(--white);transform:scale(.97)}
+#a3 .cancel:active{border-color:var(--ink-2);color:var(--ink);transform:scale(.97)}
+#a3 .back{border-radius:999px;transition:background-color .13s ease}
+#a3 .back:hover{background:rgba(23,21,18,.07)}
+#a3 .back:active{background:rgba(23,21,18,.14)}
+#a3 .tab{cursor:pointer;-webkit-tap-highlight-color:transparent;transition:color .13s ease}
+#a3 .tab:not(.on):hover{color:var(--ink-2)}
+#a3 .tab:active{color:var(--ink)}
+#a3 .step{cursor:default}
+#a3[dir="rtl"] .appbar h1,#a3[dir="rtl"] .nav h1,#a3[dir="rtl"] .back,#a3[dir="rtl"] .nm,#a3[dir="rtl"] .meta,#a3[dir="rtl"] .flash,#a3[dir="rtl"] .tk .strip,#a3[dir="rtl"] .tk .strip .u,#a3[dir="rtl"] .tk .strip .b,#a3[dir="rtl"] .entry .e1,#a3[dir="rtl"] .entry .e2,#a3[dir="rtl"] .pay .tl,#a3[dir="rtl"] .cta,#a3[dir="rtl"] .tab,#a3[dir="rtl"] .chip,#a3[dir="rtl"] .sl,#a3[dir="rtl"] .nk,#a3[dir="rtl"] .go,#a3[dir="rtl"] .keep,#a3[dir="rtl"] .fn,#a3[dir="rtl"] .oc1,#a3[dir="rtl"] .ocd,#a3[dir="rtl"] .wsub,#a3[dir="rtl"] .yet,#a3[dir="rtl"] .apply,#a3[dir="rtl"] .cancel,#a3[dir="rtl"] .own{letter-spacing:normal;text-transform:none}
+#a3[dir="rtl"] .sb-t{left:auto;right:0}
+#a3[dir="rtl"] .sb-i{right:auto;left:20px}
+#a3[dir="rtl"] .entry,#a3[dir="rtl"] .item,#a3[dir="rtl"] .opt{text-align:start}
+#a3[dir="rtl"] .meta .sep{margin:0 .34em}
+#a3[dir="rtl"] .back svg{display:inline-block;transform:scaleX(-1)}
+/* ---------- _confirm-v4-ar.html ---------- */
+#a4 .phone{width:393px;height:852px;background:var(--paper);border-radius:44px;overflow:hidden;
+  display:flex;flex-direction:column;position:relative;
+  box-shadow:0 30px 70px -30px rgba(30,24,10,.5)}
+#a4 .sb{flex:none;height:54px;position:relative;z-index:3;background:var(--shop);
+  color:var(--ink);
+  font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Helvetica Neue",Helvetica,sans-serif}
+#a4 .sb-di{position:absolute;top:11px;left:50%;transform:translateX(-50%);
+  width:126px;height:37.33px;border-radius:18.66px;background:#000}
+#a4 .sb-t{position:absolute;top:11px;left:0;width:133.5px;height:37.33px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:17px;font-weight:600;letter-spacing:-.2px;line-height:1;
+  font-variant-numeric:proportional-nums}
+#a4 .sb-i{position:absolute;top:11px;right:20px;height:37.33px;
+  display:flex;align-items:center;gap:6.5px}
+#a4 .sb-i svg{display:block;fill:currentColor}
+#a4 .nav{flex:none;height:44px;position:relative;background:var(--shop);
+  display:flex;align-items:center;padding:0 8px}
+#a4 .nav h1{position:absolute;left:64px;right:64px;margin:0;text-align:center;
+  font-size:17px;font-weight:800;letter-spacing:-.022em;line-height:1.1;
+  pointer-events:none}
+#a4 .back{position:relative;z-index:1;display:inline-flex;align-items:center;gap:2px;
+  padding:4px 6px 4px 2px;border:0;background:none;font:inherit;font-size:14px;
+  font-weight:700;letter-spacing:-.01em;color:var(--ink);cursor:pointer}
+#a4 .back svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2.6;
+  stroke-linecap:round;stroke-linejoin:round}
+#a4 .body{flex:1;min-height:0;overflow:hidden;display:flex;flex-direction:column}
+#a4 .mid{margin-block:auto}
+#a4 .card{flex:none;margin:0 16px;background:var(--white);border:1px solid var(--rule);
+  border-radius:4px;overflow:hidden}
+#a4 .now{display:grid;grid-template-columns:64px 1fr auto;gap:12px;align-items:center;
+  padding:11px 16px 12px;background:var(--paper)}
+#a4 .nk{display:block;font-size:9.5px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;
+  color:var(--ink-3);margin-bottom:2px}
+#a4 .now .pack{width:64px;height:38px}
+#a4 .now .pack svg{width:38px;height:38px}
+#a4 .now .nm{display:inline;font-size:13.5px;color:var(--ink-2)}
+#a4 .now .meta{display:inline;margin:0}
+#a4 .now .tk .maj{font-size:17px;color:var(--ink-2)}
+#a4 .now .tk .cur-m{font-size:17px;margin-right:.26em}
+#a4 .now .tk .strip{margin-top:3px;padding-top:2px;font-size:10.5px}
+#a4 .arrow{padding:7px 16px 0;width:96px;display:flex;justify-content:center}
+#a4 .arrow svg{width:15px;height:15px;fill:none;stroke:var(--ink-3);stroke-width:2.2;
+  stroke-linecap:round;stroke-linejoin:round}
+#a4 .to{padding:2px 16px 16px}
+#a4 .reason{display:block;margin-bottom:9px}
+#a4 .chip{display:inline-block;padding:3px 5.5px;border-radius:3px;
+  font-size:9.5px;font-weight:800;letter-spacing:.07em;text-transform:uppercase;line-height:1.3}
+#a4 .c1{background:var(--shop);color:var(--ink)}
+#a4 .c2{box-shadow:inset 0 0 0 1px var(--ink);color:var(--ink)}
+#a4 .c3{box-shadow:inset 0 0 0 1px var(--rule);background:var(--paper);color:var(--ink-2)}
+#a4 .prod{display:grid;grid-template-columns:64px 1fr auto;column-gap:12px;align-items:center}
+#a4 .pack{display:grid;place-items:center;width:64px;height:64px}
+#a4 .pack svg{width:64px;height:64px;display:block}
+#a4 .nm{display:block;font-size:15px;font-weight:800;letter-spacing:-.022em;line-height:1.2}
+#a4 .meta{display:block;margin-top:1px;font-size:12.5px;font-weight:400;color:var(--ink-2)}
+#a4 .own{font-weight:800;font-size:10.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--ink)}
+#a4 .tk{display:inline-flex;flex-direction:column;align-items:flex-end}
+#a4 .tk .amt{display:flex;align-items:baseline;gap:0;line-height:.92}
+#a4 .tk .cur-m{font-size:28px;font-weight:800;color:var(--ink-2);margin-right:.26em}
+#a4 .tk .maj{font-size:28px;font-weight:800;letter-spacing:-.045em}
+#a4 .tk .strip{margin-top:4px;padding-top:3px;border-top:1px solid var(--rule);align-self:stretch;
+  display:flex;justify-content:flex-end;gap:.6em;white-space:nowrap;
+  font-size:11.5px;font-weight:800;letter-spacing:.07em;text-transform:uppercase}
+#a4 .tk .strip .b{color:var(--ink-3)}
+#a4 .tk .strip .u{color:var(--ink-2)}
+#a4 .what{margin-top:16px;padding-top:14px;border-top:1px solid var(--rule)}
+#a4 .btot{display:flex;align-items:baseline;gap:0;line-height:.92;margin-top:3px}
+#a4 .btot .cur-m{font-size:34px;font-weight:800;color:var(--ink-2);margin-right:.26em}
+#a4 .btot .maj{font-size:34px;font-weight:800;letter-spacing:-.045em}
+#a4 .wsub{display:block;margin-top:7px;font-size:14px;font-weight:700;
+  letter-spacing:-.02em;color:var(--ink-2)}
+#a4 .wsep{color:var(--ink-3);margin:0 .5em}
+#a4 .yet{display:block;margin:0 0 11px;font-size:11.5px;color:var(--ink-3)}
+#a4 .foot{flex:none;padding:16px 16px 30px;background:var(--paper);
+  border-top:1px solid var(--rule);text-align:center}
+#a4 .apply{width:100%;padding:13px;border:0;border-radius:999px;background:var(--ink);
+  color:var(--white);font:inherit;font-size:14px;font-weight:800;letter-spacing:-.02em;cursor:pointer}
+#a4 .apply:hover{background:#000}
+#a4 .cancel{width:100%;margin-top:9px;padding:12px;border:1px solid var(--rule);border-radius:999px;
+  background:none;font:inherit;font-size:12.5px;font-weight:700;letter-spacing:-.01em;
+  color:var(--ink-2);cursor:pointer}
+#a4 .cancel:hover{border-color:var(--ink-2);color:var(--ink)}
+#a4 .hi{position:absolute;bottom:8px;left:50%;transform:translateX(-50%);
+  width:140px;height:5px;border-radius:3px;background:rgba(23,21,18,.26)}
+#a4 button,#a4 .item,#a4 .opt{cursor:pointer;-webkit-tap-highlight-color:transparent;
+  touch-action:manipulation}
+#a4 .item,#a4 .opt{transition:background-color .13s ease}
+#a4 .item:hover,#a4 .opt:hover{background:#FCFAF4}
+#a4 .item:active,#a4 .opt:active{background:#F3EFE4}
+#a4 .opt:hover .go{background:var(--ink);color:var(--white)}
+#a4 .entry{transition:background-color .13s ease,transform .07s ease}
+#a4 .entry:hover{background:#FFEFC8}
+#a4 .entry:active{background:#FAE3AC;transform:scale(.995)}
+#a4 .cta,#a4 .apply,#a4 .go,#a4 .keep,#a4 .exit,#a4 .cancel,#a4 .undo{transition:background-color .13s ease,color .13s ease,border-color .13s ease,transform .07s ease}
+#a4 .cta:active,#a4 .apply:active{background:#000;transform:scale(.97)}
+#a4 .go:active,#a4 .keep:active,#a4 .exit:active,#a4 .undo:active{background:var(--ink);border-color:var(--ink);color:var(--white);transform:scale(.97)}
+#a4 .cancel:active{border-color:var(--ink-2);color:var(--ink);transform:scale(.97)}
+#a4 .back{border-radius:999px;transition:background-color .13s ease}
+#a4 .back:hover{background:rgba(23,21,18,.07)}
+#a4 .back:active{background:rgba(23,21,18,.14)}
+#a4 .tab{cursor:pointer;-webkit-tap-highlight-color:transparent;transition:color .13s ease}
+#a4 .tab:not(.on):hover{color:var(--ink-2)}
+#a4 .tab:active{color:var(--ink)}
+#a4 .step{cursor:default}
+#a4[dir="rtl"] .appbar h1,#a4[dir="rtl"] .nav h1,#a4[dir="rtl"] .back,#a4[dir="rtl"] .nm,#a4[dir="rtl"] .meta,#a4[dir="rtl"] .flash,#a4[dir="rtl"] .tk .strip,#a4[dir="rtl"] .tk .strip .u,#a4[dir="rtl"] .tk .strip .b,#a4[dir="rtl"] .entry .e1,#a4[dir="rtl"] .entry .e2,#a4[dir="rtl"] .pay .tl,#a4[dir="rtl"] .cta,#a4[dir="rtl"] .tab,#a4[dir="rtl"] .chip,#a4[dir="rtl"] .sl,#a4[dir="rtl"] .nk,#a4[dir="rtl"] .go,#a4[dir="rtl"] .keep,#a4[dir="rtl"] .fn,#a4[dir="rtl"] .oc1,#a4[dir="rtl"] .ocd,#a4[dir="rtl"] .wsub,#a4[dir="rtl"] .yet,#a4[dir="rtl"] .apply,#a4[dir="rtl"] .cancel,#a4[dir="rtl"] .own{letter-spacing:normal;text-transform:none}
+#a4[dir="rtl"] .sb-t{left:auto;right:0}
+#a4[dir="rtl"] .sb-i{right:auto;left:20px}
+#a4[dir="rtl"] .entry,#a4[dir="rtl"] .item,#a4[dir="rtl"] .opt{text-align:start}
+#a4[dir="rtl"] .meta .sep{margin:0 .34em}
+#a4[dir="rtl"] .back svg{display:inline-block;transform:scaleX(-1)}
+/* ---------- _cart-applied-v4-ar.html ---------- */
+#a5 .phone{width:393px;height:852px;background:var(--white);border-radius:44px;overflow:hidden;
+  display:flex;flex-direction:column;position:relative;
+  box-shadow:0 30px 70px -30px rgba(30,24,10,.5)}
+#a5 .sb{flex:none;height:54px;position:relative;z-index:3;background:var(--shop);
+  color:var(--ink);
+  font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Helvetica Neue",Helvetica,sans-serif}
+#a5 .sb-di{position:absolute;top:11px;left:50%;transform:translateX(-50%);
+  width:126px;height:37.33px;border-radius:18.66px;background:#000}
+#a5 .sb-t{position:absolute;top:11px;left:0;width:133.5px;height:37.33px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:17px;font-weight:600;letter-spacing:-.2px;line-height:1;
+  font-variant-numeric:proportional-nums}
+#a5 .sb-i{position:absolute;top:11px;right:20px;height:37.33px;
+  display:flex;align-items:center;gap:6.5px}
+#a5 .sb-i svg{display:block;fill:currentColor}
+#a5 .appbar{flex:none;background:var(--shop);padding:0 16px 12px;
+  display:flex;align-items:baseline;gap:9px}
+#a5 .appbar h1{margin:0;font-size:24px;font-weight:800;letter-spacing:-.035em}
+#a5 .appbar span{font-size:12.5px;font-weight:700;color:#5A4600}
+#a5 .list{flex:1;min-height:0;overflow:hidden;background:var(--white)}
+#a5 .row{display:grid;grid-template-columns:52px 1fr auto;gap:11px;
+  align-items:start;padding:8px 16px}
+#a5 .row + .row{border-top:1px solid var(--rule)}
+#a5 .row.is-chg{background:var(--shop-pale);flex-wrap:wrap}
+#a5 .row.is-chg + .row{border-top-color:#EFE0B8}
+#a5 .chg{grid-column:1 / -1;margin:6px 0 0 63px;padding-top:6px;border-top:1px solid #EFE0B8;
+  display:flex;align-items:center;gap:10px}
+#a5 .chg span{flex:1;min-width:0;font-size:12px;line-height:1.35;color:var(--ink-2)}
+#a5 .chg b{font-weight:800;color:var(--ink)}
+#a5 .undo{flex:none;height:26px;padding:0 13px;border:1px solid var(--ink-2);border-radius:999px;
+  background:none;font:inherit;font-size:12px;font-weight:800;letter-spacing:-.01em;
+  color:var(--ink);cursor:pointer}
+#a5 .undo:hover{background:var(--ink);border-color:var(--ink);color:var(--white)}
+#a5 .pack{width:52px;height:52px;display:grid;place-items:center}
+#a5 .pack svg{width:50px;height:50px;display:block}
+#a5 .nm{display:block;font-size:14.5px;font-weight:800;letter-spacing:-.022em;line-height:1.18}
+#a5 .meta{display:block;margin-top:1px;font-size:12.5px;font-weight:400;line-height:1.3;color:var(--ink-2)}
+#a5 .own{font-weight:800;font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;
+  color:var(--ink);box-shadow:inset 0 -1px 0 var(--ink)}
+#a5 .ctl{margin-top:7px;display:flex;align-items:center}
+#a5 .step{display:inline-flex;align-items:center;gap:13px;height:27px;padding:0 10px;
+  border-radius:999px;border:1px solid var(--rule);background:var(--white);
+  font-size:12px;font-weight:800;color:var(--ink)}
+#a5 .step i{font-style:normal;font-size:14px;font-weight:700;color:var(--ink-2);line-height:1}
+#a5 .val{display:flex;flex-direction:column;align-items:flex-end;padding-top:1px}
+#a5 .fslot{height:15px;margin-bottom:4px;display:flex;align-items:center}
+#a5 .flash{display:inline-block;padding:2.5px 5px;border-radius:3px;background:var(--shop);
+  color:var(--ink);font-size:10px;font-weight:800;letter-spacing:.07em;text-transform:uppercase}
+#a5 .tk{display:inline-flex;flex-direction:column;align-items:flex-end}
+#a5 .tk .amt{display:flex;align-items:baseline;gap:0;line-height:.92}
+#a5 .tk .cur{font-size:19px;font-weight:800;color:var(--ink-2);margin-right:.26em}
+#a5 .tk .maj{font-size:19px;font-weight:800;letter-spacing:-.045em}
+#a5 .tk .strip{margin-top:4px;padding-top:3px;border-top:1px solid var(--rule);align-self:stretch;
+  display:flex;justify-content:flex-end;gap:.6em;white-space:nowrap;
+  font-size:11.5px;font-weight:800;letter-spacing:.07em;text-transform:uppercase}
+#a5 .tk .strip .b{color:var(--ink-3)}
+#a5 .tk .strip .u{color:var(--ink-2)}
+#a5 .foot{flex:none;padding:7px 16px 9px;border-top:1px solid var(--rule);background:var(--white);
+  box-shadow:0 -6px 18px -14px rgba(23,21,18,.55)}
+#a5 .entry{width:100%;display:flex;padding:0;border:0;border-radius:0;background:none;
+  text-align:left;font:inherit;color:inherit;cursor:pointer}
+#a5 .entry .ticket{flex:1;min-width:0;display:flex;align-items:stretch;
+  background:var(--shop-pale);border:1.5px solid var(--shop-deep);border-radius:8px;
+  overflow:hidden}
+#a5 .entry .et{flex:1;min-width:0;padding:8px 11px}
+#a5 .entry .e1{display:block;font-size:13px;font-weight:800;letter-spacing:-.02em}
+#a5 .entry .e2{display:block;margin-top:1px;font-size:12.5px;font-weight:400;color:var(--ink-2)}
+#a5 .entry .ec{flex:none;width:34px;display:inline-flex;align-items:center;justify-content:center;
+  background:var(--shop);color:var(--ink);border-left:1.5px solid var(--shop-deep);
+  font-size:17px;font-weight:800;line-height:1}
+#a5 .pay{display:flex;align-items:flex-end;gap:14px;margin-top:9px}
+#a5 .pay .tot{flex:1}
+#a5 .pay .tl{display:block;font-size:10px;font-weight:800;letter-spacing:.11em;
+  text-transform:uppercase;color:var(--ink-3);margin-bottom:3px}
+#a5 .pay .tk .cur{font-size:26px;margin-right:.26em}
+#a5 .pay .tk .maj{font-size:26px}
+#a5 .cta{flex:none;padding:12px 26px;border:0;border-radius:999px;background:var(--ink);
+  color:var(--white);font:inherit;font-size:14px;font-weight:800;letter-spacing:-.02em;
+  cursor:pointer}
+#a5 .cta:hover{background:#000}
+#a5 .tabs{flex:none;display:flex;padding:6px 4px 16px;border-top:1px solid var(--rule);
+  background:var(--white)}
+#a5 .tab{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;
+  font-size:10.5px;font-weight:700;color:var(--ink-3)}
+#a5 .tab svg{width:21px;height:21px;fill:none;stroke:currentColor;stroke-width:1.7;
+  stroke-linecap:round;stroke-linejoin:round}
+#a5 .tab.on{color:var(--ink);font-weight:800}
+#a5 .tw{position:relative}
+#a5 .tb{position:absolute;top:-4px;left:11px;min-width:15px;height:15px;padding:0 4px;
+  border-radius:999px;background:var(--shop);color:var(--ink);font-size:10px;font-weight:800;
+  line-height:15px;text-align:center;font-style:normal}
+#a5 .hi{position:absolute;bottom:8px;left:50%;transform:translateX(-50%);
+  width:140px;height:5px;border-radius:3px;background:rgba(23,21,18,.26)}
+#a5 button,#a5 .item,#a5 .opt{cursor:pointer;-webkit-tap-highlight-color:transparent;
+  touch-action:manipulation}
+#a5 .item,#a5 .opt{transition:background-color .13s ease}
+#a5 .item:hover,#a5 .opt:hover{background:#FCFAF4}
+#a5 .item:active,#a5 .opt:active{background:#F3EFE4}
+#a5 .opt:hover .go{background:var(--ink);color:var(--white)}
+#a5 .entry{transition:transform .07s ease}
+#a5 .entry .ticket,#a5 .entry .ec{transition:background-color .13s ease}
+#a5 .entry:hover .ticket{background:#FFE9B4}
+#a5 .entry:hover .ec{background:var(--shop-deep)}
+#a5 .entry:active{transform:scale(.995)}
+#a5 .entry:active .ticket{background:#FAE3AC}
+#a5 .cta,#a5 .apply,#a5 .go,#a5 .keep,#a5 .exit,#a5 .cancel,#a5 .undo{transition:background-color .13s ease,color .13s ease,border-color .13s ease,transform .07s ease}
+#a5 .cta:active,#a5 .apply:active{background:#000;transform:scale(.97)}
+#a5 .go:active,#a5 .keep:active,#a5 .exit:active,#a5 .undo:active{background:var(--ink);border-color:var(--ink);color:var(--white);transform:scale(.97)}
+#a5 .cancel:active{border-color:var(--ink-2);color:var(--ink);transform:scale(.97)}
+#a5 .back{border-radius:999px;transition:background-color .13s ease}
+#a5 .back:hover{background:rgba(23,21,18,.07)}
+#a5 .back:active{background:rgba(23,21,18,.14)}
+#a5 .tab{cursor:pointer;-webkit-tap-highlight-color:transparent;transition:color .13s ease}
+#a5 .tab:not(.on):hover{color:var(--ink-2)}
+#a5 .tab:active{color:var(--ink)}
+#a5 .step{cursor:default}
+#a5[dir="rtl"] .appbar h1,#a5[dir="rtl"] .nav h1,#a5[dir="rtl"] .back,#a5[dir="rtl"] .nm,#a5[dir="rtl"] .meta,#a5[dir="rtl"] .flash,#a5[dir="rtl"] .tk .strip,#a5[dir="rtl"] .tk .strip .u,#a5[dir="rtl"] .tk .strip .b,#a5[dir="rtl"] .entry .e1,#a5[dir="rtl"] .entry .e2,#a5[dir="rtl"] .pay .tl,#a5[dir="rtl"] .cta,#a5[dir="rtl"] .tab,#a5[dir="rtl"] .chip,#a5[dir="rtl"] .sl,#a5[dir="rtl"] .nk,#a5[dir="rtl"] .go,#a5[dir="rtl"] .keep,#a5[dir="rtl"] .fn,#a5[dir="rtl"] .oc1,#a5[dir="rtl"] .ocd,#a5[dir="rtl"] .wsub,#a5[dir="rtl"] .yet,#a5[dir="rtl"] .apply,#a5[dir="rtl"] .cancel,#a5[dir="rtl"] .own{letter-spacing:normal;text-transform:none}
+#a5[dir="rtl"] .sb-t{left:auto;right:0}
+#a5[dir="rtl"] .sb-i{right:auto;left:20px}
+#a5[dir="rtl"] .tb{left:auto;right:11px}
+#a5[dir="rtl"] .entry,#a5[dir="rtl"] .item,#a5[dir="rtl"] .opt{text-align:start}
+#a5[dir="rtl"] .meta .sep{margin:0 .34em}
+#a5[dir="rtl"] .back svg{display:inline-block;transform:scaleX(-1)}
+#a5[dir="rtl"] .entry .ec{border-left:0;border-right:1.5px solid var(--shop-deep);direction:ltr}
+#a5[dir="rtl"] .chg,#a5[dir="rtl"] .chg span,#a5[dir="rtl"] .undo{letter-spacing:normal;text-transform:none}
+#a5[dir="rtl"] .chg{margin:6px 63px 0 0}
+#a5[dir="rtl"] .tk .amt{gap:.24em}
 </style>
 </head>
 <body>
@@ -613,8 +1232,8 @@ body{margin:0;min-height:100vh;background:#EDE7DC;display:flex;flex-direction:co
       <span><span class="nm">Milk</span><span class="meta">Golden Dairy · 1.5 L</span>
         <span class="ctl"><span class="step"><i>−</i>1<i>+</i></span></span></span>
       <span class="val"><span class="fslot"><span class="flash">3 options</span></span>
-        <span class="tk"><span class="amt"><span class="cur">SAR</span><span class="maj">24</span></span>
-          <span class="strip"><span class="b">Per L</span><span class="u">SAR 16.00</span></span></span></span>
+        <span class="tk"><span class="amt"><span class="cur">⃁</span><span class="maj">24</span></span>
+          <span class="strip"><span class="b">Per L</span><span class="u">⃁ 16.00</span></span></span></span>
     </article>
 
     <article class="row">
@@ -622,8 +1241,8 @@ body{margin:0;min-height:100vh;background:#EDE7DC;display:flex;flex-direction:co
       <span><span class="nm">Rice</span><span class="meta">Golden Field · 2 kg</span>
         <span class="ctl"><span class="step"><i>−</i>1<i>+</i></span></span></span>
       <span class="val"><span class="fslot"><span class="flash">2 options</span></span>
-        <span class="tk"><span class="amt"><span class="cur">SAR</span><span class="maj">19</span></span>
-          <span class="strip"><span class="b">Per kg</span><span class="u">SAR 9.50</span></span></span></span>
+        <span class="tk"><span class="amt"><span class="cur">⃁</span><span class="maj">19</span></span>
+          <span class="strip"><span class="b">Per kg</span><span class="u">⃁ 9.50</span></span></span></span>
     </article>
 
     <article class="row">
@@ -631,8 +1250,8 @@ body{margin:0;min-height:100vh;background:#EDE7DC;display:flex;flex-direction:co
       <span><span class="nm">Dish soap</span><span class="meta">CleanPro · 750 ml</span>
         <span class="ctl"><span class="step"><i>−</i>1<i>+</i></span></span></span>
       <span class="val"><span class="fslot"><span class="flash">1 option</span></span>
-        <span class="tk"><span class="amt"><span class="cur">SAR</span><span class="maj">14</span></span>
-          <span class="strip"><span class="b">Per L</span><span class="u">SAR 18.67</span></span></span></span>
+        <span class="tk"><span class="amt"><span class="cur">⃁</span><span class="maj">14</span></span>
+          <span class="strip"><span class="b">Per L</span><span class="u">⃁ 18.67</span></span></span></span>
     </article>
 
     <!-- three items with no options: no flash, and the ticket is unchanged.
@@ -642,8 +1261,8 @@ body{margin:0;min-height:100vh;background:#EDE7DC;display:flex;flex-direction:co
       <span><span class="nm">Cornflakes</span><span class="meta">Morning Co · 500 g</span>
         <span class="ctl"><span class="step"><i>−</i>1<i>+</i></span></span></span>
       <span class="val"><span class="fslot"></span>
-        <span class="tk"><span class="amt"><span class="cur">SAR</span><span class="maj">18</span></span>
-          <span class="strip"><span class="b">Per kg</span><span class="u">SAR 36.00</span></span></span></span>
+        <span class="tk"><span class="amt"><span class="cur">⃁</span><span class="maj">18</span></span>
+          <span class="strip"><span class="b">Per kg</span><span class="u">⃁ 36.00</span></span></span></span>
     </article>
 
     <article class="row">
@@ -651,8 +1270,8 @@ body{margin:0;min-height:100vh;background:#EDE7DC;display:flex;flex-direction:co
       <span><span class="nm">Pasta</span><span class="meta">Napoli Co · 1 kg</span>
         <span class="ctl"><span class="step"><i>−</i>1<i>+</i></span></span></span>
       <span class="val"><span class="fslot"></span>
-        <span class="tk"><span class="amt"><span class="cur">SAR</span><span class="maj">11</span></span>
-          <span class="strip"><span class="b">Per kg</span><span class="u">SAR 11.00</span></span></span></span>
+        <span class="tk"><span class="amt"><span class="cur">⃁</span><span class="maj">11</span></span>
+          <span class="strip"><span class="b">Per kg</span><span class="u">⃁ 11.00</span></span></span></span>
     </article>
 
     <article class="row">
@@ -660,8 +1279,8 @@ body{margin:0;min-height:100vh;background:#EDE7DC;display:flex;flex-direction:co
       <span><span class="nm">Olive oil</span><span class="meta">Olea Verde · 500 ml</span>
         <span class="ctl"><span class="step"><i>−</i>1<i>+</i></span></span></span>
       <span class="val"><span class="fslot"></span>
-        <span class="tk"><span class="amt"><span class="cur">SAR</span><span class="maj">18</span></span>
-          <span class="strip"><span class="b">Per L</span><span class="u">SAR 36.00</span></span></span></span>
+        <span class="tk"><span class="amt"><span class="cur">⃁</span><span class="maj">18</span></span>
+          <span class="strip"><span class="b">Per L</span><span class="u">⃁ 36.00</span></span></span></span>
     </article>
 
   </div>
@@ -676,7 +1295,7 @@ body{margin:0;min-height:100vh;background:#EDE7DC;display:flex;flex-direction:co
     </button>
     <div class="pay">
       <span class="tot"><span class="tl">Total</span>
-        <span class="tk"><span class="amt"><span class="cur">SAR</span><span class="maj">104</span></span></span></span>
+        <span class="tk"><span class="amt"><span class="cur">⃁</span><span class="maj">104</span></span></span></span>
       <button class="cta" type="button">Checkout</button>
     </div>
   </div>
@@ -718,8 +1337,8 @@ body{margin:0;min-height:100vh;background:#EDE7DC;display:flex;flex-direction:co
         <span><span class="nm">Milk</span><span class="meta">Golden Dairy · 1.5 L</span>
 </span>
         <span class="val"><span class="fslot"><span class="flash">3 options</span></span>
-          <span class="tk"><span class="amt"><span class="cur-m">SAR</span><span class="maj">24</span></span>
-            <span class="strip"><span class="b">Per L</span><span class="u">SAR 16.00</span></span></span></span>
+          <span class="tk"><span class="amt"><span class="cur-m">⃁</span><span class="maj">24</span></span>
+            <span class="strip"><span class="b">Per L</span><span class="u">⃁ 16.00</span></span></span></span>
         <span class="chev"></span>
         <span class="offer">Pay less or get better unit value</span>
       </button>
@@ -729,8 +1348,8 @@ body{margin:0;min-height:100vh;background:#EDE7DC;display:flex;flex-direction:co
         <span><span class="nm">Rice</span><span class="meta">Golden Field · 2 kg</span>
 </span>
         <span class="val"><span class="fslot"><span class="flash">2 options</span></span>
-          <span class="tk"><span class="amt"><span class="cur-m">SAR</span><span class="maj">19</span></span>
-            <span class="strip"><span class="b">Per kg</span><span class="u">SAR 9.50</span></span></span></span>
+          <span class="tk"><span class="amt"><span class="cur-m">⃁</span><span class="maj">19</span></span>
+            <span class="strip"><span class="b">Per kg</span><span class="u">⃁ 9.50</span></span></span></span>
         <span class="chev"></span>
         <span class="offer">Pay less or get better unit value</span>
       </button>
@@ -740,10 +1359,10 @@ body{margin:0;min-height:100vh;background:#EDE7DC;display:flex;flex-direction:co
         <span><span class="nm">Dish soap</span><span class="meta">CleanPro · 750 ml</span>
 </span>
         <span class="val"><span class="fslot"><span class="flash">1 option</span></span>
-          <span class="tk"><span class="amt"><span class="cur-m">SAR</span><span class="maj">14</span></span>
-            <span class="strip"><span class="b">Per L</span><span class="u">SAR 18.67</span></span></span></span>
+          <span class="tk"><span class="amt"><span class="cur-m">⃁</span><span class="maj">14</span></span>
+            <span class="strip"><span class="b">Per L</span><span class="u">⃁ 18.67</span></span></span></span>
         <span class="chev"></span>
-        <span class="offer">Private label at SAR 4 less</span>
+        <span class="offer">Private label at ⃁ 4 less</span>
       </button>
 
     </div>
@@ -795,8 +1414,8 @@ body{margin:0;min-height:100vh;background:#EDE7DC;display:flex;flex-direction:co
     <div class="cur">
       <span class="pack"><svg viewBox="0 0 40 40" aria-hidden="true"><ellipse cx="20" cy="34.5" rx="8.6" ry="1.4" fill="#111114" opacity=".13"/><path d="M11.8 15.2 20 6.6l8.4 8.6z" fill="#DCE7F2"/><path d="M11.8 15.2h16.6V32a1.8 1.8 0 0 1-1.8 1.8H13.6A1.8 1.8 0 0 1 11.8 32z" fill="#F2F7FC"/><path d="M11.8 15.2h5.6v18.6h-3.8A1.8 1.8 0 0 1 11.8 32z" fill="#fff" opacity=".8"/><rect x="18.4" y="4.4" width="3.2" height="2.8" rx=".9" fill="#2F6FB5"/><rect x="11.8" y="20.4" width="16.6" height="7.6" fill="#2F6FB5"/><rect x="14.2" y="22.3" width="9.6" height="1.8" rx=".9" fill="#F2F7FC"/><path d="M11.8 15.2h16.6V32a1.8 1.8 0 0 1-1.8 1.8H13.6A1.8 1.8 0 0 1 11.8 32z" fill="none" stroke="#BFCFDE" stroke-width=".9"/><path d="M11.8 15.2 20 6.6l8.4 8.6z" fill="none" stroke="#BFCFDE" stroke-width=".9"/></svg></span>
       <span><span class="nm">Golden Dairy</span><span class="meta"> &middot; 1.5 L</span></span>
-      <span class="val"><span class="tk"><span class="amt"><span class="cur-m">SAR</span><span class="maj">24</span></span>
-        <span class="strip"><span class="b">Per L</span><span class="u">SAR 16.00</span></span></span></span>
+      <span class="val"><span class="tk"><span class="amt"><span class="cur-m">⃁</span><span class="maj">24</span></span>
+        <span class="strip"><span class="b">Per L</span><span class="u">⃁ 16.00</span></span></span></span>
     </div>
 
     <p class="sl">Options</p>
@@ -807,37 +1426,35 @@ body{margin:0;min-height:100vh;background:#EDE7DC;display:flex;flex-direction:co
         <span class="reason"><span class="chip c2">Same size, lower price</span></span>
         <span class="prod">
           <span class="pack"><svg viewBox="0 0 40 40" aria-hidden="true"><ellipse cx="20" cy="34.5" rx="8.6" ry="1.4" fill="#111114" opacity=".13"/><path d="M11.8 15.2 20 6.6l8.4 8.6z" fill="#E4EDDD"/><path d="M11.8 15.2h16.6V32a1.8 1.8 0 0 1-1.8 1.8H13.6A1.8 1.8 0 0 1 11.8 32z" fill="#F4F9F0"/><path d="M11.8 15.2h5.6v18.6h-3.8A1.8 1.8 0 0 1 11.8 32z" fill="#fff" opacity=".8"/><rect x="18.4" y="4.4" width="3.2" height="2.8" rx=".9" fill="#4C8A3F"/><rect x="11.8" y="20.4" width="16.6" height="7.6" fill="#4C8A3F"/><rect x="14.2" y="22.3" width="9.6" height="1.8" rx=".9" fill="#F4F9F0"/><path d="M11.8 15.2h16.6V32a1.8 1.8 0 0 1-1.8 1.8H13.6A1.8 1.8 0 0 1 11.8 32z" fill="none" stroke="#C6D7BC" stroke-width=".9"/><path d="M11.8 15.2 20 6.6l8.4 8.6z" fill="none" stroke="#C6D7BC" stroke-width=".9"/></svg></span>
-          <span><span class="nm">Value Milk</span><span class="meta">1.5 L</span></span>
-          <span class="tk"><span class="amt"><span class="cur-m">SAR</span><span class="maj">16</span></span>
-            <span class="strip"><span class="b">Per L</span><span class="u">SAR 10.67</span></span></span>
+          <span><span class="nm">Rif</span><span class="meta">1.5 L</span></span>
+          <span class="tk"><span class="amt"><span class="cur-m">⃁</span><span class="maj">16</span></span>
+            <span class="strip"><span class="b">Per L</span><span class="u">⃁ 10.67</span></span></span>
         </span>
         <span class="outcome">
           <span></span>
           <span class="oc">
-            <span class="oc1">Pay SAR 8 less</span>
-            <span class="oc2">Your cart becomes <b>SAR 96</b></span>
+            <span class="oc1">Cart ⃁ 96<span class="ocs">·</span><span class="ocd">⃁ 8 less</span></span>
           </span>
-          <span class="go">Continue</span>
+          <span class="go">Choose this</span>
         </span>
       </button>
 
       <!-- the recommendation, and it costs more. The chip carries the argument;
            the item delta stays a plain fact and is not dressed up to agree with it -->
       <button class="opt" type="button">
-        <span class="reason"><span class="chip c1">Lower price per litre</span></span>
+        <span class="reason"><span class="chip c1">Same brand, better per litre</span></span>
         <span class="prod">
           <span class="pack"><svg viewBox="0 0 40 40" aria-hidden="true"><ellipse cx="20" cy="34.6" rx="9.4" ry="1.5" fill="#111114" opacity=".13"/><path d="M10.4 13.6 20 4.2l9.6 9.4z" fill="#DCE7F2"/><path d="M10.4 13.6h19.2v18.6a1.8 1.8 0 0 1-1.8 1.8H12.2a1.8 1.8 0 0 1-1.8-1.8z" fill="#F2F7FC"/><path d="M10.4 13.6h6v20.4h-4.2a1.8 1.8 0 0 1-1.8-1.8z" fill="#fff" opacity=".8"/><rect x="18.4" y="1.9" width="3.2" height="2.8" rx=".9" fill="#2F6FB5"/><rect x="10.4" y="19.4" width="19.2" height="8.4" fill="#2F6FB5"/><rect x="13" y="21.5" width="11" height="1.9" rx=".95" fill="#F2F7FC"/><path d="M10.4 13.6h19.2v18.6a1.8 1.8 0 0 1-1.8 1.8H12.2a1.8 1.8 0 0 1-1.8-1.8z" fill="none" stroke="#BFCFDE" stroke-width=".9"/><path d="M10.4 13.6 20 4.2l9.6 9.4z" fill="none" stroke="#BFCFDE" stroke-width=".9"/></svg></span>
           <span><span class="nm">Golden Dairy</span><span class="meta">2 L</span></span>
-          <span class="tk"><span class="amt"><span class="cur-m">SAR</span><span class="maj">28</span></span>
-            <span class="strip"><span class="b">Per L</span><span class="u">SAR 14.00</span></span></span>
+          <span class="tk"><span class="amt"><span class="cur-m">⃁</span><span class="maj">28</span></span>
+            <span class="strip"><span class="b">Per L</span><span class="u">⃁ 14.00</span></span></span>
         </span>
         <span class="outcome">
           <span></span>
           <span class="oc">
-            <span class="oc1">Pay SAR 4 more</span>
-            <span class="oc2">Your cart becomes <b>SAR 108</b></span>
+            <span class="oc1">Cart ⃁ 108<span class="ocs">·</span><span class="ocd">⃁ 4 more</span></span>
           </span>
-          <span class="go">Continue</span>
+          <span class="go">Choose this</span>
         </span>
       </button>
 
@@ -846,17 +1463,16 @@ body{margin:0;min-height:100vh;background:#EDE7DC;display:flex;flex-direction:co
         <span class="reason"><span class="chip c3">Private label, lower price</span></span>
         <span class="prod">
           <span class="pack"><svg viewBox="0 0 40 40" aria-hidden="true"><ellipse cx="20" cy="34.5" rx="8.6" ry="1.4" fill="#111114" opacity=".13"/><path d="M11.8 15.2 20 6.6l8.4 8.6z" fill="#EDEAE1"/><path d="M11.8 15.2h16.6V32a1.8 1.8 0 0 1-1.8 1.8H13.6A1.8 1.8 0 0 1 11.8 32z" fill="#FAF8F3"/><path d="M11.8 15.2h5.6v18.6h-3.8A1.8 1.8 0 0 1 11.8 32z" fill="#fff" opacity=".8"/><rect x="18.4" y="4.4" width="3.2" height="2.8" rx=".9" fill="#171512"/><rect x="11.8" y="20.4" width="16.6" height="6.2" fill="#171512"/><rect x="14.2" y="22.2" width="9.6" height="1.6" rx=".8" fill="#FFC400"/><path d="M11.8 15.2h16.6V32a1.8 1.8 0 0 1-1.8 1.8H13.6A1.8 1.8 0 0 1 11.8 32z" fill="none" stroke="#D8D2C6" stroke-width=".9"/><path d="M11.8 15.2 20 6.6l8.4 8.6z" fill="none" stroke="#D8D2C6" stroke-width=".9"/></svg></span>
-          <span><span class="nm">Basket Value</span><span class="meta">1.5 L</span></span>
-          <span class="tk"><span class="amt"><span class="cur-m">SAR</span><span class="maj">17</span></span>
-            <span class="strip"><span class="b">Per L</span><span class="u">SAR 11.33</span></span></span>
+          <span><span class="nm">Pantry</span><span class="meta">1.5 L</span></span>
+          <span class="tk"><span class="amt"><span class="cur-m">⃁</span><span class="maj">17</span></span>
+            <span class="strip"><span class="b">Per L</span><span class="u">⃁ 11.33</span></span></span>
         </span>
         <span class="outcome">
           <span></span>
           <span class="oc">
-            <span class="oc1">Pay SAR 7 less</span>
-            <span class="oc2">Your cart becomes <b>SAR 97</b></span>
+            <span class="oc1">Cart ⃁ 97<span class="ocs">·</span><span class="ocd">⃁ 7 less</span></span>
           </span>
-          <span class="go">Continue</span>
+          <span class="go">Choose this</span>
         </span>
       </button>
 
@@ -896,27 +1512,26 @@ body{margin:0;min-height:100vh;background:#EDE7DC;display:flex;flex-direction:co
         <span class="pack"><svg viewBox="0 0 40 40" aria-hidden="true"><ellipse cx="20" cy="34.5" rx="8.6" ry="1.4" fill="#111114" opacity=".13"/><path d="M11.8 15.2 20 6.6l8.4 8.6z" fill="#DCE7F2"/><path d="M11.8 15.2h16.6V32a1.8 1.8 0 0 1-1.8 1.8H13.6A1.8 1.8 0 0 1 11.8 32z" fill="#F2F7FC"/><path d="M11.8 15.2h5.6v18.6h-3.8A1.8 1.8 0 0 1 11.8 32z" fill="#fff" opacity=".8"/><rect x="18.4" y="4.4" width="3.2" height="2.8" rx=".9" fill="#2F6FB5"/><rect x="11.8" y="20.4" width="16.6" height="7.6" fill="#2F6FB5"/><rect x="14.2" y="22.3" width="9.6" height="1.8" rx=".9" fill="#F2F7FC"/><path d="M11.8 15.2h16.6V32a1.8 1.8 0 0 1-1.8 1.8H13.6A1.8 1.8 0 0 1 11.8 32z" fill="none" stroke="#BFCFDE" stroke-width=".9"/><path d="M11.8 15.2 20 6.6l8.4 8.6z" fill="none" stroke="#BFCFDE" stroke-width=".9"/></svg></span>
         <span><span class="nk">In your cart</span>
           <span class="nm">Golden Dairy</span><span class="meta"> &middot; 1.5 L</span></span>
-        <span class="tk"><span class="amt"><span class="cur-m">SAR</span><span class="maj">24</span></span>
-          <span class="strip"><span class="b">Per L</span><span class="u">SAR 16.00</span></span></span>
+        <span class="tk"><span class="amt"><span class="cur-m">⃁</span><span class="maj">24</span></span>
+          <span class="strip"><span class="b">Per L</span><span class="u">⃁ 16.00</span></span></span>
       </div>
 
       <div class="arrow"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14"/><path d="m6 13 6 6 6-6"/></svg></div>
 
       <div class="to">
-        <span class="reason"><span class="chip c1">Lower price per litre</span></span>
+        <span class="reason"><span class="chip c1">Same brand, better per litre</span></span>
 
         <div class="prod">
           <span class="pack"><svg viewBox="0 0 40 40" aria-hidden="true"><ellipse cx="20" cy="34.6" rx="9.4" ry="1.5" fill="#111114" opacity=".13"/><path d="M10.4 13.6 20 4.2l9.6 9.4z" fill="#DCE7F2"/><path d="M10.4 13.6h19.2v18.6a1.8 1.8 0 0 1-1.8 1.8H12.2a1.8 1.8 0 0 1-1.8-1.8z" fill="#F2F7FC"/><path d="M10.4 13.6h6v20.4h-4.2a1.8 1.8 0 0 1-1.8-1.8z" fill="#fff" opacity=".8"/><rect x="18.4" y="1.9" width="3.2" height="2.8" rx=".9" fill="#2F6FB5"/><rect x="10.4" y="19.4" width="19.2" height="8.4" fill="#2F6FB5"/><rect x="13" y="21.5" width="11" height="1.9" rx=".95" fill="#F2F7FC"/><path d="M10.4 13.6h19.2v18.6a1.8 1.8 0 0 1-1.8 1.8H12.2a1.8 1.8 0 0 1-1.8-1.8z" fill="none" stroke="#BFCFDE" stroke-width=".9"/><path d="M10.4 13.6 20 4.2l9.6 9.4z" fill="none" stroke="#BFCFDE" stroke-width=".9"/></svg></span>
           <span><span class="nm">Golden Dairy</span><span class="meta">2 L</span></span>
-          <span class="tk"><span class="amt"><span class="cur-m">SAR</span><span class="maj">28</span></span>
-            <span class="strip"><span class="b">Per L</span><span class="u">SAR 14.00</span></span></span>
+          <span class="tk"><span class="amt"><span class="cur-m">⃁</span><span class="maj">28</span></span>
+            <span class="strip"><span class="b">Per L</span><span class="u">⃁ 14.00</span></span></span>
         </div>
 
         <div class="what">
-          <span class="w1">Per litre, down from <span class="was">SAR 16.00</span></span>
-          <span class="w1">Pay SAR 4 more</span>
-          <span class="w2">Your cart becomes <b>SAR 108</b></span>
-          <span class="yet">Nothing has changed yet.</span>
+          <span class="nk">Your cart becomes</span>
+          <span class="btot"><span class="cur-m">⃁</span><span class="maj">108</span></span>
+          <span class="wsub">Pay ⃁ 4 more<span class="wsep">·</span>⃁ 2.00 less per litre</span>
         </div>
       </div>
 
@@ -924,6 +1539,7 @@ body{margin:0;min-height:100vh;background:#EDE7DC;display:flex;flex-direction:co
     </div>
 
     <div class="foot">
+      <span class="yet">Nothing has changed yet.</span>
       <button class="apply" type="button">Apply change</button>
       <button class="cancel" type="button">Cancel</button>
     </div>
@@ -955,9 +1571,9 @@ body{margin:0;min-height:100vh;background:#EDE7DC;display:flex;flex-direction:co
       <span><span class="nm">Milk</span><span class="meta">Golden Dairy · 2 L</span>
         <span class="ctl"><span class="step"><i>−</i>1<i>+</i></span></span></span>
       <span class="val"><span class="fslot"></span>
-        <span class="tk"><span class="amt"><span class="cur">SAR</span><span class="maj">28</span></span>
-          <span class="strip"><span class="b">Per L</span><span class="u">SAR 14.00</span></span></span></span>
-      <span class="chg"><span><b>Lower price per litre.</b> Was 1.5 L, SAR 24.</span>
+        <span class="tk"><span class="amt"><span class="cur">⃁</span><span class="maj">28</span></span>
+          <span class="strip"><span class="b">Per L</span><span class="u">⃁ 14.00</span></span></span></span>
+      <span class="chg"><span><b>Lower price per litre.</b> Was 1.5 L, ⃁ 24.</span>
         <button class="undo" type="button">Undo</button></span>
     </article>
 
@@ -967,8 +1583,8 @@ body{margin:0;min-height:100vh;background:#EDE7DC;display:flex;flex-direction:co
       <span><span class="nm">Rice</span><span class="meta">Golden Field · 2 kg</span>
         <span class="ctl"><span class="step"><i>−</i>1<i>+</i></span></span></span>
       <span class="val"><span class="fslot"><span class="flash">2 options</span></span>
-        <span class="tk"><span class="amt"><span class="cur">SAR</span><span class="maj">19</span></span>
-          <span class="strip"><span class="b">Per kg</span><span class="u">SAR 9.50</span></span></span></span>
+        <span class="tk"><span class="amt"><span class="cur">⃁</span><span class="maj">19</span></span>
+          <span class="strip"><span class="b">Per kg</span><span class="u">⃁ 9.50</span></span></span></span>
     </article>
 
     <article class="row">
@@ -976,8 +1592,8 @@ body{margin:0;min-height:100vh;background:#EDE7DC;display:flex;flex-direction:co
       <span><span class="nm">Dish soap</span><span class="meta">CleanPro · 750 ml</span>
         <span class="ctl"><span class="step"><i>−</i>1<i>+</i></span></span></span>
       <span class="val"><span class="fslot"><span class="flash">1 option</span></span>
-        <span class="tk"><span class="amt"><span class="cur">SAR</span><span class="maj">14</span></span>
-          <span class="strip"><span class="b">Per L</span><span class="u">SAR 18.67</span></span></span></span>
+        <span class="tk"><span class="amt"><span class="cur">⃁</span><span class="maj">14</span></span>
+          <span class="strip"><span class="b">Per L</span><span class="u">⃁ 18.67</span></span></span></span>
     </article>
 
     <!-- items with no options: no flash, and the ticket is unchanged. Nothing
@@ -987,8 +1603,8 @@ body{margin:0;min-height:100vh;background:#EDE7DC;display:flex;flex-direction:co
       <span><span class="nm">Cornflakes</span><span class="meta">Morning Co · 500 g</span>
         <span class="ctl"><span class="step"><i>−</i>1<i>+</i></span></span></span>
       <span class="val"><span class="fslot"></span>
-        <span class="tk"><span class="amt"><span class="cur">SAR</span><span class="maj">18</span></span>
-          <span class="strip"><span class="b">Per kg</span><span class="u">SAR 36.00</span></span></span></span>
+        <span class="tk"><span class="amt"><span class="cur">⃁</span><span class="maj">18</span></span>
+          <span class="strip"><span class="b">Per kg</span><span class="u">⃁ 36.00</span></span></span></span>
     </article>
 
     <article class="row">
@@ -996,8 +1612,8 @@ body{margin:0;min-height:100vh;background:#EDE7DC;display:flex;flex-direction:co
       <span><span class="nm">Pasta</span><span class="meta">Napoli Co · 1 kg</span>
         <span class="ctl"><span class="step"><i>−</i>1<i>+</i></span></span></span>
       <span class="val"><span class="fslot"></span>
-        <span class="tk"><span class="amt"><span class="cur">SAR</span><span class="maj">11</span></span>
-          <span class="strip"><span class="b">Per kg</span><span class="u">SAR 11.00</span></span></span></span>
+        <span class="tk"><span class="amt"><span class="cur">⃁</span><span class="maj">11</span></span>
+          <span class="strip"><span class="b">Per kg</span><span class="u">⃁ 11.00</span></span></span></span>
     </article>
 
     <article class="row">
@@ -1005,8 +1621,8 @@ body{margin:0;min-height:100vh;background:#EDE7DC;display:flex;flex-direction:co
       <span><span class="nm">Olive oil</span><span class="meta">Olea Verde · 500 ml</span>
         <span class="ctl"><span class="step"><i>−</i>1<i>+</i></span></span></span>
       <span class="val"><span class="fslot"></span>
-        <span class="tk"><span class="amt"><span class="cur">SAR</span><span class="maj">18</span></span>
-          <span class="strip"><span class="b">Per L</span><span class="u">SAR 36.00</span></span></span></span>
+        <span class="tk"><span class="amt"><span class="cur">⃁</span><span class="maj">18</span></span>
+          <span class="strip"><span class="b">Per L</span><span class="u">⃁ 36.00</span></span></span></span>
     </article>
 
   </div>
@@ -1021,7 +1637,7 @@ body{margin:0;min-height:100vh;background:#EDE7DC;display:flex;flex-direction:co
     </button>
     <div class="pay">
       <span class="tot"><span class="tl">Total</span>
-        <span class="tk"><span class="amt"><span class="cur">SAR</span><span class="maj">108</span></span></span></span>
+        <span class="tk"><span class="amt"><span class="cur">⃁</span><span class="maj">108</span></span></span></span>
       <button class="cta" type="button">Checkout</button>
     </div>
   </div>
@@ -1036,81 +1652,598 @@ body{margin:0;min-height:100vh;background:#EDE7DC;display:flex;flex-direction:co
   <span class="hi"></span>
 </div>
   </section>
+  <section class="screen" id="a1" aria-hidden="true" dir="rtl">
+<div class="phone">
+  <div class="sb">
+    <span class="sb-t">9:41</span>
+    <span class="sb-di"></span>
+    <span class="sb-i">
+      <svg width="17.4" height="11" viewBox="0 0 17.4 11" aria-hidden="true"><rect x="0" y="7.4" width="3" height="3.6" rx="1"/><rect x="4.8" y="5.1" width="3" height="5.9" rx="1"/><rect x="9.6" y="2.6" width="3" height="8.4" rx="1"/><rect x="14.4" y="0" width="3" height="11" rx="1"/></svg>
+      <svg width="17" height="13" viewBox="0 0 17 13" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M3.13 6.23a7.6 7.6 0 0 1 10.74 0"/><path d="M5.67 8.77a4 4 0 0 1 5.66 0"/></g><circle cx="8.5" cy="11.1" r="1.5"/></svg>
+      <svg width="27.4" height="13" viewBox="0 0 27.4 13" aria-hidden="true"><rect x=".5" y=".5" width="24" height="12" rx="4.2" fill="none" stroke="currentColor" stroke-width="1" opacity=".36"/><path d="M26 4.6v3.8a2 2 0 0 0 0-3.8z" opacity=".4"/><rect x="2" y="2" width="21" height="9" rx="2.8"/></svg>
+    </span>
+  </div>
+
+  <div class="appbar"><h1>السلة</h1><span>6 منتجات</span></div>
+
+  <div class="list">
+
+    <!-- three eligible items. The row stays white; the flash on the ticket is
+         the whole eligibility signal, and it counts rather than giving a
+         reason — the reason belongs to the option, not to the basket item. -->
+    <article class="row">
+      <span class="pack"><svg viewBox="0 0 40 40" aria-hidden="true"><ellipse cx="20" cy="34.5" rx="8.6" ry="1.4" fill="#111114" opacity=".13"/><path d="M11.8 15.2 20 6.6l8.4 8.6z" fill="#DCE7F2"/><path d="M11.8 15.2h16.6V32a1.8 1.8 0 0 1-1.8 1.8H13.6A1.8 1.8 0 0 1 11.8 32z" fill="#F2F7FC"/><path d="M11.8 15.2h5.6v18.6h-3.8A1.8 1.8 0 0 1 11.8 32z" fill="#fff" opacity=".8"/><rect x="18.4" y="4.4" width="3.2" height="2.8" rx=".9" fill="#2F6FB5"/><rect x="11.8" y="20.4" width="16.6" height="7.6" fill="#2F6FB5"/><rect x="14.2" y="22.3" width="9.6" height="1.8" rx=".9" fill="#F2F7FC"/><path d="M11.8 15.2h16.6V32a1.8 1.8 0 0 1-1.8 1.8H13.6A1.8 1.8 0 0 1 11.8 32z" fill="none" stroke="#BFCFDE" stroke-width=".9"/><path d="M11.8 15.2 20 6.6l8.4 8.6z" fill="none" stroke="#BFCFDE" stroke-width=".9"/></svg></span>
+      <span><span class="nm">حليب</span><span class="meta"><bdi class="brand" dir="ltr">Golden Dairy</bdi><span class="sep">·</span><bdi class="qty">1.5 لتر</bdi></span>
+        <span class="ctl"><span class="step"><i>−</i>1<i>+</i></span></span></span>
+      <span class="val"><span class="fslot"><span class="flash">3 بدائل</span></span>
+        <span class="tk"><span class="amt"><span class="maj">24</span><span class="cur">⃁</span></span>
+          <span class="strip"><span class="u"><bdi dir="ltr">⃁ 16.00</bdi> / لتر</span></span></span></span>
+    </article>
+
+    <article class="row">
+      <span class="pack"><svg viewBox="0 0 40 40" aria-hidden="true"><ellipse cx="20" cy="34.4" rx="8.2" ry="1.4" fill="#111114" opacity=".13"/><path d="M13.2 13.8c0-3 3-4.4 6.8-4.4s6.8 1.4 6.8 4.4v17.6a2 2 0 0 1-2 2H15.2a2 2 0 0 1-2-2z" fill="#D3AE77"/><path d="M13.2 13.8c0-2.4 1.9-3.8 4.4-4.2v23.8H15.2a2 2 0 0 1-2-2z" fill="#fff" opacity=".3"/><rect x="13.2" y="18.4" width="13.6" height="7.4" fill="#B38B52"/><rect x="15.6" y="20.2" width="8.4" height="1.8" rx=".9" fill="#F7EFE1"/><path d="M13.2 13.8c0-3 3-4.4 6.8-4.4s6.8 1.4 6.8 4.4v17.6a2 2 0 0 1-2 2H15.2a2 2 0 0 1-2-2z" fill="none" stroke="#A8813F" stroke-width=".9"/></svg></span>
+      <span><span class="nm">أرز</span><span class="meta"><bdi class="brand" dir="ltr">Golden Field</bdi><span class="sep">·</span><bdi class="qty">2 كجم</bdi></span>
+        <span class="ctl"><span class="step"><i>−</i>1<i>+</i></span></span></span>
+      <span class="val"><span class="fslot"><span class="flash">2 بدائل</span></span>
+        <span class="tk"><span class="amt"><span class="maj">19</span><span class="cur">⃁</span></span>
+          <span class="strip"><span class="u"><bdi dir="ltr">⃁ 9.50</bdi> / كجم</span></span></span></span>
+    </article>
+
+    <article class="row">
+      <span class="pack"><svg viewBox="0 0 40 40" aria-hidden="true"><ellipse cx="20" cy="34.4" rx="7.2" ry="1.3" fill="#111114" opacity=".13"/><rect x="18.5" y="5.2" width="3" height="4.6" rx="1" fill="#7C7C86"/><rect x="16.2" y="9.3" width="7.6" height="3.4" rx="1.2" fill="#5F5F6B"/><path d="M14.2 17c0-2.3 1.7-3.6 5.8-3.6s5.8 1.3 5.8 3.6v14.4a2 2 0 0 1-2 2h-7.6a2 2 0 0 1-2-2z" fill="#2F9469"/><path d="M14.2 17c0-1.9 1.2-3.1 3.6-3.5v19.9h-1.6a2 2 0 0 1-2-2z" fill="#fff" opacity=".28"/><rect x="16.4" y="20.3" width="7.2" height="8.4" rx="1.2" fill="#F3FAF6"/><rect x="17.7" y="22.3" width="4.6" height="1.5" rx=".75" fill="#2F9469"/><path d="M14.2 17c0-2.3 1.7-3.6 5.8-3.6s5.8 1.3 5.8 3.6v14.4a2 2 0 0 1-2 2h-7.6a2 2 0 0 1-2-2z" fill="none" stroke="#237552" stroke-width=".9"/></svg></span>
+      <span><span class="nm">سائل غسيل الأطباق</span><span class="meta"><bdi class="brand" dir="ltr">CleanPro</bdi><span class="sep">·</span><bdi class="qty">750 مل</bdi></span>
+        <span class="ctl"><span class="step"><i>−</i>1<i>+</i></span></span></span>
+      <span class="val"><span class="fslot"><span class="flash">بديل واحد</span></span>
+        <span class="tk"><span class="amt"><span class="maj">14</span><span class="cur">⃁</span></span>
+          <span class="strip"><span class="u"><bdi dir="ltr">⃁ 18.67</bdi> / لتر</span></span></span></span>
+    </article>
+
+    <!-- three items with no options: no flash, and the ticket is unchanged.
+         Nothing is added to fill the slot the flash leaves empty. -->
+    <article class="row">
+      <span class="pack"><svg viewBox="0 0 40 40" aria-hidden="true"><ellipse cx="20" cy="34.4" rx="8.4" ry="1.3" fill="#111114" opacity=".13"/><rect x="11.8" y="8.6" width="16.4" height="24.8" rx="1.7" fill="#E08A2C"/><path d="M13.4 8.6h4.4v24.8h-4.4z" fill="#fff" opacity=".22"/><rect x="14.2" y="11.4" width="11.6" height="9.8" rx="1.2" fill="#FBE3B8"/><circle cx="20" cy="16.3" r="3" fill="#C96C1C"/><circle cx="20" cy="16.3" r="1.35" fill="#F7C67E"/><rect x="14.2" y="23.6" width="11.6" height="2.4" rx="1.2" fill="#FBE3B8"/><rect x="11.8" y="8.6" width="16.4" height="24.8" rx="1.7" fill="none" stroke="#BE6E1C" stroke-width=".9"/></svg></span>
+      <span><span class="nm">كورن فليكس</span><span class="meta"><bdi class="brand" dir="ltr">Morning Co</bdi><span class="sep">·</span><bdi class="qty">500 جم</bdi></span>
+        <span class="ctl"><span class="step"><i>−</i>1<i>+</i></span></span></span>
+      <span class="val"><span class="fslot"></span>
+        <span class="tk"><span class="amt"><span class="maj">18</span><span class="cur">⃁</span></span>
+          <span class="strip"><span class="u"><bdi dir="ltr">⃁ 36.00</bdi> / كجم</span></span></span></span>
+    </article>
+
+    <article class="row">
+      <span class="pack"><svg viewBox="0 0 40 40" aria-hidden="true"><ellipse cx="20" cy="34.4" rx="7.4" ry="1.3" fill="#111114" opacity=".13"/><rect x="13.6" y="8.4" width="12.8" height="25" rx="1.7" fill="#E9C34D"/><path d="M15 8.4h3.6v25H15z" fill="#fff" opacity=".24"/><rect x="16" y="12.2" width="8" height="11.6" rx=".9" fill="#F8F0D2"/><g fill="#D8A93B"><rect x="16.9" y="13.1" width="1.3" height="9.8" rx=".65"/><rect x="19.05" y="13.1" width="1.3" height="9.8" rx=".65"/><rect x="21.2" y="13.1" width="1.3" height="9.8" rx=".65"/></g><rect x="13.6" y="8.4" width="12.8" height="25" rx="1.7" fill="none" stroke="#C9A335" stroke-width=".9"/></svg></span>
+      <span><span class="nm">مكرونة</span><span class="meta"><bdi class="brand" dir="ltr">Napoli Co</bdi><span class="sep">·</span><bdi class="qty">1 كجم</bdi></span>
+        <span class="ctl"><span class="step"><i>−</i>1<i>+</i></span></span></span>
+      <span class="val"><span class="fslot"></span>
+        <span class="tk"><span class="amt"><span class="maj">11</span><span class="cur">⃁</span></span>
+          <span class="strip"><span class="u"><bdi dir="ltr">⃁ 11.00</bdi> / كجم</span></span></span></span>
+    </article>
+
+    <article class="row">
+      <span class="pack"><svg viewBox="0 0 40 40" aria-hidden="true"><ellipse cx="20" cy="34.4" rx="6.4" ry="1.3" fill="#111114" opacity=".13"/><rect x="18.6" y="4.8" width="2.8" height="3.2" rx=".7" fill="#33481D"/><rect x="18.2" y="7.4" width="3.6" height="5.6" fill="#4A6B2A"/><path d="M15.2 18.2c0-2.4 3-3.2 3-5.2h3.6c0 2 3 2.8 3 5.2v13.2a2 2 0 0 1-2 2h-5.6a2 2 0 0 1-2-2z" fill="#4A6B2A"/><path d="M15.2 18.2c0-1.8 1.6-2.7 2.4-4.1v19.3h-.4a2 2 0 0 1-2-2z" fill="#fff" opacity=".24"/><rect x="15.8" y="21.3" width="8.4" height="6.8" rx=".8" fill="#E5CE7A"/><rect x="17.2" y="23.1" width="5.6" height="1.4" rx=".7" fill="#4A6B2A"/><path d="M15.2 18.2c0-2.4 3-3.2 3-5.2h3.6c0 2 3 2.8 3 5.2v13.2a2 2 0 0 1-2 2h-5.6a2 2 0 0 1-2-2z" fill="none" stroke="#38521F" stroke-width=".9"/></svg></span>
+      <span><span class="nm">زيت زيتون</span><span class="meta"><bdi class="brand" dir="ltr">Olea Verde</bdi><span class="sep">·</span><bdi class="qty">500 مل</bdi></span>
+        <span class="ctl"><span class="step"><i>−</i>1<i>+</i></span></span></span>
+      <span class="val"><span class="fslot"></span>
+        <span class="tk"><span class="amt"><span class="maj">18</span><span class="cur">⃁</span></span>
+          <span class="strip"><span class="u"><bdi dir="ltr">⃁ 36.00</bdi> / لتر</span></span></span></span>
+    </article>
+
+  </div>
+
+  <div class="foot">
+    <button class="entry" type="button">
+      <span class="ticket">
+        <span class="et"><span class="e1">تحسين السلة</span>
+          <span class="e2">3 منتجات لها بدائل بقيمة أفضل</span></span>
+        <span class="ec" aria-hidden="true">‹</span>
+      </span>
+    </button>
+    <div class="pay">
+      <span class="tot"><span class="tl">الإجمالي</span>
+        <span class="tk"><span class="amt"><span class="maj">104</span><span class="cur">⃁</span></span></span></span>
+      <button class="cta" type="button">إتمام الطلب</button>
+    </div>
+  </div>
+
+  <div class="tabs">
+    <span class="tab"><svg viewBox="0 0 24 24"><path d="M3 10.5 12 4l9 6.5V20a1 1 0 0 1-1 1h-4v-6H8v6H4a1 1 0 0 1-1-1z"/></svg>الرئيسية</span>
+    <span class="tab"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"/><path d="m16 16 4.5 4.5"/></svg>البحث</span>
+    <span class="tab"><svg viewBox="0 0 24 24"><path d="M12.6 3.4H20v7.4a2 2 0 0 1-.6 1.4l-7 7a2 2 0 0 1-2.8 0l-4.8-4.8a2 2 0 0 1 0-2.8l7-7a2 2 0 0 1 1.4-.6z"/><circle cx="16.3" cy="7.7" r="1.2"/></svg>العروض</span>
+    <span class="tab on"><span class="tw"><svg viewBox="0 0 24 24"><path d="M4.5 7.5h15l-1.4 10.2a2 2 0 0 1-2 1.8H7.9a2 2 0 0 1-2-1.8z"/><path d="M8.8 7.5a3.2 3.2 0 0 1 6.4 0"/></svg><i class="tb">6</i></span>السلة</span>
+    <span class="tab"><svg viewBox="0 0 24 24"><circle cx="12" cy="8.6" r="3.6"/><path d="M5.5 20a6.5 6.5 0 0 1 13 0"/></svg>الحساب</span>
+  </div>
+  <span class="hi"></span>
+</div>
+  </section>
+  <section class="screen" id="a2" aria-hidden="true" dir="rtl">
+<div class="phone">
+  <div class="sb">
+    <span class="sb-t">9:41</span>
+    <span class="sb-di"></span>
+    <span class="sb-i">
+      <svg width="17.4" height="11" viewBox="0 0 17.4 11" aria-hidden="true"><rect x="0" y="7.4" width="3" height="3.6" rx="1"/><rect x="4.8" y="5.1" width="3" height="5.9" rx="1"/><rect x="9.6" y="2.6" width="3" height="8.4" rx="1"/><rect x="14.4" y="0" width="3" height="11" rx="1"/></svg>
+      <svg width="17" height="13" viewBox="0 0 17 13" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M3.13 6.23a7.6 7.6 0 0 1 10.74 0"/><path d="M5.67 8.77a4 4 0 0 1 5.66 0"/></g><circle cx="8.5" cy="11.1" r="1.5"/></svg>
+      <svg width="27.4" height="13" viewBox="0 0 27.4 13" aria-hidden="true"><rect x=".5" y=".5" width="24" height="12" rx="4.2" fill="none" stroke="currentColor" stroke-width="1" opacity=".36"/><path d="M26 4.6v3.8a2 2 0 0 0 0-3.8z" opacity=".4"/><rect x="2" y="2" width="21" height="9" rx="2.8"/></svg>
+    </span>
+  </div>
+
+  <div class="nav">
+    <button class="back" type="button"><svg viewBox="0 0 24 24"><path d="M15 5 8 12l7 7"/></svg>السلة</button>
+    <h1>تحسين السلة</h1>
+  </div>
+
+  <div class="body">
+
+    <p class="sl">منتجات لها بدائل</p>
+    <div class="list">
+
+      <button class="item" type="button" data-p="milk">
+        <span class="pack"><svg viewBox="0 0 40 40" aria-hidden="true"><ellipse cx="20" cy="34.5" rx="8.6" ry="1.4" fill="#111114" opacity=".13"/><path d="M11.8 15.2 20 6.6l8.4 8.6z" fill="#DCE7F2"/><path d="M11.8 15.2h16.6V32a1.8 1.8 0 0 1-1.8 1.8H13.6A1.8 1.8 0 0 1 11.8 32z" fill="#F2F7FC"/><path d="M11.8 15.2h5.6v18.6h-3.8A1.8 1.8 0 0 1 11.8 32z" fill="#fff" opacity=".8"/><rect x="18.4" y="4.4" width="3.2" height="2.8" rx=".9" fill="#2F6FB5"/><rect x="11.8" y="20.4" width="16.6" height="7.6" fill="#2F6FB5"/><rect x="14.2" y="22.3" width="9.6" height="1.8" rx=".9" fill="#F2F7FC"/><path d="M11.8 15.2h16.6V32a1.8 1.8 0 0 1-1.8 1.8H13.6A1.8 1.8 0 0 1 11.8 32z" fill="none" stroke="#BFCFDE" stroke-width=".9"/><path d="M11.8 15.2 20 6.6l8.4 8.6z" fill="none" stroke="#BFCFDE" stroke-width=".9"/></svg></span>
+        <span><span class="nm">حليب</span><span class="meta"><bdi class="brand" dir="ltr">Golden Dairy</bdi><span class="sep">·</span><bdi class="qty">1.5 لتر</bdi></span>
+</span>
+        <span class="val"><span class="fslot"><span class="flash">3 بدائل</span></span>
+          <span class="tk"><span class="amt"><span class="maj">24</span><span class="cur-m">⃁</span></span>
+            <span class="strip"><span class="u"><bdi dir="ltr">⃁ 16.00</bdi> / لتر</span></span></span></span>
+        <span class="chev"></span>
+        <span class="offer">تدفع أقل أو تحصل على قيمة أفضل للوحدة</span>
+      </button>
+
+      <button class="item" type="button" data-p="rice">
+        <span class="pack"><svg viewBox="0 0 40 40" aria-hidden="true"><ellipse cx="20" cy="34.4" rx="8.2" ry="1.4" fill="#111114" opacity=".13"/><path d="M13.2 13.8c0-3 3-4.4 6.8-4.4s6.8 1.4 6.8 4.4v17.6a2 2 0 0 1-2 2H15.2a2 2 0 0 1-2-2z" fill="#D3AE77"/><path d="M13.2 13.8c0-2.4 1.9-3.8 4.4-4.2v23.8H15.2a2 2 0 0 1-2-2z" fill="#fff" opacity=".3"/><rect x="13.2" y="18.4" width="13.6" height="7.4" fill="#B38B52"/><rect x="15.6" y="20.2" width="8.4" height="1.8" rx=".9" fill="#F7EFE1"/><path d="M13.2 13.8c0-3 3-4.4 6.8-4.4s6.8 1.4 6.8 4.4v17.6a2 2 0 0 1-2 2H15.2a2 2 0 0 1-2-2z" fill="none" stroke="#A8813F" stroke-width=".9"/></svg></span>
+        <span><span class="nm">أرز</span><span class="meta"><bdi class="brand" dir="ltr">Golden Field</bdi><span class="sep">·</span><bdi class="qty">2 كجم</bdi></span>
+</span>
+        <span class="val"><span class="fslot"><span class="flash">2 بدائل</span></span>
+          <span class="tk"><span class="amt"><span class="maj">19</span><span class="cur-m">⃁</span></span>
+            <span class="strip"><span class="u"><bdi dir="ltr">⃁ 9.50</bdi> / كجم</span></span></span></span>
+        <span class="chev"></span>
+        <span class="offer">تدفع أقل أو تحصل على قيمة أفضل للوحدة</span>
+      </button>
+
+      <button class="item" type="button" data-p="soap">
+        <span class="pack"><svg viewBox="0 0 40 40" aria-hidden="true"><ellipse cx="20" cy="34.4" rx="7.2" ry="1.3" fill="#111114" opacity=".13"/><rect x="18.5" y="5.2" width="3" height="4.6" rx="1" fill="#7C7C86"/><rect x="16.2" y="9.3" width="7.6" height="3.4" rx="1.2" fill="#5F5F6B"/><path d="M14.2 17c0-2.3 1.7-3.6 5.8-3.6s5.8 1.3 5.8 3.6v14.4a2 2 0 0 1-2 2h-7.6a2 2 0 0 1-2-2z" fill="#2F9469"/><path d="M14.2 17c0-1.9 1.2-3.1 3.6-3.5v19.9h-1.6a2 2 0 0 1-2-2z" fill="#fff" opacity=".28"/><rect x="16.4" y="20.3" width="7.2" height="8.4" rx="1.2" fill="#F3FAF6"/><rect x="17.7" y="22.3" width="4.6" height="1.5" rx=".75" fill="#2F9469"/><path d="M14.2 17c0-2.3 1.7-3.6 5.8-3.6s5.8 1.3 5.8 3.6v14.4a2 2 0 0 1-2 2h-7.6a2 2 0 0 1-2-2z" fill="none" stroke="#237552" stroke-width=".9"/></svg></span>
+        <span><span class="nm">سائل غسيل الأطباق</span><span class="meta"><bdi class="brand" dir="ltr">CleanPro</bdi><span class="sep">·</span><bdi class="qty">750 مل</bdi></span>
+</span>
+        <span class="val"><span class="fslot"><span class="flash">بديل واحد</span></span>
+          <span class="tk"><span class="amt"><span class="maj">14</span><span class="cur-m">⃁</span></span>
+            <span class="strip"><span class="u"><bdi dir="ltr">⃁ 18.67</bdi> / لتر</span></span></span></span>
+        <span class="chev"></span>
+        <span class="offer">علامة خاصة، أقل بـ <bdi dir="ltr">⃁ 4</bdi></span>
+      </button>
+
+    </div>
+
+    <p class="sl">لا توجد بدائل بقيمة أفضل</p>
+    <div class="none">
+      <div class="nrow">
+        <span class="pack"><svg viewBox="0 0 40 40" aria-hidden="true"><ellipse cx="20" cy="34.4" rx="8.4" ry="1.3" fill="#111114" opacity=".13"/><rect x="11.8" y="8.6" width="16.4" height="24.8" rx="1.7" fill="#E08A2C"/><path d="M13.4 8.6h4.4v24.8h-4.4z" fill="#fff" opacity=".22"/><rect x="14.2" y="11.4" width="11.6" height="9.8" rx="1.2" fill="#FBE3B8"/><circle cx="20" cy="16.3" r="3" fill="#C96C1C"/><circle cx="20" cy="16.3" r="1.35" fill="#F7C67E"/><rect x="14.2" y="23.6" width="11.6" height="2.4" rx="1.2" fill="#FBE3B8"/><rect x="11.8" y="8.6" width="16.4" height="24.8" rx="1.7" fill="none" stroke="#BE6E1C" stroke-width=".9"/></svg></span>
+        <span><span class="nm">كورن فليكس</span><span class="meta"><span class="sep">·</span><bdi class="qty">500 جم</bdi></span></span>
+      </div>
+      <div class="nrow">
+        <span class="pack"><svg viewBox="0 0 40 40" aria-hidden="true"><ellipse cx="20" cy="34.4" rx="7.4" ry="1.3" fill="#111114" opacity=".13"/><rect x="13.6" y="8.4" width="12.8" height="25" rx="1.7" fill="#E9C34D"/><path d="M15 8.4h3.6v25H15z" fill="#fff" opacity=".24"/><rect x="16" y="12.2" width="8" height="11.6" rx=".9" fill="#F8F0D2"/><g fill="#D8A93B"><rect x="16.9" y="13.1" width="1.3" height="9.8" rx=".65"/><rect x="19.05" y="13.1" width="1.3" height="9.8" rx=".65"/><rect x="21.2" y="13.1" width="1.3" height="9.8" rx=".65"/></g><rect x="13.6" y="8.4" width="12.8" height="25" rx="1.7" fill="none" stroke="#C9A335" stroke-width=".9"/></svg></span>
+        <span><span class="nm">مكرونة</span><span class="meta"><span class="sep">·</span><bdi class="qty">1 كجم</bdi></span></span>
+      </div>
+      <div class="nrow">
+        <span class="pack"><svg viewBox="0 0 40 40" aria-hidden="true"><ellipse cx="20" cy="34.4" rx="6.4" ry="1.3" fill="#111114" opacity=".13"/><rect x="18.6" y="4.8" width="2.8" height="3.2" rx=".7" fill="#33481D"/><rect x="18.2" y="7.4" width="3.6" height="5.6" fill="#4A6B2A"/><path d="M15.2 18.2c0-2.4 3-3.2 3-5.2h3.6c0 2 3 2.8 3 5.2v13.2a2 2 0 0 1-2 2h-5.6a2 2 0 0 1-2-2z" fill="#4A6B2A"/><path d="M15.2 18.2c0-1.8 1.6-2.7 2.4-4.1v19.3h-.4a2 2 0 0 1-2-2z" fill="#fff" opacity=".24"/><rect x="15.8" y="21.3" width="8.4" height="6.8" rx=".8" fill="#E5CE7A"/><rect x="17.2" y="23.1" width="5.6" height="1.4" rx=".7" fill="#4A6B2A"/><path d="M15.2 18.2c0-2.4 3-3.2 3-5.2h3.6c0 2 3 2.8 3 5.2v13.2a2 2 0 0 1-2 2h-5.6a2 2 0 0 1-2-2z" fill="none" stroke="#38521F" stroke-width=".9"/></svg></span>
+        <span><span class="nm">زيت زيتون</span><span class="meta"><span class="sep">·</span><bdi class="qty">500 مل</bdi></span></span>
+      </div>
+    </div>
+
+    <div class="foot">
+      <button class="exit" type="button">رجوع للسلة</button>
+    </div>
+  </div>
+
+  <span class="hi"></span>
+</div>
+  </section>
+  <section class="screen" id="a3" aria-hidden="true" dir="rtl">
+<div class="phone">
+  <div class="sb">
+    <span class="sb-t">9:41</span>
+    <span class="sb-di"></span>
+    <span class="sb-i">
+      <svg width="17.4" height="11" viewBox="0 0 17.4 11" aria-hidden="true"><rect x="0" y="7.4" width="3" height="3.6" rx="1"/><rect x="4.8" y="5.1" width="3" height="5.9" rx="1"/><rect x="9.6" y="2.6" width="3" height="8.4" rx="1"/><rect x="14.4" y="0" width="3" height="11" rx="1"/></svg>
+      <svg width="17" height="13" viewBox="0 0 17 13" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M3.13 6.23a7.6 7.6 0 0 1 10.74 0"/><path d="M5.67 8.77a4 4 0 0 1 5.66 0"/></g><circle cx="8.5" cy="11.1" r="1.5"/></svg>
+      <svg width="27.4" height="13" viewBox="0 0 27.4 13" aria-hidden="true"><rect x=".5" y=".5" width="24" height="12" rx="4.2" fill="none" stroke="currentColor" stroke-width="1" opacity=".36"/><path d="M26 4.6v3.8a2 2 0 0 0 0-3.8z" opacity=".4"/><rect x="2" y="2" width="21" height="9" rx="2.8"/></svg>
+    </span>
+  </div>
+
+  <div class="nav">
+    <button class="back" type="button"><svg viewBox="0 0 24 24"><path d="M15 5 8 12l7 7"/></svg>رجوع</button>
+    <h1>الحليب</h1>
+  </div>
+
+  <div class="body">
+
+    <p class="sl">في سلتك</p>
+    <div class="cur">
+      <span class="pack"><svg viewBox="0 0 40 40" aria-hidden="true"><ellipse cx="20" cy="34.5" rx="8.6" ry="1.4" fill="#111114" opacity=".13"/><path d="M11.8 15.2 20 6.6l8.4 8.6z" fill="#DCE7F2"/><path d="M11.8 15.2h16.6V32a1.8 1.8 0 0 1-1.8 1.8H13.6A1.8 1.8 0 0 1 11.8 32z" fill="#F2F7FC"/><path d="M11.8 15.2h5.6v18.6h-3.8A1.8 1.8 0 0 1 11.8 32z" fill="#fff" opacity=".8"/><rect x="18.4" y="4.4" width="3.2" height="2.8" rx=".9" fill="#2F6FB5"/><rect x="11.8" y="20.4" width="16.6" height="7.6" fill="#2F6FB5"/><rect x="14.2" y="22.3" width="9.6" height="1.8" rx=".9" fill="#F2F7FC"/><path d="M11.8 15.2h16.6V32a1.8 1.8 0 0 1-1.8 1.8H13.6A1.8 1.8 0 0 1 11.8 32z" fill="none" stroke="#BFCFDE" stroke-width=".9"/><path d="M11.8 15.2 20 6.6l8.4 8.6z" fill="none" stroke="#BFCFDE" stroke-width=".9"/></svg></span>
+      <span><span class="nm"><bdi>Golden Dairy</bdi></span><span class="meta"><span class="sep">·</span><bdi class="qty">1.5 لتر</bdi></span></span>
+      <span class="val"><span class="tk"><span class="amt"><span class="maj">24</span><span class="cur-m">⃁</span></span>
+        <span class="strip"><span class="u"><bdi dir="ltr">⃁ 16.00</bdi> / لتر</span></span></span></span>
+    </div>
+
+    <p class="sl">البدائل</p>
+    <div class="opts">
+
+      <!-- the largest saving, and the same pack size the customer already chose -->
+      <button class="opt" type="button">
+        <span class="reason"><span class="chip c2">نفس الحجم، سعر أقل</span></span>
+        <span class="prod">
+          <span class="pack"><svg viewBox="0 0 40 40" aria-hidden="true"><ellipse cx="20" cy="34.5" rx="8.6" ry="1.4" fill="#111114" opacity=".13"/><path d="M11.8 15.2 20 6.6l8.4 8.6z" fill="#E4EDDD"/><path d="M11.8 15.2h16.6V32a1.8 1.8 0 0 1-1.8 1.8H13.6A1.8 1.8 0 0 1 11.8 32z" fill="#F4F9F0"/><path d="M11.8 15.2h5.6v18.6h-3.8A1.8 1.8 0 0 1 11.8 32z" fill="#fff" opacity=".8"/><rect x="18.4" y="4.4" width="3.2" height="2.8" rx=".9" fill="#4C8A3F"/><rect x="11.8" y="20.4" width="16.6" height="7.6" fill="#4C8A3F"/><rect x="14.2" y="22.3" width="9.6" height="1.8" rx=".9" fill="#F4F9F0"/><path d="M11.8 15.2h16.6V32a1.8 1.8 0 0 1-1.8 1.8H13.6A1.8 1.8 0 0 1 11.8 32z" fill="none" stroke="#C6D7BC" stroke-width=".9"/><path d="M11.8 15.2 20 6.6l8.4 8.6z" fill="none" stroke="#C6D7BC" stroke-width=".9"/></svg></span>
+          <span><span class="nm"><bdi>Rif</bdi></span><span class="meta"><bdi class="qty">1.5 لتر</bdi></span></span>
+          <span class="tk"><span class="amt"><span class="maj">16</span><span class="cur-m">⃁</span></span>
+            <span class="strip"><span class="u"><bdi dir="ltr">⃁ 10.67</bdi> / لتر</span></span></span>
+        </span>
+        <span class="outcome">
+          <span></span>
+          <span class="oc">
+            <span class="oc1">السلة <bdi dir="ltr">⃁ 96</bdi><span class="ocs">·</span><span class="ocd"><bdi dir="ltr">⃁ 8</bdi> أقل</span></span>
+          </span>
+          <span class="go">اختيار هذا البديل</span>
+        </span>
+      </button>
+
+      <!-- the recommendation, and it costs more. The chip carries the argument;
+           the item delta stays a plain fact and is not dressed up to agree with it -->
+      <button class="opt" type="button">
+        <span class="reason"><span class="chip c1">نفس العلامة، سعر أقل لكل لتر</span></span>
+        <span class="prod">
+          <span class="pack"><svg viewBox="0 0 40 40" aria-hidden="true"><ellipse cx="20" cy="34.6" rx="9.4" ry="1.5" fill="#111114" opacity=".13"/><path d="M10.4 13.6 20 4.2l9.6 9.4z" fill="#DCE7F2"/><path d="M10.4 13.6h19.2v18.6a1.8 1.8 0 0 1-1.8 1.8H12.2a1.8 1.8 0 0 1-1.8-1.8z" fill="#F2F7FC"/><path d="M10.4 13.6h6v20.4h-4.2a1.8 1.8 0 0 1-1.8-1.8z" fill="#fff" opacity=".8"/><rect x="18.4" y="1.9" width="3.2" height="2.8" rx=".9" fill="#2F6FB5"/><rect x="10.4" y="19.4" width="19.2" height="8.4" fill="#2F6FB5"/><rect x="13" y="21.5" width="11" height="1.9" rx=".95" fill="#F2F7FC"/><path d="M10.4 13.6h19.2v18.6a1.8 1.8 0 0 1-1.8 1.8H12.2a1.8 1.8 0 0 1-1.8-1.8z" fill="none" stroke="#BFCFDE" stroke-width=".9"/><path d="M10.4 13.6 20 4.2l9.6 9.4z" fill="none" stroke="#BFCFDE" stroke-width=".9"/></svg></span>
+          <span><span class="nm"><bdi>Golden Dairy</bdi></span><span class="meta"><bdi class="qty">2 لتر</bdi></span></span>
+          <span class="tk"><span class="amt"><span class="maj">28</span><span class="cur-m">⃁</span></span>
+            <span class="strip"><span class="u"><bdi dir="ltr">⃁ 14.00</bdi> / لتر</span></span></span>
+        </span>
+        <span class="outcome">
+          <span></span>
+          <span class="oc">
+            <span class="oc1">السلة <bdi dir="ltr">⃁ 108</bdi><span class="ocs">·</span><span class="ocd"><bdi dir="ltr">⃁ 4</bdi> أكثر</span></span>
+          </span>
+          <span class="go">اختيار هذا البديل</span>
+        </span>
+      </button>
+
+      <!-- the private label. The reason names it, so the brand line is the brand -->
+      <button class="opt" type="button">
+        <span class="reason"><span class="chip c3">علامة خاصة، سعر أقل</span></span>
+        <span class="prod">
+          <span class="pack"><svg viewBox="0 0 40 40" aria-hidden="true"><ellipse cx="20" cy="34.5" rx="8.6" ry="1.4" fill="#111114" opacity=".13"/><path d="M11.8 15.2 20 6.6l8.4 8.6z" fill="#EDEAE1"/><path d="M11.8 15.2h16.6V32a1.8 1.8 0 0 1-1.8 1.8H13.6A1.8 1.8 0 0 1 11.8 32z" fill="#FAF8F3"/><path d="M11.8 15.2h5.6v18.6h-3.8A1.8 1.8 0 0 1 11.8 32z" fill="#fff" opacity=".8"/><rect x="18.4" y="4.4" width="3.2" height="2.8" rx=".9" fill="#171512"/><rect x="11.8" y="20.4" width="16.6" height="6.2" fill="#171512"/><rect x="14.2" y="22.2" width="9.6" height="1.6" rx=".8" fill="#FFC400"/><path d="M11.8 15.2h16.6V32a1.8 1.8 0 0 1-1.8 1.8H13.6A1.8 1.8 0 0 1 11.8 32z" fill="none" stroke="#D8D2C6" stroke-width=".9"/><path d="M11.8 15.2 20 6.6l8.4 8.6z" fill="none" stroke="#D8D2C6" stroke-width=".9"/></svg></span>
+          <span><span class="nm"><bdi>Pantry</bdi></span><span class="meta"><bdi class="qty">1.5 لتر</bdi></span></span>
+          <span class="tk"><span class="amt"><span class="maj">17</span><span class="cur-m">⃁</span></span>
+            <span class="strip"><span class="u"><bdi dir="ltr">⃁ 11.33</bdi> / لتر</span></span></span>
+        </span>
+        <span class="outcome">
+          <span></span>
+          <span class="oc">
+            <span class="oc1">السلة <bdi dir="ltr">⃁ 97</bdi><span class="ocs">·</span><span class="ocd"><bdi dir="ltr">⃁ 7</bdi> أقل</span></span>
+          </span>
+          <span class="go">اختيار هذا البديل</span>
+        </span>
+      </button>
+
+    </div>
+
+    <div class="foot">
+      <button class="keep" type="button">الاحتفاظ بالمنتج الحالي</button>
+      <span class="fn">لم يتم تطبيق أي تغيير بعد.</span>
+    </div>
+  </div>
+
+  <span class="hi"></span>
+</div>
+  </section>
+  <section class="screen" id="a4" aria-hidden="true" dir="rtl">
+<div class="phone">
+  <div class="sb">
+    <span class="sb-t">9:41</span>
+    <span class="sb-di"></span>
+    <span class="sb-i">
+      <svg width="17.4" height="11" viewBox="0 0 17.4 11" aria-hidden="true"><rect x="0" y="7.4" width="3" height="3.6" rx="1"/><rect x="4.8" y="5.1" width="3" height="5.9" rx="1"/><rect x="9.6" y="2.6" width="3" height="8.4" rx="1"/><rect x="14.4" y="0" width="3" height="11" rx="1"/></svg>
+      <svg width="17" height="13" viewBox="0 0 17 13" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M3.13 6.23a7.6 7.6 0 0 1 10.74 0"/><path d="M5.67 8.77a4 4 0 0 1 5.66 0"/></g><circle cx="8.5" cy="11.1" r="1.5"/></svg>
+      <svg width="27.4" height="13" viewBox="0 0 27.4 13" aria-hidden="true"><rect x=".5" y=".5" width="24" height="12" rx="4.2" fill="none" stroke="currentColor" stroke-width="1" opacity=".36"/><path d="M26 4.6v3.8a2 2 0 0 0 0-3.8z" opacity=".4"/><rect x="2" y="2" width="21" height="9" rx="2.8"/></svg>
+    </span>
+  </div>
+
+  <div class="nav">
+    <button class="back" type="button"><svg viewBox="0 0 24 24"><path d="M15 5 8 12l7 7"/></svg>الحليب</button>
+    <h1>تأكيد التغيير</h1>
+  </div>
+
+  <div class="body">
+    <div class="mid">
+    <div class="card">
+
+      <div class="now">
+        <span class="pack"><svg viewBox="0 0 40 40" aria-hidden="true"><ellipse cx="20" cy="34.5" rx="8.6" ry="1.4" fill="#111114" opacity=".13"/><path d="M11.8 15.2 20 6.6l8.4 8.6z" fill="#DCE7F2"/><path d="M11.8 15.2h16.6V32a1.8 1.8 0 0 1-1.8 1.8H13.6A1.8 1.8 0 0 1 11.8 32z" fill="#F2F7FC"/><path d="M11.8 15.2h5.6v18.6h-3.8A1.8 1.8 0 0 1 11.8 32z" fill="#fff" opacity=".8"/><rect x="18.4" y="4.4" width="3.2" height="2.8" rx=".9" fill="#2F6FB5"/><rect x="11.8" y="20.4" width="16.6" height="7.6" fill="#2F6FB5"/><rect x="14.2" y="22.3" width="9.6" height="1.8" rx=".9" fill="#F2F7FC"/><path d="M11.8 15.2h16.6V32a1.8 1.8 0 0 1-1.8 1.8H13.6A1.8 1.8 0 0 1 11.8 32z" fill="none" stroke="#BFCFDE" stroke-width=".9"/><path d="M11.8 15.2 20 6.6l8.4 8.6z" fill="none" stroke="#BFCFDE" stroke-width=".9"/></svg></span>
+        <span><span class="nk">في سلتك</span>
+          <span class="nm"><bdi>Golden Dairy</bdi></span><span class="meta"><span class="sep">·</span><bdi class="qty">1.5 لتر</bdi></span></span>
+        <span class="tk"><span class="amt"><span class="maj">24</span><span class="cur-m">⃁</span></span>
+          <span class="strip"><span class="u"><bdi dir="ltr">⃁ 16.00</bdi> / لتر</span></span></span>
+      </div>
+
+      <div class="arrow"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14"/><path d="m6 13 6 6 6-6"/></svg></div>
+
+      <div class="to">
+        <span class="reason"><span class="chip c1">نفس العلامة، سعر أقل لكل لتر</span></span>
+
+        <div class="prod">
+          <span class="pack"><svg viewBox="0 0 40 40" aria-hidden="true"><ellipse cx="20" cy="34.6" rx="9.4" ry="1.5" fill="#111114" opacity=".13"/><path d="M10.4 13.6 20 4.2l9.6 9.4z" fill="#DCE7F2"/><path d="M10.4 13.6h19.2v18.6a1.8 1.8 0 0 1-1.8 1.8H12.2a1.8 1.8 0 0 1-1.8-1.8z" fill="#F2F7FC"/><path d="M10.4 13.6h6v20.4h-4.2a1.8 1.8 0 0 1-1.8-1.8z" fill="#fff" opacity=".8"/><rect x="18.4" y="1.9" width="3.2" height="2.8" rx=".9" fill="#2F6FB5"/><rect x="10.4" y="19.4" width="19.2" height="8.4" fill="#2F6FB5"/><rect x="13" y="21.5" width="11" height="1.9" rx=".95" fill="#F2F7FC"/><path d="M10.4 13.6h19.2v18.6a1.8 1.8 0 0 1-1.8 1.8H12.2a1.8 1.8 0 0 1-1.8-1.8z" fill="none" stroke="#BFCFDE" stroke-width=".9"/><path d="M10.4 13.6 20 4.2l9.6 9.4z" fill="none" stroke="#BFCFDE" stroke-width=".9"/></svg></span>
+          <span><span class="nm"><bdi>Golden Dairy</bdi></span><span class="meta"><bdi class="qty">2 لتر</bdi></span></span>
+          <span class="tk"><span class="amt"><span class="maj">28</span><span class="cur-m">⃁</span></span>
+            <span class="strip"><span class="u"><bdi dir="ltr">⃁ 14.00</bdi> / لتر</span></span></span>
+        </div>
+
+        <div class="what">
+          <span class="nk">إجمالي السلة بعد التغيير</span>
+          <span class="btot"><span class="maj">108</span><span class="cur-m">⃁</span></span>
+          <span class="wsub">تدفع <bdi dir="ltr">⃁ 4</bdi> أكثر<span class="wsep">·</span>وتوفر <bdi dir="ltr">⃁ 2.00</bdi> لكل لتر</span>
+        </div>
+      </div>
+
+    </div>
+    </div>
+
+    <div class="foot">
+      <span class="yet">لم يتم تطبيق أي تغيير بعد.</span>
+      <button class="apply" type="button">تطبيق التغيير</button>
+      <button class="cancel" type="button">إلغاء</button>
+    </div>
+  </div>
+
+  <span class="hi"></span>
+</div>
+  </section>
+  <section class="screen" id="a5" aria-hidden="true" dir="rtl">
+<div class="phone">
+  <div class="sb">
+    <span class="sb-t">9:41</span>
+    <span class="sb-di"></span>
+    <span class="sb-i">
+      <svg width="17.4" height="11" viewBox="0 0 17.4 11" aria-hidden="true"><rect x="0" y="7.4" width="3" height="3.6" rx="1"/><rect x="4.8" y="5.1" width="3" height="5.9" rx="1"/><rect x="9.6" y="2.6" width="3" height="8.4" rx="1"/><rect x="14.4" y="0" width="3" height="11" rx="1"/></svg>
+      <svg width="17" height="13" viewBox="0 0 17 13" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M3.13 6.23a7.6 7.6 0 0 1 10.74 0"/><path d="M5.67 8.77a4 4 0 0 1 5.66 0"/></g><circle cx="8.5" cy="11.1" r="1.5"/></svg>
+      <svg width="27.4" height="13" viewBox="0 0 27.4 13" aria-hidden="true"><rect x=".5" y=".5" width="24" height="12" rx="4.2" fill="none" stroke="currentColor" stroke-width="1" opacity=".36"/><path d="M26 4.6v3.8a2 2 0 0 0 0-3.8z" opacity=".4"/><rect x="2" y="2" width="21" height="9" rx="2.8"/></svg>
+    </span>
+  </div>
+
+  <div class="appbar"><h1>السلة</h1><span>6 منتجات</span></div>
+
+  <div class="list">
+
+    <!-- the changed item. Pale field, no flash, and the note that records what
+         it replaced with the control that puts it back. -->
+    <article class="row is-chg">
+      <span class="pack"><svg viewBox="0 0 40 40" aria-hidden="true"><ellipse cx="20" cy="34.6" rx="9.4" ry="1.5" fill="#111114" opacity=".13"/><path d="M10.4 13.6 20 4.2l9.6 9.4z" fill="#DCE7F2"/><path d="M10.4 13.6h19.2v18.6a1.8 1.8 0 0 1-1.8 1.8H12.2a1.8 1.8 0 0 1-1.8-1.8z" fill="#F2F7FC"/><path d="M10.4 13.6h6v20.4h-4.2a1.8 1.8 0 0 1-1.8-1.8z" fill="#fff" opacity=".8"/><rect x="18.4" y="1.9" width="3.2" height="2.8" rx=".9" fill="#2F6FB5"/><rect x="10.4" y="19.4" width="19.2" height="8.4" fill="#2F6FB5"/><rect x="13" y="21.5" width="11" height="1.9" rx=".95" fill="#F2F7FC"/><path d="M10.4 13.6h19.2v18.6a1.8 1.8 0 0 1-1.8 1.8H12.2a1.8 1.8 0 0 1-1.8-1.8z" fill="none" stroke="#BFCFDE" stroke-width=".9"/><path d="M10.4 13.6 20 4.2l9.6 9.4z" fill="none" stroke="#BFCFDE" stroke-width=".9"/></svg></span>
+      <span><span class="nm">حليب</span><span class="meta"><bdi class="brand" dir="ltr">Golden Dairy</bdi><span class="sep">·</span><bdi class="qty">2 لتر</bdi></span>
+        <span class="ctl"><span class="step"><i>−</i>1<i>+</i></span></span></span>
+      <span class="val"><span class="fslot"></span>
+        <span class="tk"><span class="amt"><span class="maj">28</span><span class="cur">⃁</span></span>
+          <span class="strip"><span class="u"><bdi dir="ltr">⃁ 14.00</bdi> / لتر</span></span></span></span>
+      <span class="chg"><span><b>سعر أقل لكل لتر.</b> كان 1.5 لتر، <bdi dir="ltr">⃁ 24</bdi>.</span>
+        <button class="undo" type="button">تراجع</button></span>
+    </article>
+
+    <!-- two items still have options, so they still carry the flash -->
+    <article class="row">
+      <span class="pack"><svg viewBox="0 0 40 40" aria-hidden="true"><ellipse cx="20" cy="34.4" rx="8.2" ry="1.4" fill="#111114" opacity=".13"/><path d="M13.2 13.8c0-3 3-4.4 6.8-4.4s6.8 1.4 6.8 4.4v17.6a2 2 0 0 1-2 2H15.2a2 2 0 0 1-2-2z" fill="#D3AE77"/><path d="M13.2 13.8c0-2.4 1.9-3.8 4.4-4.2v23.8H15.2a2 2 0 0 1-2-2z" fill="#fff" opacity=".3"/><rect x="13.2" y="18.4" width="13.6" height="7.4" fill="#B38B52"/><rect x="15.6" y="20.2" width="8.4" height="1.8" rx=".9" fill="#F7EFE1"/><path d="M13.2 13.8c0-3 3-4.4 6.8-4.4s6.8 1.4 6.8 4.4v17.6a2 2 0 0 1-2 2H15.2a2 2 0 0 1-2-2z" fill="none" stroke="#A8813F" stroke-width=".9"/></svg></span>
+      <span><span class="nm">أرز</span><span class="meta"><bdi class="brand" dir="ltr">Golden Field</bdi><span class="sep">·</span><bdi class="qty">2 كجم</bdi></span>
+        <span class="ctl"><span class="step"><i>−</i>1<i>+</i></span></span></span>
+      <span class="val"><span class="fslot"><span class="flash">2 بدائل</span></span>
+        <span class="tk"><span class="amt"><span class="maj">19</span><span class="cur">⃁</span></span>
+          <span class="strip"><span class="u"><bdi dir="ltr">⃁ 9.50</bdi> / كجم</span></span></span></span>
+    </article>
+
+    <article class="row">
+      <span class="pack"><svg viewBox="0 0 40 40" aria-hidden="true"><ellipse cx="20" cy="34.4" rx="7.2" ry="1.3" fill="#111114" opacity=".13"/><rect x="18.5" y="5.2" width="3" height="4.6" rx="1" fill="#7C7C86"/><rect x="16.2" y="9.3" width="7.6" height="3.4" rx="1.2" fill="#5F5F6B"/><path d="M14.2 17c0-2.3 1.7-3.6 5.8-3.6s5.8 1.3 5.8 3.6v14.4a2 2 0 0 1-2 2h-7.6a2 2 0 0 1-2-2z" fill="#2F9469"/><path d="M14.2 17c0-1.9 1.2-3.1 3.6-3.5v19.9h-1.6a2 2 0 0 1-2-2z" fill="#fff" opacity=".28"/><rect x="16.4" y="20.3" width="7.2" height="8.4" rx="1.2" fill="#F3FAF6"/><rect x="17.7" y="22.3" width="4.6" height="1.5" rx=".75" fill="#2F9469"/><path d="M14.2 17c0-2.3 1.7-3.6 5.8-3.6s5.8 1.3 5.8 3.6v14.4a2 2 0 0 1-2 2h-7.6a2 2 0 0 1-2-2z" fill="none" stroke="#237552" stroke-width=".9"/></svg></span>
+      <span><span class="nm">سائل غسيل الأطباق</span><span class="meta"><bdi class="brand" dir="ltr">CleanPro</bdi><span class="sep">·</span><bdi class="qty">750 مل</bdi></span>
+        <span class="ctl"><span class="step"><i>−</i>1<i>+</i></span></span></span>
+      <span class="val"><span class="fslot"><span class="flash">بديل واحد</span></span>
+        <span class="tk"><span class="amt"><span class="maj">14</span><span class="cur">⃁</span></span>
+          <span class="strip"><span class="u"><bdi dir="ltr">⃁ 18.67</bdi> / لتر</span></span></span></span>
+    </article>
+
+    <!-- items with no options: no flash, and the ticket is unchanged. Nothing
+         is added to fill the slot the flash leaves empty. -->
+    <article class="row">
+      <span class="pack"><svg viewBox="0 0 40 40" aria-hidden="true"><ellipse cx="20" cy="34.4" rx="8.4" ry="1.3" fill="#111114" opacity=".13"/><rect x="11.8" y="8.6" width="16.4" height="24.8" rx="1.7" fill="#E08A2C"/><path d="M13.4 8.6h4.4v24.8h-4.4z" fill="#fff" opacity=".22"/><rect x="14.2" y="11.4" width="11.6" height="9.8" rx="1.2" fill="#FBE3B8"/><circle cx="20" cy="16.3" r="3" fill="#C96C1C"/><circle cx="20" cy="16.3" r="1.35" fill="#F7C67E"/><rect x="14.2" y="23.6" width="11.6" height="2.4" rx="1.2" fill="#FBE3B8"/><rect x="11.8" y="8.6" width="16.4" height="24.8" rx="1.7" fill="none" stroke="#BE6E1C" stroke-width=".9"/></svg></span>
+      <span><span class="nm">كورن فليكس</span><span class="meta"><bdi class="brand" dir="ltr">Morning Co</bdi><span class="sep">·</span><bdi class="qty">500 جم</bdi></span>
+        <span class="ctl"><span class="step"><i>−</i>1<i>+</i></span></span></span>
+      <span class="val"><span class="fslot"></span>
+        <span class="tk"><span class="amt"><span class="maj">18</span><span class="cur">⃁</span></span>
+          <span class="strip"><span class="u"><bdi dir="ltr">⃁ 36.00</bdi> / كجم</span></span></span></span>
+    </article>
+
+    <article class="row">
+      <span class="pack"><svg viewBox="0 0 40 40" aria-hidden="true"><ellipse cx="20" cy="34.4" rx="7.4" ry="1.3" fill="#111114" opacity=".13"/><rect x="13.6" y="8.4" width="12.8" height="25" rx="1.7" fill="#E9C34D"/><path d="M15 8.4h3.6v25H15z" fill="#fff" opacity=".24"/><rect x="16" y="12.2" width="8" height="11.6" rx=".9" fill="#F8F0D2"/><g fill="#D8A93B"><rect x="16.9" y="13.1" width="1.3" height="9.8" rx=".65"/><rect x="19.05" y="13.1" width="1.3" height="9.8" rx=".65"/><rect x="21.2" y="13.1" width="1.3" height="9.8" rx=".65"/></g><rect x="13.6" y="8.4" width="12.8" height="25" rx="1.7" fill="none" stroke="#C9A335" stroke-width=".9"/></svg></span>
+      <span><span class="nm">مكرونة</span><span class="meta"><bdi class="brand" dir="ltr">Napoli Co</bdi><span class="sep">·</span><bdi class="qty">1 كجم</bdi></span>
+        <span class="ctl"><span class="step"><i>−</i>1<i>+</i></span></span></span>
+      <span class="val"><span class="fslot"></span>
+        <span class="tk"><span class="amt"><span class="maj">11</span><span class="cur">⃁</span></span>
+          <span class="strip"><span class="u"><bdi dir="ltr">⃁ 11.00</bdi> / كجم</span></span></span></span>
+    </article>
+
+    <article class="row">
+      <span class="pack"><svg viewBox="0 0 40 40" aria-hidden="true"><ellipse cx="20" cy="34.4" rx="6.4" ry="1.3" fill="#111114" opacity=".13"/><rect x="18.6" y="4.8" width="2.8" height="3.2" rx=".7" fill="#33481D"/><rect x="18.2" y="7.4" width="3.6" height="5.6" fill="#4A6B2A"/><path d="M15.2 18.2c0-2.4 3-3.2 3-5.2h3.6c0 2 3 2.8 3 5.2v13.2a2 2 0 0 1-2 2h-5.6a2 2 0 0 1-2-2z" fill="#4A6B2A"/><path d="M15.2 18.2c0-1.8 1.6-2.7 2.4-4.1v19.3h-.4a2 2 0 0 1-2-2z" fill="#fff" opacity=".24"/><rect x="15.8" y="21.3" width="8.4" height="6.8" rx=".8" fill="#E5CE7A"/><rect x="17.2" y="23.1" width="5.6" height="1.4" rx=".7" fill="#4A6B2A"/><path d="M15.2 18.2c0-2.4 3-3.2 3-5.2h3.6c0 2 3 2.8 3 5.2v13.2a2 2 0 0 1-2 2h-5.6a2 2 0 0 1-2-2z" fill="none" stroke="#38521F" stroke-width=".9"/></svg></span>
+      <span><span class="nm">زيت زيتون</span><span class="meta"><bdi class="brand" dir="ltr">Olea Verde</bdi><span class="sep">·</span><bdi class="qty">500 مل</bdi></span>
+        <span class="ctl"><span class="step"><i>−</i>1<i>+</i></span></span></span>
+      <span class="val"><span class="fslot"></span>
+        <span class="tk"><span class="amt"><span class="maj">18</span><span class="cur">⃁</span></span>
+          <span class="strip"><span class="u"><bdi dir="ltr">⃁ 36.00</bdi> / لتر</span></span></span></span>
+    </article>
+
+  </div>
+
+  <div class="foot">
+    <button class="entry" type="button">
+      <span class="ticket">
+        <span class="et"><span class="e1">تحسين السلة</span>
+          <span class="e2">2 منتجات لها بدائل بقيمة أفضل</span></span>
+        <span class="ec" aria-hidden="true">‹</span>
+      </span>
+    </button>
+    <div class="pay">
+      <span class="tot"><span class="tl">الإجمالي</span>
+        <span class="tk"><span class="amt"><span class="maj">108</span><span class="cur">⃁</span></span></span></span>
+      <button class="cta" type="button">إتمام الطلب</button>
+    </div>
+  </div>
+
+  <div class="tabs">
+    <span class="tab"><svg viewBox="0 0 24 24"><path d="M3 10.5 12 4l9 6.5V20a1 1 0 0 1-1 1h-4v-6H8v6H4a1 1 0 0 1-1-1z"/></svg>الرئيسية</span>
+    <span class="tab"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"/><path d="m16 16 4.5 4.5"/></svg>البحث</span>
+    <span class="tab"><svg viewBox="0 0 24 24"><path d="M12.6 3.4H20v7.4a2 2 0 0 1-.6 1.4l-7 7a2 2 0 0 1-2.8 0l-4.8-4.8a2 2 0 0 1 0-2.8l7-7a2 2 0 0 1 1.4-.6z"/><circle cx="16.3" cy="7.7" r="1.2"/></svg>العروض</span>
+    <span class="tab on"><span class="tw"><svg viewBox="0 0 24 24"><path d="M4.5 7.5h15l-1.4 10.2a2 2 0 0 1-2 1.8H7.9a2 2 0 0 1-2-1.8z"/><path d="M8.8 7.5a3.2 3.2 0 0 1 6.4 0"/></svg><i class="tb">6</i></span>السلة</span>
+    <span class="tab"><svg viewBox="0 0 24 24"><circle cx="12" cy="8.6" r="3.6"/><path d="M5.5 20a6.5 6.5 0 0 1 13 0"/></svg>الحساب</span>
+  </div>
+  <span class="hi"></span>
+</div>
+  </section>
 </div>
 
 <div class="bar">
-  <a class="out" id="out" href="index.html">&lsaquo; Case study</a>
-  <span class="rule"></span>
-  <span>Step <b id="step">1 / 5</b> &nbsp;·&nbsp; <span id="stepname">Cart</span></span>
-  <button id="back" type="button">Back</button>
-  <button id="restart" type="button">Restart</button>
-  <span class="hint">press <kbd>esc</kbd> to go back</span>
+  <!-- Three physical zones that never swap. The bar is pinned to direction:ltr
+       because it is the prototype's own chrome, not the product: a control that
+       moves across the screen when you change language is a control you have to
+       hunt for. Only the TEXT inside each item follows its own language, via
+       dir="auto". Grouped by job: leave · where you are · move and switch. -->
+  <div class="zone zl">
+    <a class="out" id="out" href="index.html">&lsaquo; Case study</a>
+    <a class="li bh" href="https://www.behance.net/gallery/251982435/From-Product-Level-Choices-to-Cart-Decisions"
+       target="_blank" rel="noopener noreferrer" aria-label="The case study on Behance">
+      <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M8.4 11.25c1.25-.38 2.05-1.32 2.05-2.72C10.45 5.95 8.58 5 6.18 5H1.5v14h4.9c2.78 0 4.78-1.34 4.78-4.17 0-1.78-.96-3.02-2.78-3.58ZM4.38 7.3h1.55c1.08 0 1.72.42 1.72 1.42 0 1.08-.7 1.5-1.78 1.5H4.38V7.3Zm1.72 9.35H4.38v-3.78h1.78c1.28 0 2.08.5 2.08 1.82 0 1.4-.88 1.96-2.14 1.96ZM16.82 8.35c-3.28 0-5.3 2.3-5.3 5.5 0 3.32 1.92 5.45 5.4 5.45 2.48 0 4.18-1.2 4.92-3.48h-2.7c-.28.82-1.08 1.2-2.12 1.2-1.5 0-2.48-.78-2.55-2.4H22c.18-3.45-1.58-6.27-5.18-6.27Zm-2.32 4.48c.18-1.32.95-2.18 2.28-2.18 1.38 0 2.12.82 2.3 2.18H14.5ZM14 5.55h5.55v1.5H14v-1.5Z"/></svg>
+      <span class="lil">Behance</span>
+    </a>
+    <a class="li" href="https://www.linkedin.com/in/islamashraf" target="_blank"
+       rel="noopener noreferrer" aria-label="Islam Ashraf on LinkedIn">
+      <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.225 0z"/></svg>
+      <span class="lil">LinkedIn</span>
+    </a>
+  </div>
+  <div class="zone zc">
+    <span class="step" dir="auto"><span id="stepword">Step</span>
+      <b id="step" dir="ltr">1 / 5</b><span class="dot">·</span><span id="stepname">Cart</span></span>
+  </div>
+  <div class="zone zr">
+    <span class="hint" id="hint">press <kbd>esc</kbd> to go back</span>
+    <button id="back" type="button" dir="auto">Back</button>
+    <button id="restart" type="button" dir="auto">Restart</button>
+    <span class="rule"></span>
+    <button id="lang" class="lang" type="button" dir="auto"
+            aria-label="Switch language / تغيير اللغة">عربي</button>
+  </div>
 </div>
 
 <script>
+
 (function(){
   var PACK = {milk:'<svg viewBox="0 0 40 40" aria-hidden="true"><ellipse cx="20" cy="34.5" rx="8.6" ry="1.4" fill="#111114" opacity=".13"/><path d="M11.8 15.2 20 6.6l8.4 8.6z" fill="#DCE7F2"/><path d="M11.8 15.2h16.6V32a1.8 1.8 0 0 1-1.8 1.8H13.6A1.8 1.8 0 0 1 11.8 32z" fill="#F2F7FC"/><path d="M11.8 15.2h5.6v18.6h-3.8A1.8 1.8 0 0 1 11.8 32z" fill="#fff" opacity=".8"/><rect x="18.4" y="4.4" width="3.2" height="2.8" rx=".9" fill="#2F6FB5"/><rect x="11.8" y="20.4" width="16.6" height="7.6" fill="#2F6FB5"/><rect x="14.2" y="22.3" width="9.6" height="1.8" rx=".9" fill="#F2F7FC"/><path d="M11.8 15.2h16.6V32a1.8 1.8 0 0 1-1.8 1.8H13.6A1.8 1.8 0 0 1 11.8 32z" fill="none" stroke="#BFCFDE" stroke-width=".9"/><path d="M11.8 15.2 20 6.6l8.4 8.6z" fill="none" stroke="#BFCFDE" stroke-width=".9"/></svg>',rice:'<svg viewBox="0 0 40 40" aria-hidden="true"><ellipse cx="20" cy="34.4" rx="8.2" ry="1.4" fill="#111114" opacity=".13"/><path d="M13.2 13.8c0-3 3-4.4 6.8-4.4s6.8 1.4 6.8 4.4v17.6a2 2 0 0 1-2 2H15.2a2 2 0 0 1-2-2z" fill="#D3AE77"/><path d="M13.2 13.8c0-2.4 1.9-3.8 4.4-4.2v23.8H15.2a2 2 0 0 1-2-2z" fill="#fff" opacity=".3"/><rect x="13.2" y="18.4" width="13.6" height="7.4" fill="#B38B52"/><rect x="15.6" y="20.2" width="8.4" height="1.8" rx=".9" fill="#F7EFE1"/><path d="M13.2 13.8c0-3 3-4.4 6.8-4.4s6.8 1.4 6.8 4.4v17.6a2 2 0 0 1-2 2H15.2a2 2 0 0 1-2-2z" fill="none" stroke="#A8813F" stroke-width=".9"/></svg>',soap:'<svg viewBox="0 0 40 40" aria-hidden="true"><ellipse cx="20" cy="34.4" rx="7.2" ry="1.3" fill="#111114" opacity=".13"/><rect x="18.5" y="5.2" width="3" height="4.6" rx="1" fill="#7C7C86"/><rect x="16.2" y="9.3" width="7.6" height="3.4" rx="1.2" fill="#5F5F6B"/><path d="M14.2 17c0-2.3 1.7-3.6 5.8-3.6s5.8 1.3 5.8 3.6v14.4a2 2 0 0 1-2 2h-7.6a2 2 0 0 1-2-2z" fill="#2F9469"/><path d="M14.2 17c0-1.9 1.2-3.1 3.6-3.5v19.9h-1.6a2 2 0 0 1-2-2z" fill="#fff" opacity=".28"/><rect x="16.4" y="20.3" width="7.2" height="8.4" rx="1.2" fill="#F3FAF6"/><rect x="17.7" y="22.3" width="4.6" height="1.5" rx=".75" fill="#2F9469"/><path d="M14.2 17c0-2.3 1.7-3.6 5.8-3.6s5.8 1.3 5.8 3.6v14.4a2 2 0 0 1-2 2h-7.6a2 2 0 0 1-2-2z" fill="none" stroke="#237552" stroke-width=".9"/></svg>',vMilk:'<svg viewBox="0 0 40 40" aria-hidden="true"><ellipse cx="20" cy="34.5" rx="8.6" ry="1.4" fill="#111114" opacity=".13"/><path d="M11.8 15.2 20 6.6l8.4 8.6z" fill="#E4EDDD"/><path d="M11.8 15.2h16.6V32a1.8 1.8 0 0 1-1.8 1.8H13.6A1.8 1.8 0 0 1 11.8 32z" fill="#F4F9F0"/><path d="M11.8 15.2h5.6v18.6h-3.8A1.8 1.8 0 0 1 11.8 32z" fill="#fff" opacity=".8"/><rect x="18.4" y="4.4" width="3.2" height="2.8" rx=".9" fill="#4C8A3F"/><rect x="11.8" y="20.4" width="16.6" height="7.6" fill="#4C8A3F"/><rect x="14.2" y="22.3" width="9.6" height="1.8" rx=".9" fill="#F4F9F0"/><path d="M11.8 15.2h16.6V32a1.8 1.8 0 0 1-1.8 1.8H13.6A1.8 1.8 0 0 1 11.8 32z" fill="none" stroke="#C6D7BC" stroke-width=".9"/><path d="M11.8 15.2 20 6.6l8.4 8.6z" fill="none" stroke="#C6D7BC" stroke-width=".9"/></svg>',gd2:'<svg viewBox="0 0 40 40" aria-hidden="true"><ellipse cx="20" cy="34.6" rx="9.4" ry="1.5" fill="#111114" opacity=".13"/><path d="M10.4 13.6 20 4.2l9.6 9.4z" fill="#DCE7F2"/><path d="M10.4 13.6h19.2v18.6a1.8 1.8 0 0 1-1.8 1.8H12.2a1.8 1.8 0 0 1-1.8-1.8z" fill="#F2F7FC"/><path d="M10.4 13.6h6v20.4h-4.2a1.8 1.8 0 0 1-1.8-1.8z" fill="#fff" opacity=".8"/><rect x="18.4" y="1.9" width="3.2" height="2.8" rx=".9" fill="#2F6FB5"/><rect x="10.4" y="19.4" width="19.2" height="8.4" fill="#2F6FB5"/><rect x="13" y="21.5" width="11" height="1.9" rx=".95" fill="#F2F7FC"/><path d="M10.4 13.6h19.2v18.6a1.8 1.8 0 0 1-1.8 1.8H12.2a1.8 1.8 0 0 1-1.8-1.8z" fill="none" stroke="#BFCFDE" stroke-width=".9"/><path d="M10.4 13.6 20 4.2l9.6 9.4z" fill="none" stroke="#BFCFDE" stroke-width=".9"/></svg>',oMilk:'<svg viewBox="0 0 40 40" aria-hidden="true"><ellipse cx="20" cy="34.5" rx="8.6" ry="1.4" fill="#111114" opacity=".13"/><path d="M11.8 15.2 20 6.6l8.4 8.6z" fill="#EDEAE1"/><path d="M11.8 15.2h16.6V32a1.8 1.8 0 0 1-1.8 1.8H13.6A1.8 1.8 0 0 1 11.8 32z" fill="#FAF8F3"/><path d="M11.8 15.2h5.6v18.6h-3.8A1.8 1.8 0 0 1 11.8 32z" fill="#fff" opacity=".8"/><rect x="18.4" y="4.4" width="3.2" height="2.8" rx=".9" fill="#171512"/><rect x="11.8" y="20.4" width="16.6" height="6.2" fill="#171512"/><rect x="14.2" y="22.2" width="9.6" height="1.6" rx=".8" fill="#FFC400"/><path d="M11.8 15.2h16.6V32a1.8 1.8 0 0 1-1.8 1.8H13.6A1.8 1.8 0 0 1 11.8 32z" fill="none" stroke="#D8D2C6" stroke-width=".9"/><path d="M11.8 15.2 20 6.6l8.4 8.6z" fill="none" stroke="#D8D2C6" stroke-width=".9"/></svg>',vRice:'<svg viewBox="0 0 40 40" aria-hidden="true"><ellipse cx="20" cy="34.4" rx="8.2" ry="1.4" fill="#111114" opacity=".13"/><path d="M13.2 13.8c0-3 3-4.4 6.8-4.4s6.8 1.4 6.8 4.4v17.6a2 2 0 0 1-2 2H15.2a2 2 0 0 1-2-2z" fill="#E2D9C2"/><path d="M13.2 13.8c0-2.4 1.9-3.8 4.4-4.2v23.8H15.2a2 2 0 0 1-2-2z" fill="#fff" opacity=".4"/><rect x="13.2" y="18.4" width="13.6" height="7.4" fill="#4C8A3F"/><rect x="15.6" y="20.2" width="8.4" height="1.8" rx=".9" fill="#F4F9F0"/><path d="M13.2 13.8c0-3 3-4.4 6.8-4.4s6.8 1.4 6.8 4.4v17.6a2 2 0 0 1-2 2H15.2a2 2 0 0 1-2-2z" fill="none" stroke="#C6B99C" stroke-width=".9"/></svg>',gf5:'<svg viewBox="0 0 40 40" aria-hidden="true"><ellipse cx="20" cy="35" rx="10" ry="1.5" fill="#111114" opacity=".13"/><path d="M10.6 11.8c0-3.4 3.8-5 9.4-5s9.4 1.6 9.4 5v20.4a2 2 0 0 1-2 2H12.6a2 2 0 0 1-2-2z" fill="#D3AE77"/><path d="M10.6 11.8c0-2.7 2.4-4.3 5.6-4.8v27.2H12.6a2 2 0 0 1-2-2z" fill="#fff" opacity=".3"/><rect x="10.6" y="17.4" width="18.8" height="8.8" fill="#B38B52"/><rect x="13.6" y="19.8" width="11.8" height="2" rx="1" fill="#F7EFE1"/><path d="M10.6 11.8c0-3.4 3.8-5 9.4-5s9.4 1.6 9.4 5v20.4a2 2 0 0 1-2 2H12.6a2 2 0 0 1-2-2z" fill="none" stroke="#A8813F" stroke-width=".9"/></svg>',oSoap:'<svg viewBox="0 0 40 40" aria-hidden="true"><ellipse cx="20" cy="34.4" rx="7.2" ry="1.3" fill="#111114" opacity=".13"/><rect x="18.5" y="5.2" width="3" height="4.6" rx="1" fill="#55555E"/><rect x="16.2" y="9.3" width="7.6" height="3.4" rx="1.2" fill="#33333B"/><path d="M14.2 17c0-2.3 1.7-3.6 5.8-3.6s5.8 1.3 5.8 3.6v14.4a2 2 0 0 1-2 2h-7.6a2 2 0 0 1-2-2z" fill="#1D1A16"/><path d="M14.2 17c0-1.9 1.2-3.1 3.6-3.5v19.9h-1.6a2 2 0 0 1-2-2z" fill="#fff" opacity=".13"/><rect x="16.4" y="20.3" width="7.2" height="8.4" rx="1.2" fill="#FAF8F3"/><rect x="17.7" y="22.3" width="4.6" height="1.5" rx=".75" fill="#FFC400"/><path d="M14.2 17c0-2.3 1.7-3.6 5.8-3.6s5.8 1.3 5.8 3.6v14.4a2 2 0 0 1-2 2h-7.6a2 2 0 0 1-2-2z" fill="none" stroke="#000" stroke-width=".9" opacity=".45"/></svg>'};
 
-  /* ---------------------------------------------------------------------
-     One source of truth for the scenario. Milk is R14 section 05. Rice and
-     dish soap come from index.html and the earlier prototype, with three
-     conflicts resolved: dish soap is SAR 10 (R14 and the old prototype agree,
-     index.html's SAR 9 is the outlier); the budget rice brand is Value Rice,
-     matching Value Milk; and rice's second chip reads "Lower price per kilo"
-     rather than "Best price per unit", which was a superlative the numbers do
-     not support — Value Rice is SAR 7.50/kg against the 5 kg sack's 7.80.
+  /* =====================================================================
+     BILINGUAL PROTOTYPE
 
-     The filled chip is the shop's argument, one per screen. On rice it goes to
-     Value Rice, which is both cheaper and better value per kilo; the same-brand
-     larger sack is a real trade but not the one to lead with.
-     --------------------------------------------------------------------- */
+     Two complete screen sets live in the page: s1..s5 English, a1..a5 the
+     approved Arabic RTL designs. They are not translations of one markup —
+     the Arabic screens carry their own mirrored chrome, their own tracking
+     resets and their own folded price strip — so both are embedded whole.
+
+     The step machine therefore works on step NUMBERS and resolves an id
+     through S(). Switching language re-renders the same step in the other
+     set rather than starting a separate flow.
+
+     There is ONE numeric model. Prices, units and totals are shared and the
+     language only chooses labels, so the two languages cannot drift apart on
+     a number. Every Arabic string here already exists in the approved
+     screens except the kilo chip, derived from its litre twin, and the four
+     furniture words.
+     ===================================================================== */
+  var LANG = 'en';
+  function S(n){ return (LANG === 'ar' ? 'a' : 's') + n; }
+  function L(pair){ return pair[LANG === 'ar' ? 1 : 0]; }
+
   var BASE_TOTAL = 104;
-  var PRODUCTS = {
-    milk: {i:0, title:'Milk', brand:'Golden Dairy', size:'1.5 L', price:24,
-      basis:'Per L', word:'litre', unit:'SAR 16.00', pack:'milk', count:'3 options',
-      opts:[
-        {w:'c2', chip:'Same size, lower price', name:'Value Milk', size:'1.5 L',
-          price:16, unit:'SAR 10.67', pack:'vMilk', meta:'Value Milk &middot; 1.5 L',
-          note:'<b>Same size, lower price.</b> Was Golden Dairy 1.5 L, SAR 24.'},
-        {w:'c1', chip:'Lower price per litre', name:'Golden Dairy', size:'2 L',
-          price:28, unit:'SAR 14.00', pack:'gd2', meta:'Golden Dairy &middot; 2 L',
-          note:'<b>Lower price per litre.</b> Was 1.5 L, SAR 24.'},
-        {w:'c3', chip:'Private label, lower price', name:'Basket Value', size:'1.5 L',
-          price:17, unit:'SAR 11.33', pack:'oMilk', meta:'Basket Value &middot; 1.5 L',
-          note:'<b>Private label, lower price.</b> Was Golden Dairy 1.5 L, SAR 24.'}
+
+  var CHIP = {
+    sameSize: ['Same size, lower price',      'نفس الحجم، سعر أقل'],
+    perUnitL: ['Lower price per litre',       'نفس العلامة، سعر أقل لكل لتر'],
+    perUnitK: ['Lower price per kilo',        'نفس العلامة، سعر أقل لكل كجم'],
+    private:  ['Private label, lower price',  'علامة خاصة، سعر أقل']
+  };
+
+  /* Brands stay Latin in both languages. Rif is the budget label and Pantry
+     the private label — the names that replaced "Value Milk" and
+     "Basket Value", which the screens stopped using. */
+  var MODEL = {
+    milk: {i:0, title:['Milk','حليب'], brand:'Golden Dairy',
+      size:['1.5 L','1.5 لتر'], price:24, unit:16.00, per:'L', word:['litre','لتر'],
+      pack:'milk', opts:[
+        {w:'c2', chip:CHIP.sameSize, name:'Rif',          size:['1.5 L','1.5 لتر'], price:16, unit:10.67, pack:'vMilk'},
+        {w:'c1', chip:CHIP.perUnitL, name:'Golden Dairy', size:['2 L','2 لتر'],     price:28, unit:14.00, pack:'gd2'},
+        {w:'c3', chip:CHIP.private,  name:'Pantry',       size:['1.5 L','1.5 لتر'], price:17, unit:11.33, pack:'oMilk'}
       ]},
-    rice: {i:1, title:'Rice', brand:'Golden Field', size:'2 kg', price:19,
-      basis:'Per kg', word:'kilo', unit:'SAR 9.50', pack:'rice', count:'2 options',
-      opts:[
-        {w:'c1', chip:'Same size, lower price', name:'Value Rice', size:'2 kg',
-          price:15, unit:'SAR 7.50', pack:'vRice', meta:'Value Rice &middot; 2 kg',
-          note:'<b>Same size, lower price.</b> Was Golden Field 2 kg, SAR 19.'},
-        {w:'c2', chip:'Lower price per kilo', name:'Golden Field', size:'5 kg',
-          price:39, unit:'SAR 7.80', pack:'gf5', meta:'Golden Field &middot; 5 kg',
-          note:'<b>Lower price per kilo.</b> Was 2 kg, SAR 19.'}
+    rice: {i:1, title:['Rice','أرز'], brand:'Golden Field',
+      size:['2 kg','2 كجم'], price:19, unit:9.50, per:'kg', word:['kilo','كجم'],
+      pack:'rice', opts:[
+        {w:'c1', chip:CHIP.sameSize, name:'Rif',          size:['2 kg','2 كجم'], price:15, unit:7.50, pack:'vRice'},
+        {w:'c2', chip:CHIP.perUnitK, name:'Golden Field', size:['5 kg','5 كجم'], price:39, unit:7.80, pack:'gf5'}
       ]},
-    soap: {i:2, title:'Dish soap', brand:'CleanPro', size:'750 ml', price:14,
-      basis:'Per L', word:'litre', unit:'SAR 18.67', pack:'soap', count:'1 option',
-      opts:[
-        {w:'c1', chip:'Private label, lower price', name:'Basket Value', size:'750 ml',
-          price:10, unit:'SAR 13.33', pack:'oSoap', meta:'Basket Value &middot; 750 ml',
-          note:'<b>Private label, lower price.</b> Was CleanPro 750 ml, SAR 14.'}
+    soap: {i:2, title:['Dish soap','سائل غسيل الأطباق'], brand:'CleanPro',
+      size:['750 ml','750 مل'], price:14, unit:18.67, per:'L', word:['litre','لتر'],
+      pack:'soap', opts:[
+        {w:'c1', chip:CHIP.private, name:'Pantry', size:['750 ml','750 مل'], price:10, unit:13.33, pack:'oSoap'}
       ]}
   };
   var KEYS = ['milk','rice','soap'];
-  var NAMES = {s1:'Cart', s2:'Optimize basket', s3:'Review options',
-                s4:'Confirm change', s5:'Updated cart'};
-  var ORDER = ['s1','s2','s3','s4','s5'];
 
-  function payLine(p,o){
-    var d = o.price - p.price;
-    return d < 0 ? 'Pay SAR ' + (-d) + ' less'
-         : d > 0 ? 'Pay SAR ' + d + ' more' : 'Pay the same';
-  }
+  var COPY = {
+    en: {
+      dir:'ltr',
+      names:['Cart','Optimize basket','Review options','Confirm change','Updated cart'],
+      step:'Step', back:'Back', restart:'Restart', out:'&lsaquo; Case study',
+      hint:'press <kbd>esc</kbd> to go back', undo:'Undo', toggle:'عربي',
+      money:function(n){ return '⃁\u00A0' + n; },
+      pay:function(d){ return d < 0 ? 'Pay ⃁\u00A0' + (-d) + ' less'
+                            : d > 0 ? 'Pay ⃁\u00A0' + d + ' more' : 'Pay the same'; },
+      oc1:function(total,d){ return 'Cart ⃁\u00A0' + total
+        + '<span class="ocs">·</span><span class="ocd">'
+        + (d < 0 ? '⃁\u00A0' + (-d) + ' less' : d > 0 ? '⃁\u00A0' + d + ' more' : 'no change')
+        + '</span>'; },
+      nkAfter:'Your cart becomes',
+      wsub:function(d,save,word){ return this.pay(d)
+        + '<span class="wsep">·</span>⃁ ' + save.toFixed(2) + ' less per ' + word; },
+      note:function(chip,brand,size,price){ return '<b>' + chip + '.</b> Was '
+        + size + ', ⃁\u00A0' + price + '.'; },
+      entry2:function(n){ return n + ' items have better-value options'; },
+      count:function(n){ return n === 1 ? '1 option' : n + ' options'; },
+      basis:function(p){ return 'Per ' + p.per; },
+      unit:function(v){ return '⃁\u00A0' + v.toFixed(2); }
+    },
+    ar: {
+      dir:'rtl',
+      names:['السلة','تحسين السلة','البدائل','تأكيد التغيير','السلة بعد التغيير'],
+      step:'خطوة', back:'رجوع', restart:'إعادة', out:'دراسة الحالة &rsaquo;',
+      hint:'<kbd>esc</kbd> للرجوع', undo:'تراجع', toggle:'EN',
+      money:function(n){ return '<bdi dir="ltr">⃁\u00A0' + n + '</bdi>'; },
+      pay:function(d){ return d < 0 ? 'تدفع ' + this.money(-d) + ' أقل'
+                            : d > 0 ? 'تدفع ' + this.money(d) + ' أكثر'
+                            : 'نفس السعر'; },
+      oc1:function(total,d){ return 'السلة ' + this.money(total)
+        + '<span class="ocs">·</span><span class="ocd">'
+        + this.money(Math.abs(d)) + (d < 0 ? ' أقل' : d > 0 ? ' أكثر' : '') + '</span>'; },
+      nkAfter:'إجمالي السلة بعد التغيير',
+      wsub:function(d,save,word){ return this.pay(d)
+        + '<span class="wsep">·</span>وتوفر ' + this.money(save.toFixed(2)) + ' لكل ' + word; },
+      note:function(chip,brand,size,price){ return '<b>' + chip + '.</b> كان '
+        + size + '، ' + this.money(price) + '.'; },
+      entry2:function(n){ return n + ' منتجات لها بدائل بقيمة أفضل'; },
+      count:function(n){ return n === 1 ? 'بديل واحد' : n + ' بدائل'; },
+      basis:function(){ return ''; },
+      unit:function(v,word){ return '<bdi dir="ltr">⃁\u00A0' + v.toFixed(2) + '</bdi> / ' + word; }
+    }
+  };
+  function C(){ return COPY[LANG]; }
+  function payLine(p,o){ return C().pay(o.price - p.price); }
   function cartAfter(p,o){ return BASE_TOTAL - p.price + o.price; }
 
   var reduce = matchMedia('(prefers-reduced-motion: reduce)');
-  var stack = ['s1'], product = 'milk', option = 0, applied = null, busy = false;
+  var stack = [1], product = 'milk', option = 0, applied = null, busy = false;
 
   function el(id){ return document.getElementById(id); }
   function q(scope,sel){ return el(scope).querySelector(sel); }
@@ -1118,16 +2251,19 @@ body{margin:0;min-height:100vh;background:#EDE7DC;display:flex;flex-direction:co
   function current(){ return stack[stack.length-1]; }
 
   function label(){
-    var id = current(), back = el('back');
-    el('step').textContent = (ORDER.indexOf(id)+1) + ' / 5';
-    el('stepname').textContent = NAMES[id];
+    var n = current(), c = C(), back = el('back');
+    el('step').textContent = n + ' / 5';
+    el('stepword').textContent = c.step;
+    el('stepname').textContent = c.names[n-1];
+    el('back').textContent = c.back;
+    el('restart').textContent = c.restart;
+    el('out').innerHTML = c.out;
+    el('hint').innerHTML = c.hint;
+    el('lang').textContent = c.toggle;
     back.disabled = stack.length < 2;
     back.style.opacity = stack.length < 2 ? .4 : 1;
   }
 
-  /* a push slides the new screen in from the right and eases the old one back,
-     a pop reverses it. Screen transitions are system navigation, not the
-     product's own motion — the total recount stays parked. */
   function transition(from, to, dir){
     if (from === to) { label(); return; }
     var a = el(from), b = el(to);
@@ -1150,160 +2286,194 @@ body{margin:0;min-height:100vh;background:#EDE7DC;display:flex;flex-direction:co
       busy = false;
     }, 360);
   }
-  function push(to){ if (busy) return; var f = current(); stack.push(to); transition(f,to,'push'); }
-  function pop(){ if (busy || stack.length < 2) return; var f = stack.pop(); transition(f,current(),'pop'); }
-  function rebase(to,dir){ if (busy) return; var f = current(); stack = [to]; transition(f,to,dir); }
-  function reset(){ if (busy) return; applied = null; renderAll(); rebase('s1','pop'); }
+  function push(n){ if (busy) return; var f = S(current()); stack.push(n); transition(f,S(n),'push'); }
+  function goBack(){
+    if (busy || stack.length < 2) return;
+    var f = S(current()); stack.pop(); transition(f, S(current()), 'pop');
+  }
+  function rebase(n,dir){ if (busy) return; var f = S(current()); stack = [n]; transition(f,S(n),dir); }
+  function reset(){ if (busy) return; applied = null; renderAll(); rebase(1,'pop'); }
 
-  /* ---- fill a ticket block from a price and a unit basis ---- */
-  function ticket(node, price, basis, unit){
+  function ticket(node, p, price, unit){
     node.querySelector('.maj').textContent = price;
-    node.querySelector('.strip .b').textContent = basis;
-    node.querySelector('.strip .u').textContent = unit;
+    /* the Arabic screens fold the basis into the unit strip, so .b is absent
+       there by design — write it only where the markup has it */
+    var b = node.querySelector('.strip .b');
+    if (b) b.textContent = C().basis(p);
+    node.querySelector('.strip .u').innerHTML = C().unit(unit, L(p.word));
   }
 
-  /* ---- s2: items still worth reviewing ---- */
+  /* Metadata is built from explicit, direction-controlled parts. The old form
+     was one uncontrolled mixed string — "<bdi>Golden Dairy</bdi> · 1.5 لتر" —
+     where the middot, the digits and the Arabic unit were all loose neutrals
+     whose placement depended on whatever sat beside them. Chrome shattered it
+     into five bidi runs and the right edge moved per row. Now: the Latin brand
+     is an isolate with an explicit dir, the separator is its own element with
+     its own margins, and the quantity is a second isolate. English keeps the
+     plain string it always had. */
+  function metaBrand(brand, size){
+    return LANG === 'ar'
+      ? '<bdi class="brand" dir="ltr">' + brand + '</bdi>'
+        + '<span class="sep">·</span><bdi class="qty">' + size + '</bdi>'
+      : brand + ' · ' + size;
+  }
+  function metaSize(size){
+    return LANG === 'ar'
+      ? '<span class="sep">·</span><bdi class="qty">' + size + '</bdi>'
+      : ' &middot; ' + size;
+  }
+  function metaBare(size){
+    return LANG === 'ar' ? '<bdi class="qty">' + size + '</bdi>' : size;
+  }
+
   function renderOptimize(){
-    qa('s2','.item').forEach(function(row){
+    qa(S(2),'.item').forEach(function(row){
       row.style.display = (applied && applied.p === row.dataset.p) ? 'none' : '';
     });
   }
 
-  /* ---- s3: the options for whichever product was opened ---- */
   function renderOptions(){
-    var p = PRODUCTS[product];
-    q('s3','h1').textContent = p.title;
-    var ref = q('s3','.cur');
+    var p = MODEL[product], c = C(), id = S(3);
+    q(id,'h1').textContent = L(p.title);
+    var ref = q(id,'.cur');
     ref.querySelector('.pack').innerHTML = PACK[p.pack];
-    ref.querySelector('.nm').textContent = p.brand;
-    ref.querySelector('.meta').innerHTML = ' &middot; ' + p.size;
-    ticket(ref.querySelector('.tk'), p.price, p.basis, p.unit);
+    ref.querySelector('.nm').innerHTML = LANG === 'ar' ? '<bdi>' + p.brand + '</bdi>' : p.brand;
+    ref.querySelector('.meta').innerHTML = metaSize(L(p.size));
+    ticket(ref.querySelector('.tk'), p, p.price, p.unit);
 
-    qa('s3','.opt').forEach(function(row,i){
+    qa(id,'.opt').forEach(function(row,i){
       var o = p.opts[i];
       if (!o) { row.style.display = 'none'; return; }
       row.style.display = '';
       var chip = row.querySelector('.chip');
       chip.className = 'chip ' + o.w;
-      chip.textContent = o.chip;
+      chip.textContent = L(o.chip);
       row.querySelector('.pack').innerHTML = PACK[o.pack];
-      row.querySelector('.nm').textContent = o.name;
-      row.querySelector('.meta').innerHTML = o.size;
-      ticket(row.querySelector('.tk'), o.price, p.basis, o.unit);
-      row.querySelector('.oc1').textContent = payLine(p,o);
-      row.querySelector('.oc2 b').textContent = 'SAR ' + cartAfter(p,o);
+      row.querySelector('.nm').innerHTML = LANG === 'ar' ? '<bdi>' + o.name + '</bdi>' : o.name;
+      row.querySelector('.meta').innerHTML = metaBare(L(o.size));
+      ticket(row.querySelector('.tk'), p, o.price, o.unit);
+      row.querySelector('.oc1').innerHTML = c.oc1(cartAfter(p,o), o.price - p.price);
     });
   }
 
-  /* ---- s4: the one option being confirmed ---- */
   function renderConfirm(){
-    var p = PRODUCTS[product], o = p.opts[option];
-    q('s4','.back').lastChild.textContent = p.title;
-    var now = q('s4','.now');
+    var p = MODEL[product], o = p.opts[option], c = C(), id = S(4);
+    var backBtn = q(id,'.back');
+    backBtn.lastChild.textContent = L(p.title);
+    var now = q(id,'.now');
     now.querySelector('.pack').innerHTML = PACK[p.pack];
-    now.querySelector('.nm').textContent = p.brand;
-    now.querySelector('.meta').innerHTML = ' &middot; ' + p.size;
-    ticket(now.querySelector('.tk'), p.price, p.basis, p.unit);
+    now.querySelector('.nm').innerHTML = LANG === 'ar' ? '<bdi>' + p.brand + '</bdi>' : p.brand;
+    now.querySelector('.meta').innerHTML = metaSize(L(p.size));
+    ticket(now.querySelector('.tk'), p, p.price, p.unit);
 
-    var chip = q('s4','.chip');
+    var chip = q(id,'.chip');
     chip.className = 'chip ' + o.w;
-    chip.textContent = o.chip;
-    var to = q('s4','.to');
+    chip.textContent = L(o.chip);
+    var to = q(id,'.to');
     to.querySelector('.pack').innerHTML = PACK[o.pack];
-    to.querySelector('.nm').textContent = o.name;
-    to.querySelector('.meta').innerHTML = o.size;
-    ticket(to.querySelector('.tk'), o.price, p.basis, o.unit);
+    to.querySelector('.nm').innerHTML = LANG === 'ar' ? '<bdi>' + o.name + '</bdi>' : o.name;
+    to.querySelector('.meta').innerHTML = metaBare(L(o.size));
+    ticket(to.querySelector('.tk'), p, o.price, o.unit);
 
-    var w = qa('s4','.w1');
-    w[0].innerHTML = 'Per ' + p.word + ', down from <span class="was">' + p.unit + '</span>';
-    w[1].textContent = payLine(p,o);
-    q('s4','.w2 b').textContent = 'SAR ' + cartAfter(p,o);
+    q(id,'.what .nk').textContent = c.nkAfter;
+    q(id,'.btot .maj').textContent = cartAfter(p,o);
+    q(id,'.wsub').innerHTML = c.wsub(o.price - p.price, p.unit - o.unit, L(p.word));
   }
 
-  /* ---- s5: the cart with one row changed. The list is restored from a clean
-          snapshot each time, so a change can move between rows. ---- */
-  var S5_BASE = null;
+  var S5_BASE = {};
   function snapshotS5(){
-    var list = q('s5','.list');
-    qa('s5','.chg').forEach(function(n){ n.remove(); });
-    qa('s5','.row').forEach(function(r){ r.classList.remove('is-chg'); });
-    KEYS.forEach(function(k){
-      var p = PRODUCTS[k], row = qa('s5','.row')[p.i];
-      row.querySelector('.pack').innerHTML = PACK[p.pack];
-      row.querySelector('.meta').textContent = p.brand + ' · ' + p.size;
-      ticket(row.querySelector('.tk'), p.price, p.basis, p.unit);
-      row.querySelector('.fslot').innerHTML = '<span class="flash">' + p.count + '</span>';
+    ['s5','a5'].forEach(function(id){
+      var list = q(id,'.list');
+      qa(id,'.chg').forEach(function(n){ n.remove(); });
+      qa(id,'.row').forEach(function(r){ r.classList.remove('is-chg'); });
+      S5_BASE[id] = list.innerHTML;
     });
-    S5_BASE = list.innerHTML;
   }
   function renderApplied(){
-    var list = q('s5','.list');
-    list.innerHTML = S5_BASE;
+    var id = S(5), c = C(), list = q(id,'.list');
+    list.innerHTML = S5_BASE[id];
+    KEYS.forEach(function(k){
+      var p = MODEL[k], row = list.querySelectorAll('.row')[p.i];
+      row.querySelector('.pack').innerHTML = PACK[p.pack];
+      row.querySelector('.meta').innerHTML = metaBrand(p.brand, L(p.size));
+      ticket(row.querySelector('.tk'), p, p.price, p.unit);
+      row.querySelector('.fslot').innerHTML = '<span class="flash">' + c.count(p.opts.length) + '</span>';
+    });
     if (!applied) {
-      /* nothing applied: the screen is the cart again, footer included */
-      q('s5','.pay .maj').textContent = BASE_TOTAL;
-      q('s5','.entry .e2').textContent = '3 items have better-value options';
+      q(id,'.pay .maj').textContent = BASE_TOTAL;
+      q(id,'.entry .e2').textContent = c.entry2(3);
       return;
     }
-    var p = PRODUCTS[applied.p], o = p.opts[applied.o];
+    var p = MODEL[applied.p], o = p.opts[applied.o];
     var row = list.querySelectorAll('.row')[p.i];
     row.classList.add('is-chg');
     row.querySelector('.pack').innerHTML = PACK[o.pack];
-    row.querySelector('.meta').innerHTML = o.meta;
-    ticket(row.querySelector('.tk'), o.price, p.basis, o.unit);
-    row.querySelector('.fslot').innerHTML = '';        /* the offer was taken */
+    row.querySelector('.meta').innerHTML = metaBrand(o.name, L(o.size));
+    ticket(row.querySelector('.tk'), p, o.price, o.unit);
+    row.querySelector('.fslot').innerHTML = '';
     var note = document.createElement('span');
     note.className = 'chg';
-    note.innerHTML = '<span>' + o.note + '</span><button class="undo" type="button">Undo</button>';
+    note.innerHTML = '<span>' + c.note(L(o.chip), p.brand, L(p.size), p.price)
+      + '</span><button class="undo" type="button">' + c.undo + '</button>';
     row.appendChild(note);
     note.querySelector('.undo').addEventListener('click', reset);
-    q('s5','.pay .maj').textContent = cartAfter(p,o);
-    q('s5','.entry .e2').textContent = '2 items have better-value options';
+    q(id,'.pay .maj').textContent = cartAfter(p,o);
+    q(id,'.entry .e2').textContent = c.entry2(2);
   }
 
   function renderAll(){ renderOptimize(); renderOptions(); renderConfirm(); renderApplied(); }
 
-  function byText(screen, text){
-    return qa(screen,'button').filter(function(b){
-      return b.textContent.trim().indexOf(text) === 0; })[0];
-  }
   function on(node, fn){ if (node) node.addEventListener('click', fn); }
 
-  /* s1 */
-  on(q('s1','.entry'), function(){ push('s2'); });
-  /* s2 — all three eligible products open their own options */
-  qa('s2','.item').forEach(function(row){
-    row.addEventListener('click', function(){
-      product = row.dataset.p; renderOptions(); push('s3');
-    });
-  });
-  on(byText('s2','Back to cart'), pop);
-  on(q('s2','.back'), pop);
-  /* s3 — every option is live */
-  qa('s3','.opt').forEach(function(row,i){
-    row.addEventListener('click', function(){
-      option = i; renderConfirm(); push('s4');
-    });
-  });
-  on(byText('s3','Keep current item'), pop);
-  on(q('s3','.back'), pop);
-  /* s4 */
-  on(byText('s4','Apply change'), function(){
-    applied = {p: product, o: option}; renderAll(); rebase('s5','push');
-  });
-  on(byText('s4','Cancel'), pop);
-  on(q('s4','.back'), pop);
-  /* s5 */
-  on(q('s5','.entry'), function(){ push('s2'); });
+  /* Hooks bind to CLASSES, never to text. The previous build matched buttons
+     by their English label — byText('s3','Keep current item') — which every
+     Arabic screen would have missed silently. .exit .keep .apply .cancel are
+     shared by both sets. */
+  function wire(prefix, n){
+    var id = prefix + n;
+    if (n === 1 || n === 5) on(q(id,'.entry'), function(){ push(2); });
+    if (n === 2) {
+      qa(id,'.item').forEach(function(row){
+        row.addEventListener('click', function(){
+          product = row.dataset.p; renderOptions(); push(3); }); });
+      on(q(id,'.exit'), goBack); on(q(id,'.back'), goBack);
+    }
+    if (n === 3) {
+      qa(id,'.opt').forEach(function(row,i){
+        row.addEventListener('click', function(){
+          option = i; renderConfirm(); push(4); }); });
+      on(q(id,'.keep'), goBack); on(q(id,'.back'), goBack);
+    }
+    if (n === 4) {
+      on(q(id,'.apply'), function(){
+        applied = {p: product, o: option}; renderAll(); rebase(5,'push'); });
+      on(q(id,'.cancel'), goBack); on(q(id,'.back'), goBack);
+    }
+  }
+  /* Both sets are wired once, up front. A handler on a2 is harmless while
+     English is showing, and it is already live the instant the toggle flips. */
+  ['s','a'].forEach(function(pfx){ [1,2,3,4,5].forEach(function(n){ wire(pfx, n); }); });
 
-  /* Going back to the case study, not forward to it. When the reader arrived
-     from the case study the browser has their scroll position in history, and
-     history.back() restores it — a fresh link to the same page would drop them
-     at the top, which is the whole thing this is meant to avoid.
+  /* ---- the language toggle -------------------------------------------
+     The same step in the other set, with the stack intact, so switching
+     mid-flow keeps your place. The page direction flips too: the furniture
+     below the device is the prototype's own, and it reads with the app. */
+  function setLang(next){
+    if (busy || next === LANG) return;
+    var from = S(current());
+    LANG = next;
+    document.documentElement.lang = next;
+    document.documentElement.dir = C().dir;
+    document.body.dir = C().dir;
+    renderAll();
+    var to = S(current());
+    el(from).classList.remove('on'); el(from).style.transform = '';
+    el(to).classList.add('on'); el(to).style.transform = '';
+    label();
+    fit();
+  }
+  el('lang').addEventListener('click', function(){ setLang(LANG === 'en' ? 'ar' : 'en'); });
 
-     The referrer also tells us which file to fall back to: the document is
-     Smart-Basket-Case-Study-R14.html in the working tree and index.html once
-     published, and this prototype is the same file in both places. */
   (function(){
     var out = el('out'), ref = document.referrer, same = false;
     try {
@@ -1316,42 +2486,36 @@ body{margin:0;min-height:100vh;background:#EDE7DC;display:flex;flex-direction:co
     }
   })();
 
-  el('back').addEventListener('click', pop);
+  el('back').addEventListener('click', goBack);
   el('restart').addEventListener('click', reset);
   addEventListener('keydown', function(e){
-    if (e.key === 'Escape' || e.key === 'Backspace') { e.preventDefault(); pop(); }
+    if (e.key === 'Escape' || e.key === 'Backspace') { e.preventDefault(); goBack(); }
   });
 
-  /* Fit the device to the window. The chrome below is measured rather than
-     assumed, because it wraps to two lines on a narrow screen and that height
-     is part of what the phone has to share. */
   function fit(){
     var cs = getComputedStyle(document.body), bar = document.querySelector('.bar');
     var vv = window.visualViewport;
     var vh = vv ? vv.height : innerHeight, vw = vv ? vv.width : innerWidth;
-    if (!vh || !vw) return;                     /* nothing measurable yet */
+    if (!vh || !vw) return;
     var availH = vh - parseFloat(cs.paddingTop) - parseFloat(cs.paddingBottom)
                - (parseFloat(cs.rowGap) || 0) - bar.offsetHeight;
     var availW = vw - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
-    if (availH <= 0 || availW <= 0) return;     /* keep the last good value */
-    /* Below half size the device stops being readable, so the page scrolls
-       instead. Fitting is worth doing until it costs more than it gives. */
+    if (availH <= 0 || availW <= 0) return;
     var s = Math.max(.5, Math.min(1, availH / 852, availW / 393));
     document.documentElement.style.setProperty('--fit', s.toFixed(4));
   }
   addEventListener('resize', fit);
   addEventListener('orientationchange', fit);
   if (window.visualViewport) visualViewport.addEventListener('resize', fit);
-  /* twice: the first pass can change whether a scrollbar exists, which changes
-     the width the second pass measures. Again once the face has loaded, since
-     the chrome below the device is set in it and its height is part of the sum. */
   fit(); requestAnimationFrame(fit);
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(fit);
 
   snapshotS5();
+  document.documentElement.dir = C().dir;
   el('s1').classList.add('on');
   renderAll(); label();
 })();
+
 </script>
 </body>
 </html>
