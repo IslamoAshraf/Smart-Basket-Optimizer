@@ -2218,7 +2218,9 @@ body{margin:0;min-height:100vh;background:#EDE7DC;display:flex;flex-direction:co
         + '<span class="wsep">·</span>⃁ ' + save.toFixed(2) + ' less per ' + word; },
       note:function(chip,brand,size,price){ return '<b>' + chip + '.</b> Was '
         + size + ', ⃁\u00A0' + price + '.'; },
-      entry2:function(n){ return n + ' items have better-value options'; },
+      entry2:function(n){ return n === 0 ? 'No better-value options left'
+        : n === 1 ? '1 item has better-value options'
+        : n + ' items have better-value options'; },
       count:function(n){ return n === 1 ? '1 option' : n + ' options'; },
       basis:function(p){ return 'Per ' + p.per; },
       unit:function(v){ return '⃁\u00A0' + v.toFixed(2); }
@@ -2240,7 +2242,9 @@ body{margin:0;min-height:100vh;background:#EDE7DC;display:flex;flex-direction:co
         + '<span class="wsep">·</span>وتوفر ' + this.money(save.toFixed(2)) + ' لكل ' + word; },
       note:function(chip,brand,size,price){ return '<b>' + chip + '.</b> كان '
         + size + '، ' + this.money(price) + '.'; },
-      entry2:function(n){ return n + ' منتجات لها بدائل بقيمة أفضل'; },
+      entry2:function(n){ return n === 0 ? 'لا توجد بدائل بقيمة أفضل'
+        : n === 1 ? 'منتج واحد له بدائل بقيمة أفضل'
+        : n + ' منتجات لها بدائل بقيمة أفضل'; },
       count:function(n){ return n === 1 ? 'بديل واحد' : n + ' بدائل'; },
       basis:function(){ return ''; },
       unit:function(v,word){ return '<bdi dir="ltr">⃁\u00A0' + v.toFixed(2) + '</bdi> / ' + word; }
@@ -2248,10 +2252,23 @@ body{margin:0;min-height:100vh;background:#EDE7DC;display:flex;flex-direction:co
   };
   function C(){ return COPY[LANG]; }
   function payLine(p,o){ return C().pay(o.price - p.price); }
-  function cartAfter(p,o){ return BASE_TOTAL - p.price + o.price; }
+  /* every change already applied moves the total, so a preview has to start
+     from where the basket actually is, not from BASE_TOTAL */
+  function currentTotal(){
+    return appliedKeys().reduce(function(t,k){
+      var p = MODEL[k], o = p.opts[applied[k]];
+      return t + (o.price - p.price);
+    }, BASE_TOTAL);
+  }
+  function cartAfter(p,o){ return currentTotal() + (o.price - p.price); }
 
   var reduce = matchMedia('(prefers-reduced-motion: reduce)');
-  var stack = [1], product = 'milk', option = 0, applied = null, busy = false;
+  /* applied maps a product key to the option index chosen for it. It used to be
+   a single {p,o}, so applying a second change overwrote the first: the earlier
+   row lost its highlight, reappeared in step 2 as if untouched, and the total
+   was recomputed from BASE_TOTAL with only the last delta. */
+  var stack = [1], product = 'milk', option = 0, applied = {}, busy = false;
+  function appliedKeys(){ return KEYS.filter(function(k){ return k in applied; }); }
 
   function el(id){ return document.getElementById(id); }
   function q(scope,sel){ return el(scope).querySelector(sel); }
@@ -2300,7 +2317,8 @@ body{margin:0;min-height:100vh;background:#EDE7DC;display:flex;flex-direction:co
     var f = S(current()); stack.pop(); transition(f, S(current()), 'pop');
   }
   function rebase(n,dir){ if (busy) return; var f = S(current()); stack = [n]; transition(f,S(n),dir); }
-  function reset(){ if (busy) return; applied = null; renderAll(); rebase(1,'pop'); }
+  function reset(){ if (busy) return; applied = {}; renderAll(); rebase(1,'pop'); }
+  function undoOne(k){ if (busy) return; delete applied[k]; renderAll(); }
 
   function ticket(node, p, price, unit){
     node.querySelector('.maj').textContent = price;
@@ -2336,7 +2354,7 @@ body{margin:0;min-height:100vh;background:#EDE7DC;display:flex;flex-direction:co
 
   function renderOptimize(){
     qa(S(2),'.item').forEach(function(row){
-      row.style.display = (applied && applied.p === row.dataset.p) ? 'none' : '';
+      row.style.display = (row.dataset.p in applied) ? 'none' : '';
     });
   }
 
@@ -2407,26 +2425,25 @@ body{margin:0;min-height:100vh;background:#EDE7DC;display:flex;flex-direction:co
       ticket(row.querySelector('.tk'), p, p.price, p.unit);
       row.querySelector('.fslot').innerHTML = '<span class="flash">' + c.count(p.opts.length) + '</span>';
     });
-    if (!applied) {
-      q(id,'.pay .maj').textContent = BASE_TOTAL;
-      q(id,'.entry .e2').textContent = c.entry2(3);
-      return;
-    }
-    var p = MODEL[applied.p], o = p.opts[applied.o];
-    var row = list.querySelectorAll('.row')[p.i];
-    row.classList.add('is-chg');
-    row.querySelector('.pack').innerHTML = PACK[o.pack];
-    row.querySelector('.meta').innerHTML = metaBrand(o.name, L(o.size));
-    ticket(row.querySelector('.tk'), p, o.price, o.unit);
-    row.querySelector('.fslot').innerHTML = '';
-    var note = document.createElement('span');
-    note.className = 'chg';
-    note.innerHTML = '<span>' + c.note(L(o.chip), p.brand, L(p.size), p.price)
-      + '</span><button class="undo" type="button">' + c.undo + '</button>';
-    row.appendChild(note);
-    note.querySelector('.undo').addEventListener('click', reset);
-    q(id,'.pay .maj').textContent = cartAfter(p,o);
-    q(id,'.entry .e2').textContent = c.entry2(2);
+    appliedKeys().forEach(function(k){
+      var p = MODEL[k], o = p.opts[applied[k]];
+      var row = list.querySelectorAll('.row')[p.i];
+      row.classList.add('is-chg');
+      row.querySelector('.pack').innerHTML = PACK[o.pack];
+      row.querySelector('.meta').innerHTML = metaBrand(o.name, L(o.size));
+      ticket(row.querySelector('.tk'), p, o.price, o.unit);
+      row.querySelector('.fslot').innerHTML = '';          /* the offer was taken */
+      var note = document.createElement('span');
+      note.className = 'chg';
+      note.innerHTML = '<span>' + c.note(L(o.chip), p.brand, L(p.size), p.price)
+        + '</span><button class="undo" type="button">' + c.undo + '</button>';
+      row.appendChild(note);
+      /* undo takes back THIS change only, and leaves the others standing */
+      note.querySelector('.undo').addEventListener('click', function(){ undoOne(k); });
+    });
+    q(id,'.pay .maj').textContent = currentTotal();
+    /* the real remaining count, not a hardcoded 2 */
+    q(id,'.entry .e2').textContent = c.entry2(KEYS.length - appliedKeys().length);
   }
 
   function renderAll(){ renderOptimize(); renderOptions(); renderConfirm(); renderApplied(); }
@@ -2454,7 +2471,7 @@ body{margin:0;min-height:100vh;background:#EDE7DC;display:flex;flex-direction:co
     }
     if (n === 4) {
       on(q(id,'.apply'), function(){
-        applied = {p: product, o: option}; renderAll(); rebase(5,'push'); });
+        applied[product] = option; renderAll(); rebase(5,'push'); });
       on(q(id,'.cancel'), goBack); on(q(id,'.back'), goBack);
     }
   }
